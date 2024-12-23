@@ -79,7 +79,13 @@ export const DisplayMap = () => {
         }
       }
     });
-    //Clean up on unmount
+
+    const onZoomChange = () => {
+      console.log('Current Zoom Level:', map.getZoom());
+    };
+
+    map.addEventListener('mapviewchangeend', onZoomChange);
+
     return () => {
       map.dispose();
     };

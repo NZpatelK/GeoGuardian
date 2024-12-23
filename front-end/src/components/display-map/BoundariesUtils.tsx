@@ -6,6 +6,14 @@ let temporaryMarker: null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
 let polygon = null;
 
+/**
+ * Calculates the distance between two geographical points using the Haversine formula.
+ * 
+ * @param point1 - The first point with latitude and longitude.
+ * @param point2 - The second point with latitude and longitude.
+ * @returns The distance in meters between the two points on the Earth's surface.
+ */
+
 export const calculateDistanceBetweenPoints = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
     const earthRadius = 6371e3;
     const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -27,6 +35,13 @@ export const calculateDistanceBetweenPoints = (point1: { lat: number; lng: numbe
     return earthRadius * c;
 };
 
+/**
+ * Calculates the area of a polygon in square kilometers on the surface of the Earth.
+ * 
+ * @param polygonCoordinates - The coordinates of the polygon in the format of an array of objects containing 'lat' and 'lng' properties.
+ * @returns The area in square kilometers.
+ * @throws {Error} If the polygon has fewer than three vertices.
+ */
 const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: number; lng: number }[]): number => {
 
     const EARTH_RADIUS = 6371000;
