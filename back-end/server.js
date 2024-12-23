@@ -4,10 +4,13 @@ const fs = require('fs');  // To read files from the filesystem
 const path = require('path');
 const app = express();
 const port = 3000;
+const cors = require('cors');
+app.use(cors());  // Allow all origins
+
 
 // Serve data from the data.json file
-app.get('/api/users', (req, res) => {
-  const filePath = path.join(__dirname, './data/data.json');
+app.get('/api/field-data', (req, res) => {
+  const filePath = path.join(__dirname, './data/FieldData.json');
   
   // Read the data.json file and send it as a response
   fs.readFile(filePath, 'utf-8', (err, data) => {

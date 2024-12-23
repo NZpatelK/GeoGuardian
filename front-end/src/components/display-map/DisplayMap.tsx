@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel } from './BoundariesUtils';
+import axios from 'axios';
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
@@ -36,6 +37,17 @@ export const DisplayMap = () => {
     const ui = H.ui.UI.createDefault(map, defaultLayers);
 
     let isDrawing = false;
+
+    const fieldData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/field-data');  // Using axios to fetch data
+        console.log('Response:', response.data);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    };
+
+    fieldData();
 
     map.addEventListener("tap", (evt) => {
       const coords = map.screenToGeo(
