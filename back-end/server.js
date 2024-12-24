@@ -39,6 +39,7 @@ app.get('/api/field-data', (req, res) => {
 
 app.post('/save-data', (req, res) => {
     const data = req.body; // Get data from the request body
+    console.log(data);
   
     // Read the existing data from the JSON file
     fs.readFile(filePath, 'utf8', (err, jsonData) => {
