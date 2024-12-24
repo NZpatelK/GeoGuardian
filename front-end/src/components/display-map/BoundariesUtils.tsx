@@ -1,5 +1,5 @@
-import axios from "axios";
 import { markerIcon } from "../../assets/markerIcon.";
+import FieldApi from "../../services/FieldApi";
 
 let polygonCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: null = null;
@@ -123,7 +123,7 @@ export const closePolygon = (startPoint: { lat: number; lng: number }) => {
 
     CompletedPolygon = [];
     CompletedPolygon = polygonCoordinates;
-    saveData(polygonCoordinates);
+    FieldApi.addField(polygonCoordinates);
     polygonCoordinates = [];
 
     return { removeTempPolyline, removeTempMarker, polygon };
@@ -201,27 +201,3 @@ export const createLabel = (labelName: string) => {
     return label
 }
 
-const saveData = async (polygonCoordinates: { lat: number; lng: number }[]) => {
-
-    const data = {
-        id: 1,
-        name: 'Cow Home',
-        coordinates: polygonCoordinates,
-    };
-    try {
-        // Send data to the backend using axios
-        const response = await axios.post('http://localhost:3000/save-data', data, {
-            headers: {
-                'Content-Type': 'application/json', // Ensure the server expects JSON
-            },
-        });
-
-        console.log(response.data.message); // Success message
-    } catch (err) {
-        if (axios.isAxiosError(err)) {
-            console.error('Error:', err.response ? err.response.data : err.message);
-        } else {
-            console.error('Error:', err);
-        }
-    }
-}

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
+import H from '@here/maps-api-for-javascript';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel } from './BoundariesUtils';
-import axios from 'axios';
+import FieldApi from '../../services/FieldApi';
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
@@ -38,16 +39,8 @@ export const DisplayMap = () => {
 
     let isDrawing = false;
 
-    const fieldData = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/field-data');  // Using axios to fetch data
-        console.log('Response:', response.data);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      }
-    };
-
-    fieldData();
+    const response = FieldApi.getFieldCoordinates();
+    console.log('Response:', response);
 
     map.addEventListener("tap", (evt) => {
       const coords = map.screenToGeo(
