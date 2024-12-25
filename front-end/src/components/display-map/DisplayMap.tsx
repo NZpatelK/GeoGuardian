@@ -18,7 +18,7 @@ export const DisplayMap = () => {
       apikey: HereApiKey,
     });
 
-    const defaultLayers = platform.createDefaultLayers();
+    const defaultLayers = platform.createDefaultLayers() as any;
 
     // Initialize the map
     const map: HMap | null = mapRef.current
@@ -56,7 +56,7 @@ export const DisplayMap = () => {
           const tempMarker = startPolygon(coords as { lat: number; lng: number });
           isDrawing = true;
 
-          map.addObject(tempMarker as any);
+          map.addObject(tempMarker as H.map.Marker);
         } else {
 
           const startPoint = getSpecifcPolygonCoordinates(0);
@@ -66,8 +66,8 @@ export const DisplayMap = () => {
 
             const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint);
 
-            map.removeObject(removeTempPolyline as any);
-            map.removeObject(removeTempMarker as any);
+            map.removeObject(removeTempPolyline as H.map.Polyline);
+            map.removeObject(removeTempMarker as H.map.Marker);
             map.addObject(polygon);
 
             const label = createLabel("Cow Home");
@@ -81,8 +81,8 @@ export const DisplayMap = () => {
 
             if (removeTempPolyline) map.removeObject(removeTempPolyline);
             if (removeTempMarker) map.removeObject(removeTempMarker);
-            map.addObject(addTempPolyline as any);
-            map.addObject(addTempMarker as any);
+            map.addObject(addTempPolyline as  H.map.Polyline );
+            map.addObject(addTempMarker as H.map.Marker);
           }
         }
       });
