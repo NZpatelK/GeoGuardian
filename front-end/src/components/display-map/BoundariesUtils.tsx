@@ -1,9 +1,9 @@
-import axios from "axios";
 import { markerIcon } from "../../assets/markerIcon.";
+import FieldApi from "../../services/FieldApi";
 
 let polygonCoordinates: { lat: number; lng: number }[] = [];
-let temporaryPolyline: null = null;
-let temporaryMarker: null = null;
+let temporaryPolyline: H.map.Polyline | null = null;
+let temporaryMarker: H.map.Marker | null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
 let polygon = null;
 
@@ -91,7 +91,7 @@ const calculateCentroid = () => {
 export const createMarker = (coords: { lat: number; lng: number }) => {
     return new H.map.Marker(
         { lat: coords.lat, lng: coords.lng },
-        { icon: markerIcon }
+        { icon: markerIcon, data: {} }
     );
 }
 
@@ -116,6 +116,7 @@ export const closePolygon = (startPoint: { lat: number; lng: number }) => {
 
     polygon = new H.map.Polygon(lineString, {
         style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
+        data: {}
     });
 
     const area = calculateGeodeticAreaInSquareKilometers(polygonCoordinates);
@@ -123,7 +124,7 @@ export const closePolygon = (startPoint: { lat: number; lng: number }) => {
 
     CompletedPolygon = [];
     CompletedPolygon = polygonCoordinates;
-    saveData(polygonCoordinates);
+    FieldApi.addField(polygonCoordinates);
     polygonCoordinates = [];
 
     return { removeTempPolyline, removeTempMarker, polygon };
@@ -143,6 +144,7 @@ export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
 
     temporaryPolyline = new H.map.Polyline(lineString, {
         style: { lineWidth: 5, strokeColor: 'blue' },
+        data: {}
     });
 
     const addTempPolyline = temporaryPolyline;
@@ -176,7 +178,7 @@ function cleanupTemporaryObjects() {
 
 function createLineString(coordinates: { lat: number; lng: number }[]) {
     const lineString = new H.geo.LineString();
-    coordinates.forEach((coord) => lineString.pushLatLngAlt(coord.lat, coord.lng));
+    coordinates.forEach((coord) => lineString.pushLatLngAlt(coord.lat, coord.lng, 0));
     return lineString;
 }
 
@@ -195,33 +197,9 @@ export const createLabel = (labelName: string) => {
 
     const label = new H.map.Marker(
         { lat: centroid.lat, lng: centroid.lng }, // Coordinates
-        { icon: labelIcon } // Custom icon
+        { icon: labelIcon, data: {} } // Custom icon
     );
 
     return label
 }
 
-const saveData = async (polygonCoordinates: { lat: number; lng: number }[]) => {
-
-    const data = {
-        id: 1,
-        name: 'Cow Home',
-        coordinates: polygonCoordinates,
-    };
-    try {
-        // Send data to the backend using axios
-        const response = await axios.post('http://localhost:3000/save-data', data, {
-            headers: {
-                'Content-Type': 'application/json', // Ensure the server expects JSON
-            },
-        });
-
-        console.log(response.data.message); // Success message
-    } catch (err) {
-        if (axios.isAxiosError(err)) {
-            console.error('Error:', err.response ? err.response.data : err.message);
-        } else {
-            console.error('Error:', err);
-        }
-    }
-}

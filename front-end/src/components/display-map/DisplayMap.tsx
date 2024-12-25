@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
+import { Map as HMap } from '@here/maps-api-for-javascript';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel } from './BoundariesUtils';
-import axios from 'axios';
+import FieldApi from '../../services/FieldApi';
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
@@ -17,90 +18,86 @@ export const DisplayMap = () => {
       apikey: HereApiKey,
     });
 
-    const defaultLayers = platform.createDefaultLayers();
+    const defaultLayers = platform.createDefaultLayers() as any;
 
     // Initialize the map
-    const map = new H.Map(
-      mapRef.current,
-      defaultLayers.vector.normal.map,
-      {
-        center: { lat: 37.7749, lng: -122.4194 }, // Example: San Francisco coordinates
-        zoom: 15,
-        pixelRatio: window.devicePixelRatio || 1,
-      }
-    );
+    const map: HMap | null = mapRef.current
+      ? new H.Map(
+        mapRef.current,
+        defaultLayers.vector.normal.map,
+        {
+          center: { lat: 37.7749, lng: -122.4194 },
+          zoom: 15,
+          pixelRatio: window.devicePixelRatio || 1,
+        }
+      )
+      : null;
 
-    // Enable map events
-    const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+    if (map) {
+      // Enable map events
+      const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
 
-    // Add UI controls
-    const ui = H.ui.UI.createDefault(map, defaultLayers);
+      // Add UI controls
+      const ui = H.ui.UI.createDefault(map, defaultLayers);
 
-    let isDrawing = false;
+      let isDrawing = false;
 
-    const fieldData = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/api/field-data');  // Using axios to fetch data
-        console.log('Response:', response.data);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      }
-    };
+      const response = FieldApi.getFieldCoordinates();
+      console.log('Response:', response);
 
-    fieldData();
+      map.addEventListener("tap", (evt: any) => {
+        const coords = map.screenToGeo(
+          evt.currentPointer.viewportX,
+          evt.currentPointer.viewportY
+        );
 
-    map.addEventListener("tap", (evt) => {
-      const coords = map.screenToGeo(
-        evt.currentPointer.viewportX,
-        evt.currentPointer.viewportY
-      );
+        if (!isDrawing) {
 
-      if (!isDrawing) {
+          const tempMarker = startPolygon(coords as { lat: number; lng: number });
+          isDrawing = true;
 
-        const tempMarker = startPolygon(coords);
-        isDrawing = true;
-
-        map.addObject(tempMarker);
-      } else {
-
-        const startPoint = getSpecifcPolygonCoordinates(0);
-        const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords);
-
-        if (distanceToStart < 10) {
-
-          const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint);
-
-          map.removeObject(removeTempPolyline);
-          map.removeObject(removeTempMarker);
-          map.addObject(polygon);
-
-          const label = createLabel("Cow Home");
-          map.addObject(label);
-
-          isDrawing = false;
-
+          map.addObject(tempMarker as H.map.Marker);
         } else {
 
-          const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords);
+          const startPoint = getSpecifcPolygonCoordinates(0);
+          const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
 
-          if (removeTempPolyline) map.removeObject(removeTempPolyline);
-          if (removeTempMarker) map.removeObject(removeTempMarker);
-          map.addObject(addTempPolyline);
-          map.addObject(addTempMarker);
+          if (distanceToStart < 10) {
 
+            const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint);
+
+            map.removeObject(removeTempPolyline as H.map.Polyline);
+            map.removeObject(removeTempMarker as H.map.Marker);
+            map.addObject(polygon);
+
+            const label = createLabel("Cow Home");
+            map.addObject(label);
+
+            isDrawing = false;
+
+          } else {
+
+            const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
+
+            if (removeTempPolyline) map.removeObject(removeTempPolyline);
+            if (removeTempMarker) map.removeObject(removeTempMarker);
+            map.addObject(addTempPolyline as  H.map.Polyline );
+            map.addObject(addTempMarker as H.map.Marker);
+          }
         }
-      }
-    });
+      });
 
-    const onZoomChange = () => {
-      console.log('Current Zoom Level:', map.getZoom());
-    };
+      const onZoomChange = () => {
+        console.log('Current Zoom Level:', map.getZoom());
+      };
 
-    map.addEventListener('mapviewchangeend', onZoomChange);
+      map.addEventListener('mapviewchangeend', onZoomChange);
 
-    return () => {
-      map.dispose();
-    };
+      return () => {
+        map.dispose();
+      };
+
+    }
   }, []);
 
 
