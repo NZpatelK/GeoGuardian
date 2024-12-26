@@ -130,6 +130,21 @@ export const closePolygon = (startPoint: { lat: number; lng: number }) => {
     return { removeTempPolyline, removeTempMarker, polygon };
 }
 
+export const addExistingPolygon = (coords: { lat: number; lng: number }[], label: string) => {
+    const lineString = createLineString(coords);
+    const existingPolygon = new H.map.Polygon(lineString, {
+        style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
+        data: {}
+    });
+
+    CompletedPolygon = coords;
+    const labelMarker = createLabel(label);
+    CompletedPolygon = [];
+
+    return { existingPolygon, labelMarker };
+}
+
+
 export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
     polygonCoordinates.push({ lat: coords.lat, lng: coords.lng });
 

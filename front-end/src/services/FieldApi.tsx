@@ -1,10 +1,11 @@
 import axios from "axios";
+import { nanoid } from 'nanoid';
 
 class FieldApi {
     static async getFieldCoordinates() {
         try {
-            const response = await axios.get('http://localhost:3000/api/field-data');  // Using axios to fetch data
-            console.log('Response:', response.data);
+            const response = await axios.get('http://localhost:3000/api/field-data');
+            return response.data;
         } catch (err) {
             console.error('Error fetching data:', err);
         }
@@ -12,7 +13,7 @@ class FieldApi {
 
     static async addField(polygonCoordinates: { lat: number; lng: number }[]) {
         const data = {
-            id: 1,
+            id: nanoid(),
             name: 'Cow Home',
             coordinates: polygonCoordinates,
         };
