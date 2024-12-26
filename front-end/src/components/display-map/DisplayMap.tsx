@@ -14,7 +14,7 @@ export const DisplayMap = () => {
         console.error("HERE Maps API key is missing!");
         return;
       }
-      // Set up HERE Maps platform
+      
       const platform = new H.service.Platform({
         apikey: HereApiKey,
       });
@@ -44,7 +44,6 @@ export const DisplayMap = () => {
         let isDrawing = false;
 
         const existFieldCoordinates: any = await FieldApi.getFieldCoordinates();
-        // console.log('Response:',);
 
         if (existFieldCoordinates) {
 
