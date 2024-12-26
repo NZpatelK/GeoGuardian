@@ -7,6 +7,7 @@ let temporaryMarker: H.map.Marker | null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
 let polygon = null;
 
+
 /**
  * Calculates the distance between two geographical points using the Haversine formula.
  * 
@@ -14,7 +15,6 @@ let polygon = null;
  * @param point2 - The second point with latitude and longitude.
  * @returns The distance in meters between the two points on the Earth's surface.
  */
-
 export const calculateDistanceBetweenPoints = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
     const earthRadius = 6371e3;
     const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -76,6 +76,12 @@ const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: numb
     return area / 1_000_000; // Area in square kilometers
 };
 
+/**
+ * Calculates the centroid of a polygon. The centroid is the average of all the
+ * points of the polygon.
+ *
+ * @returns The centroid of the polygon.
+ */
 const calculateCentroid = () => {
     const centriod = CompletedPolygon.reduce(
         (acc, coord) => ({
@@ -88,6 +94,12 @@ const calculateCentroid = () => {
     return centriod;
 }
 
+/**
+ * Creates a new marker at the specified coordinates.
+ *
+ * @param coords - The coordinates for the marker in the format of an object containing 'lat' and 'lng' properties.
+ * @returns A new marker at the specified coordinates.
+ */
 export const createMarker = (coords: { lat: number; lng: number }) => {
     return new H.map.Marker(
         { lat: coords.lat, lng: coords.lng },
@@ -95,10 +107,23 @@ export const createMarker = (coords: { lat: number; lng: number }) => {
     );
 }
 
+/**
+ * Returns the coordinates of a specific polygon.
+ *
+ * @param index - The index of the polygon to be returned.
+ * @returns The coordinates of the polygon at the specified index.
+ */
 export const getSpecifcPolygonCoordinates = (index: number) => {
     return polygonCoordinates[index];
 }
 
+/**
+ * Starts a new polygon by adding a marker at the specified coordinates. The
+ * coordinates will be the first point of the polygon.
+ *
+ * @param coords - The coordinates for the first point of the polygon in the format of an object containing 'lat' and 'lng' properties.
+ * @returns The newly created marker.
+ */
 export const startPolygon = (coords: { lat: number; lng: number }) => {
     polygonCoordinates = [{ lat: coords.lat, lng: coords.lng }];
 
@@ -119,8 +144,7 @@ export const closePolygon = (startPoint: { lat: number; lng: number }) => {
         data: {}
     });
 
-    const area = calculateGeodeticAreaInSquareKilometers(polygonCoordinates);
-    console.log('Area:', area);
+    // const area = calculateGeodeticAreaInSquareKilometers(polygonCoordinates);
 
     CompletedPolygon = [];
     CompletedPolygon = polygonCoordinates;
@@ -130,6 +154,14 @@ export const closePolygon = (startPoint: { lat: number; lng: number }) => {
     return { removeTempPolyline, removeTempMarker, polygon };
 }
 
+/**
+ * Creates a new polygon based on the given coordinates and label.
+ * This function is used to load existing polygons from the server.
+ *
+ * @param coords - The coordinates of the polygon in the format of an array of objects containing 'lat' and 'lng' properties.
+ * @param label - The label for the polygon.
+ * @returns An object containing the newly created H.map.Polygon and H.map.Marker.
+ */
 export const addExistingPolygon = (coords: { lat: number; lng: number }[], label: string) => {
     const lineString = createLineString(coords);
     const existingPolygon = new H.map.Polygon(lineString, {
@@ -145,6 +177,16 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
 }
 
 
+/**
+ * Adds a point to the current polygon.
+ *
+ * @param coords - The coordinates of the point to be added in the format of an object containing 'lat' and 'lng' properties.
+ * @returns An object containing the following properties:
+ *  - removeTempPolyline: The temporary polyline that was previously added to the map, if any.
+ *  - removeTempMarker: The temporary marker that was previously added to the map, if any.
+ *  - addTempPolyline: The new temporary polyline that has been added to the map.
+ *  - addTempMarker: The new temporary marker that has been added to the map.
+ */
 export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
     polygonCoordinates.push({ lat: coords.lat, lng: coords.lng });
 
@@ -174,6 +216,14 @@ export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
     return { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker };
 }
 
+/**
+ * Removes the temporary polyline and marker from the map, if any, and returns them.
+ * This function is used to clean up the temporary objects after a polygon has been completed.
+ *
+ * @returns An object containing the following properties:
+ *  - removeTempPolyline: The temporary polyline that was previously added to the map, if any.
+ *  - removeTempMarker: The temporary marker that was previously added to the map, if any.
+ */
 function cleanupTemporaryObjects() {
     let removeTempPolyline;
     let removeTempMarker;
@@ -190,6 +240,13 @@ function cleanupTemporaryObjects() {
 
     return { removeTempPolyline, removeTempMarker };
 }
+
+/**
+ * Creates a LineString from an array of geographical coordinates.
+ *
+ * @param coordinates - An array of objects, each containing 'lat' and 'lng' properties representing the latitude and longitude of a point.
+ * @returns A LineString object representing the path through the given coordinates.
+ */
 
 function createLineString(coordinates: { lat: number; lng: number }[]) {
     const lineString = new H.geo.LineString();
