@@ -11,18 +11,7 @@ app.use(express.json());
 
 
 const filePath = path.join(__dirname, './data/FieldData.json');
-
-// // Check if the file exists. If not, create a new file with an empty array.
-// fs.access(filePath, fs.constants.F_OK, (err) => {
-//   if (err) {
-//     // File does not exist, create it with an empty array
-//     fs.writeFileSync(filePath, JSON.stringify([]), 'utf8');
-//     console.log('data.json file created');
-//   } else {
-//     console.log('data.json file exists');
-//   }
-// });
-
+ 
 const dummyData = [
   {
     "id": "3EQgVfD9gFCJTS9ptainQ",
