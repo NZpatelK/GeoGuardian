@@ -1,4 +1,4 @@
-import { markerIcon } from "../../assets/markerIcon.";
+import { labelIcon, markerIcon } from "../../assets/Icon";
 import FieldApi from "../../services/FieldApi";
 
 let polygonCoordinates: { lat: number; lng: number }[] = [];
@@ -256,20 +256,12 @@ function createLineString(coordinates: { lat: number; lng: number }[]) {
 
 export const createLabel = (labelName: string) => {
     const centroid = calculateCentroid();
-
-    const labelIcon = new H.map.Icon(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
-          <rect x="0" y="0" width="120" height="40" fill="#FFFFFF" stroke="#000000" stroke-width="2" rx="5" ry="5" />
-          <text x="60" y="25" font-size="14" font-family="Arial, sans-serif" font-weight="bold" text-anchor="middle" fill="#000000">
-            ${labelName}
-          </text>
-        </svg>`,
-        { size: { w: 120, h: 40 }, anchor: { x: 60, y: 20 } } // Anchor at the center of the label
-    );
+    
+    const newLabelIcon = labelIcon(labelName);
 
     const label = new H.map.Marker(
         { lat: centroid.lat, lng: centroid.lng }, // Coordinates
-        { icon: labelIcon, data: {} } // Custom icon
+        { icon: newLabelIcon, data: {} } // Custom icon
     );
 
     return label
