@@ -73,14 +73,16 @@ export const DisplayMap = () => {
             const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
 
             if (distanceToStart < 10) {
+              const inputName = prompt("Please enter the name of the field:");
 
-              const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint);
+              const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
 
               map.removeObject(removeTempPolyline as H.map.Polyline);
               map.removeObject(removeTempMarker as H.map.Marker);
               map.addObject(polygon);
 
-              const label = createLabel("Cow Home");
+
+              const label = createLabel(inputName as string);
               map.addObject(label);
 
               isDrawing = false;

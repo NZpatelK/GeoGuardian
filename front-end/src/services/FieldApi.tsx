@@ -11,10 +11,10 @@ class FieldApi {
         }
     }
 
-    static async addField(polygonCoordinates: { lat: number; lng: number }[]) {
+    static async addField(polygonCoordinates: { lat: number; lng: number }[], label: string) {
         const data = {
             id: nanoid(),
-            name: 'Cow Home',
+            name: label,
             coordinates: polygonCoordinates,
         };
         try {

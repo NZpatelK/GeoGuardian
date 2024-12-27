@@ -132,7 +132,7 @@ export const startPolygon = (coords: { lat: number; lng: number }) => {
     return temporaryMarker;
 }
 
-export const closePolygon = (startPoint: { lat: number; lng: number }) => {
+export const closePolygon = (startPoint: { lat: number; lng: number }, label: string) => {
     polygonCoordinates.push(startPoint);
 
     const { removeTempPolyline, removeTempMarker } = cleanupTemporaryObjects();
@@ -148,7 +148,7 @@ export const closePolygon = (startPoint: { lat: number; lng: number }) => {
 
     CompletedPolygon = [];
     CompletedPolygon = polygonCoordinates;
-    FieldApi.addField(polygonCoordinates);
+    FieldApi.addField(polygonCoordinates, label);
     polygonCoordinates = [];
 
     return { removeTempPolyline, removeTempMarker, polygon };
@@ -256,7 +256,7 @@ function createLineString(coordinates: { lat: number; lng: number }[]) {
 
 export const createLabel = (labelName: string) => {
     const centroid = calculateCentroid();
-    
+
     const newLabelIcon = labelIcon(labelName);
 
     const label = new H.map.Marker(

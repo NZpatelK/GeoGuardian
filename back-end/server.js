@@ -15,7 +15,7 @@ const filePath = path.join(__dirname, './data/FieldData.json');
 const dummyData = [
   {
     "id": "3EQgVfD9gFCJTS9ptainQ",
-    "name": "Cow Home",
+    "name": "Willow Brook",
     "coordinates": [
       {
         "lat": 37.77299146011582,
@@ -41,7 +41,7 @@ const dummyData = [
   },
   {
     "id": "HkZnCQFYM0uRkQoA0jxfV",
-    "name": "Cow Home",
+    "name": "Sunny Bend",
     "coordinates": [
       {
         "lat": 37.77047148374791,
@@ -135,7 +135,7 @@ const dummyData = [
   },
   {
     "id": "x-TPvphQsc9QFz3Q8qIjK",
-    "name": "Cow Home",
+    "name": "Meadow Haven",
     "coordinates": [
       {
         "lat": 37.779829374902974,
