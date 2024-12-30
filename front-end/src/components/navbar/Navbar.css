@@ -2,34 +2,99 @@
     position: fixed;
     background-color: #000000a5;
     bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 1rem 3rem;
-    border-radius: 50px;
+    right: 50px;
+    /* padding: 1rem 1rem; */
+    width: 80px;
+    height: 80px;
+    border-radius: 100px;
     backdrop-filter: blur(3px);
     box-shadow: 0 10px 20px 0 #00000063;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    transition: all 1s;
 }
 
-.navbar ul {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    gap: 3rem;
+.navbar.opened {
+    width: 300px;
+    height: 80px;
+    right: 50%;
+    transform: translateX(50%);
+    /* border-radius: 10px; */
+    backdrop-filter: blur(3px);
+    box-shadow: 0 10px 20px 0 #00000063;
 }
 
-.navbar li {
+.navbar .menu-icon {
     display: flex;
+    justify-content: center;
     align-items: center;
-    color: #ffffff;
-    font-size: 1.2rem;
+    opacity: 0;
+    transition: all 0.5s;
+
+}
+
+.navbar.opened .menu-icon {
+    opacity: 1;
+}
+
+.navbar img {
+    width: 40px;
+    margin-right: 30px;
+}
+
+.menu {
+    background-color: transparent;
+    border: none;
     cursor: pointer;
-    font-weight: 600;
+    display: flex;
+    padding: 0;
+    outline: none;
+    transform: translateX(-71px);
+    transition: transform 0.5s;
 }
 
-.navbar li img {
-    width: 50px;
+.menu.opened {
+    transform: translateX(0);
+}
+
+.line {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 6;
+    transition: stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
+        stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.line1 {
+    stroke-dasharray: 60 207;
+    stroke-width: 4;
+}
+
+.line2 {
+    stroke-dasharray: 60 60;
+    stroke-width: 4;
+}
+
+.line3 {
+    stroke-dasharray: 60 207;
+    stroke-width: 4;
+}
+
+.opened .line1 {
+    stroke-dasharray: 90 207;
+    stroke-dashoffset: -134;
+    stroke-width: 4;
+}
+
+.opened .line2 {
+    stroke-dasharray: 1 60;
+    stroke-dashoffset: -30;
+    stroke-width: 4;
+}
+
+.opened .line3 {
+    stroke-dasharray: 90 207;
+    stroke-dashoffset: -134;
+    stroke-width: 4;
 }
