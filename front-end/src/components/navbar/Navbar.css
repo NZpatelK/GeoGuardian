@@ -1,29 +1,35 @@
-.navbar{
+.navbar {
     position: fixed;
-    background-color: #00000063;
+    background-color: #000000a5;
     bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
     padding: 1rem 3rem;
     border-radius: 50px;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(3px);
     box-shadow: 0 10px 20px 0 #00000063;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.navbar ul{
+.navbar ul {
     display: flex;
     list-style: none;
     padding: 0;
     margin: 0;
-    gap: 1rem;
+    gap: 3rem;
 }
 
-.navbar li{
+.navbar li {
+    display: flex;
+    align-items: center;
     color: #ffffff;
     font-size: 1.2rem;
     cursor: pointer;
     font-weight: 600;
+}
+
+.navbar li img {
+    width: 50px;
 }
