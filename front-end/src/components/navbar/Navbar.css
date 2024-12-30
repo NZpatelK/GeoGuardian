@@ -1,0 +1,29 @@
+.navbar{
+    position: absolute;
+    background-color: #00000063;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 20px 0 #00000063;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar ul{
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 1rem;
+}
+
+.navbar li{
+    color: #ffffff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: 600;
+}
