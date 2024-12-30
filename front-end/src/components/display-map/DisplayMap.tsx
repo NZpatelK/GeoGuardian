@@ -8,6 +8,9 @@ export const DisplayMap = () => {
 
   useEffect(() => {
     const initializeMap = async () => {
+
+      if (!mapRef.current) return;
+
       const HereApiKey = import.meta.env.VITE_HERE_API_KEY; // Load API key from .env
 
       if (!HereApiKey) {
@@ -40,6 +43,12 @@ export const DisplayMap = () => {
 
         // Add UI controls
         const ui = H.ui.UI.createDefault(map, defaultLayers);
+
+
+        //add marker of current position
+        const marker = new H.map.Marker({ lat: 37.7749, lng: -122.4194 }); // Adjust coordinates
+        map.addObject(marker);
+    
 
         let isDrawing = false;
 
