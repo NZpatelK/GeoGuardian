@@ -1,0 +1,14 @@
+.modal-container{
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    width: 250px;
+    height: 350px;
+    /* transform: translate(-50%, -50%);    */
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 10px;
+    z-index: 1;
+    color: #000;
+    box-shadow: 10px 10px 20px 0 #00000028;
+}

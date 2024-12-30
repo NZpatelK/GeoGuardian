@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon } from './BoundariesUtils';
 import FieldApi from '../../services/FieldApi';
+import { Modal } from '../modal/Modal';
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
@@ -134,7 +135,9 @@ export const DisplayMap = () => {
         width: "100vw",
         height: "100vh",
       }}
-    ></div>
+    >
+      <Modal/>
+    </div>
   );
 }
 
