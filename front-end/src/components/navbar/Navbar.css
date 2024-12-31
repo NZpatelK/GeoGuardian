@@ -25,22 +25,72 @@
     box-shadow: 0 10px 20px 0 #00000063;
 }
 
-.navbar .menu-icon {
+.navbar .menu-container {
     display: flex;
     justify-content: center;
     align-items: center;
     opacity: 0;
     transition: all 0.5s;
+    gap: 30px;
 
 }
 
-.navbar.opened .menu-icon {
+.navbar.opened .menu-container {
+    opacity: 1;
+}
+
+.menu-container .menu-item {
+    box-sizing: border-box;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    transform: scale(1);
+    transition: all 0.5s;
+}
+
+.menu-container .menu-item:hover {
+    transform: scale(1.2);
+}
+
+.menu-container .menu-item::before {
+    content: attr(data-title);
+    font-size: 16px;
+    position: absolute;
+    background: #134f04;
+    color: #fff;
+    padding: 0.5em 1.5em;
+    border-radius: 5px;
+    transform: translateY(-49px);
+    opacity: 0;
+    transition: all 0.5s;
+}
+
+.menu-container .menu-item:hover::before {
+    transform: translateY(-60px);
+    opacity: 1;
+}
+
+.menu-container .menu-item::after{
+    content: '';
+    position: absolute;
+    height: 0;
+    width: 0;
+    border-left: 13px solid transparent;
+    border-right: 13px solid transparent;
+    border-top: 15px solid #134f04;
+    transform: translateY(-25px);
+    opacity: 0;
+    transition: all 0.5s;
+} 
+
+.menu-container .menu-item:hover::after {
+    transform: translateY(-36px) ;
     opacity: 1;
 }
 
 .navbar img {
     width: 40px;
-    margin-right: 30px;
+    /* margin-right: 30px; */
 }
 
 .menu {
@@ -58,12 +108,22 @@
     transform: translateX(0);
 }
 
+.menu-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-icon {
+   margin-left: 30px;
+}
+
 .line {
     fill: none;
     stroke: #ffffff;
     stroke-width: 6;
-    transition: stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
-        stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: stroke-dasharray 1500ms cubic-bezier(0.4, 0, 0.2, 1),
+        stroke-dashoffset 1500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .line1 {
