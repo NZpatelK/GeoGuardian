@@ -3,7 +3,6 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon } from './BoundariesUtils';
 import FieldApi from '../../services/FieldApi';
 import { Modal } from '../modal/Modal';
-
 export const DisplayMap = () => {
   const mapRef = useRef(null);
   let isMapLoaded = false;
@@ -13,14 +12,14 @@ export const DisplayMap = () => {
 
       if (!mapRef.current || isMapLoaded) return;
       isMapLoaded = true;
-      
+
       const HereApiKey = import.meta.env.VITE_HERE_API_KEY; // Load API key from .env
 
       if (!HereApiKey) {
         console.error("HERE Maps API key is missing!");
         return;
       }
-      
+
       const platform = new H.service.Platform({
         apikey: HereApiKey,
       });
@@ -51,7 +50,7 @@ export const DisplayMap = () => {
         //add marker of current position
         const marker = new H.map.Marker({ lat: 37.7749, lng: -122.4194 }); // Adjust coordinates
         map.addObject(marker);
-    
+
 
         let isDrawing = false;
 
@@ -136,7 +135,7 @@ export const DisplayMap = () => {
         height: "100vh",
       }}
     >
-      <Modal/>
+      <Modal />
     </div>
   );
 }
