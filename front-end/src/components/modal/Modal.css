@@ -1,0 +1,28 @@
+.modal-card {
+    position: fixed;
+    top: 100px;
+    left: 100px;
+    width: 250px;
+    height: 400px;
+    /* transform: translate(-50%, -50%);    */
+    background-color: #ffffff;
+    padding: 0.5rem 2rem;
+    border-radius: 10px;
+    z-index: 1;
+    color: #000;
+    box-shadow: 10px 10px 20px 0 #00000028;
+}
+
+.drag-btn {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+}
+
+.grip-handle {
+    cursor: none;
+    pointer-events: none;
+    user-select: none;
+
+}
