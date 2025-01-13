@@ -5,6 +5,8 @@ import FieldApi from '../../services/FieldApi';
 import { Modal } from '../modal/Modal';
 export const DisplayMap = () => {
   const mapRef = useRef(null);
+  const [map, setMap] = useState<HMap | null>(null);
+  const [marker, setMarker] = useState<H.map.Marker | null>(null);
   let isMapLoaded = false;
 
   useEffect(() => {
@@ -116,6 +118,10 @@ export const DisplayMap = () => {
 
         map.addEventListener('mapviewchangeend', onZoomChange);
 
+        setMap(map);
+        setMarker(marker);
+
+
         return () => {
           map.dispose();
         };
@@ -126,6 +132,36 @@ export const DisplayMap = () => {
     initializeMap();
   }, []);
 
+  const moveMarker = (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
+    if (!map || !marker) return;
+
+    const steps = 2000;
+    const duration = 2000;
+    const interval = duration / steps;
+
+    let step = 0;
+
+    const moveAnimate = () => {
+      step++;
+
+      if (step > steps) {
+        return;
+      }
+
+      const lat = from.lat + (to.lat - from.lat) * step / steps;
+      const lng = from.lng + (to.lng - from.lng) * step / steps;
+
+      marker.setGeometry({ lat, lng });
+
+      map.getViewModel().setLookAtData({
+        position: { lat, lng },
+      });
+      setTimeout(moveAnimate, interval);
+    };
+
+    moveAnimate();
+  }
+
 
   return (
     <div
@@ -135,7 +171,11 @@ export const DisplayMap = () => {
         height: "100vh",
       }}
     >
-      <Modal />
+      <Modal>
+        <button onClick={() => moveMarker({ lat: 37.7749, lng: -122.4194 }, { lat: 37.7749, lng: -122.5194 })}>
+          Move Marker
+        </button>
+      </Modal>
     </div>
   );
 }

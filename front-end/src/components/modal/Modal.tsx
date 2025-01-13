@@ -1,7 +1,14 @@
-import React, { useRef } from 'react'
+import React, { ReactNode, useRef } from 'react'
 import gripHandle from '../../assets/grip handle.svg'
 import './Modal.css';
-export const Modal:React.FC = () => {
+
+interface ModalProps {
+
+    children: ReactNode;
+  
+  }
+
+export const Modal: React.FC<ModalProps> = ({children}: ModalProps) => {
     const cardRef = useRef<HTMLDivElement| null>(null);
     let startX = 0; 
     let startY = 0;
@@ -54,7 +61,7 @@ export const Modal:React.FC = () => {
             <div className="drag-btn" onMouseDown={mouseDown}> 
                 <img src={gripHandle} alt="" className='grip-handle'/>
             </div>
-            Modal 
+            {children}
         </div>
     )
 }
