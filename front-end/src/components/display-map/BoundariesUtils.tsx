@@ -136,7 +136,7 @@ export const closePolygon = (startPoint: { lat: number; lng: number }, label: st
     polygonCoordinates.push(startPoint);
 
     if (polygonCoordinates.length < 3) {
-        throw new Error("A polygon must have at least three vertices.");
+        return;
     }
 
     const { removeTempPolyline, removeTempMarker } = cleanupTemporaryObjects();
