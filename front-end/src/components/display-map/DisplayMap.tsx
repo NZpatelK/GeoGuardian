@@ -112,6 +112,8 @@ export const DisplayMap = () => {
           }
         });
 
+  
+
         hereMap.addEventListener('mapviewchangeend', onZoomChange);
 
         setMap(hereMap);
@@ -163,7 +165,8 @@ export const DisplayMap = () => {
       console.log('Current Zoom Level:', map.getZoom());
     }
   };
-  
+
+
 
 
   return (
