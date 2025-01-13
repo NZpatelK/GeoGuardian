@@ -29,7 +29,7 @@ export const DisplayMap = () => {
       const defaultLayers = platform.createDefaultLayers() as any;
 
       // Initialize the map
-      const map: HMap | null = mapRef.current
+      const hereMap: HMap | null = mapRef.current
         ? new H.Map(
           mapRef.current,
           defaultLayers.vector.normal.map,
@@ -41,17 +41,17 @@ export const DisplayMap = () => {
         )
         : null;
 
-      if (map) {
+      if (hereMap) {
         // Enable map events
-        const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+        const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(hereMap));
 
         // Add UI controls
-        const ui = H.ui.UI.createDefault(map, defaultLayers);
+        const ui = H.ui.UI.createDefault(hereMap, defaultLayers);
 
 
         //add marker of current position
         const marker = new H.map.Marker({ lat: 37.7749, lng: -122.4194 }); // Adjust coordinates
-        map.addObject(marker);
+        hereMap.addObject(marker);
 
 
         let isDrawing = false;
@@ -63,13 +63,13 @@ export const DisplayMap = () => {
           for (const item of existFieldCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
             const existingPolygon = addExistingPolygon(coord, item.name);
-            map.addObject(existingPolygon.existingPolygon);
-            map.addObject(existingPolygon.labelMarker);
+            hereMap.addObject(existingPolygon.existingPolygon);
+            hereMap.addObject(existingPolygon.labelMarker);
           }
         }
 
-        map.addEventListener("tap", (evt: any) => {
-          const coords = map.screenToGeo(
+        hereMap.addEventListener("tap", (evt: any) => {
+          const coords = hereMap.screenToGeo(
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
           );
@@ -79,7 +79,7 @@ export const DisplayMap = () => {
             const tempMarker = startPolygon(coords as { lat: number; lng: number });
             isDrawing = true;
 
-            map.addObject(tempMarker as H.map.Marker);
+            hereMap.addObject(tempMarker as H.map.Marker);
           } else {
 
             const startPoint = getSpecifcPolygonCoordinates(0);
@@ -90,13 +90,13 @@ export const DisplayMap = () => {
 
               const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
 
-              map.removeObject(removeTempPolyline as H.map.Polyline);
-              map.removeObject(removeTempMarker as H.map.Marker);
-              map.addObject(polygon);
+              hereMap.removeObject(removeTempPolyline as H.map.Polyline);
+              hereMap.removeObject(removeTempMarker as H.map.Marker);
+              hereMap.addObject(polygon);
 
 
               const label = createLabel(inputName as string);
-              map.addObject(label);
+              hereMap.addObject(label);
 
               isDrawing = false;
 
@@ -104,26 +104,22 @@ export const DisplayMap = () => {
 
               const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
 
-              if (removeTempPolyline) map.removeObject(removeTempPolyline);
-              if (removeTempMarker) map.removeObject(removeTempMarker);
-              map.addObject(addTempPolyline as H.map.Polyline);
-              map.addObject(addTempMarker as H.map.Marker);
+              if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+              if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+              hereMap.addObject(addTempPolyline as H.map.Polyline);
+              hereMap.addObject(addTempMarker as H.map.Marker);
             }
           }
         });
 
-        const onZoomChange = () => {
-          console.log('Current Zoom Level:', map.getZoom());
-        };
+        hereMap.addEventListener('mapviewchangeend', onZoomChange);
 
-        map.addEventListener('mapviewchangeend', onZoomChange);
-
-        setMap(map);
+        setMap(hereMap);
         setMarker(marker);
 
 
         return () => {
-          map.dispose();
+          hereMap.dispose();
         };
 
       };
@@ -161,6 +157,13 @@ export const DisplayMap = () => {
 
     moveAnimate();
   }
+
+  const onZoomChange = () => {
+    if (map) {
+      console.log('Current Zoom Level:', map.getZoom());
+    }
+  };
+  
 
 
   return (
