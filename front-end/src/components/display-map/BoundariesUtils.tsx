@@ -135,6 +135,10 @@ export const startPolygon = (coords: { lat: number; lng: number }) => {
 export const closePolygon = (startPoint: { lat: number; lng: number }, label: string) => {
     polygonCoordinates.push(startPoint);
 
+    if (polygonCoordinates.length < 3) {
+        throw new Error("A polygon must have at least three vertices.");
+    }
+
     const { removeTempPolyline, removeTempMarker } = cleanupTemporaryObjects();
 
     const lineString = createLineString(polygonCoordinates);

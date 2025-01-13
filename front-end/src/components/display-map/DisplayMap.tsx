@@ -130,35 +130,48 @@ export const DisplayMap = () => {
     initializeMap();
   }, []);
 
+  // const moveMarker = (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
+  //   if (!map || !marker) return;
+
+  //   const steps = 1;
+  //   const duration = 2000;
+  //   const interval = duration / steps;
+
+  //   let step = 0;
+
+  //   const moveAnimate = () => {
+  //     step++;
+
+  //     if (step > steps) {
+  //       return;
+  //     }
+
+  //     const lat = from.lat + (to.lat - from.lat) * step / steps;
+  //     const lng = from.lng + (to.lng - from.lng) * step / steps;
+
+  //     marker.setGeometry({ lat, lng });
+
+  //     map.getViewModel().setLookAtData({
+  //       position: { lat, lng },
+  //     });
+  //     setTimeout(moveAnimate, interval);
+  //   };
+
+  //   moveAnimate();
+  // }
+
   const moveMarker = (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
     if (!map || !marker) return;
 
-    const steps = 2000;
-    const duration = 2000;
-    const interval = duration / steps;
+    const lat = to.lat;
+    const lng = to.lng;
 
-    let step = 0;
+    marker.setGeometry({ lat, lng });
 
-    const moveAnimate = () => {
-      step++;
-
-      if (step > steps) {
-        return;
-      }
-
-      const lat = from.lat + (to.lat - from.lat) * step / steps;
-      const lng = from.lng + (to.lng - from.lng) * step / steps;
-
-      marker.setGeometry({ lat, lng });
-
-      map.getViewModel().setLookAtData({
+    map.getViewModel().setLookAtData({
         position: { lat, lng },
-      });
-      setTimeout(moveAnimate, interval);
-    };
-
-    moveAnimate();
-  }
+    });
+};
 
   const onZoomChange = () => {
     if (map) {
