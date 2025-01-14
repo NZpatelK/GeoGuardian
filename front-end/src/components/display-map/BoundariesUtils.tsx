@@ -5,6 +5,7 @@ let polygonCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
+let listFields: { label: string, polygon: { lat: number; lng: number }[] }[] = [];
 let polygon = null;
 
 
@@ -177,6 +178,7 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
     const labelMarker = createLabel(label);
     CompletedPolygon = [];
 
+    listFields.push({ label: label, polygon: coords });
     return { existingPolygon, labelMarker };
 }
 
@@ -271,3 +273,24 @@ export const createLabel = (labelName: string) => {
     return label
 }
 
+export const getFields = () => {
+    return listFields;
+}
+
+export const isPointInPolygon = (point: { lat: number; lng: number }, polygonCoords: { lat: number; lng: number }[]): boolean => {
+    let intersects = 0;
+
+    for (let i = 0; i < polygonCoords.length; i++) {
+        const vertex1 = polygonCoords[i];
+        const vertex2 = polygonCoords[(i + 1) % polygonCoords.length];
+
+        if (
+            ((vertex1.lat > point.lat) !== (vertex2.lat > point.lat)) &&
+            (point.lng < (vertex2.lng - vertex1.lng) * (point.lat - vertex1.lat) / (vertex2.lat - vertex1.lat) + vertex1.lng)
+        ) {
+            intersects++;
+        }
+    }
+
+    return intersects % 2 === 1;
+};
