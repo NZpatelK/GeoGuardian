@@ -107,7 +107,10 @@ export const DisplayMap = () => {
           }
         });
 
-        hereMap.addEventListener('mapviewchangeend', onZoomChange);
+        hereMap.addEventListener('mapviewchangeend', () => {
+          const zoom = hereMap.getZoom();
+          console.log(zoom);
+        });
 
         setMapInstance(hereMap);
         setMarker(marker);
@@ -167,35 +170,6 @@ export const DisplayMap = () => {
   
   //---------------------------------------------------------------------------------------------------------------------------//
 
-  // const moveMarker = (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
-  //   if (!map || !marker) return;
-
-  //   const steps = 1;
-  //   const duration = 2000;
-  //   const interval = duration / steps;
-
-  //   let step = 0;
-
-  //   const moveAnimate = () => {
-  //     step++;
-
-  //     if (step > steps) {
-  //       return;
-  //     }
-
-  //     const lat = from.lat + (to.lat - from.lat) * step / steps;
-  //     const lng = from.lng + (to.lng - from.lng) * step / steps;
-
-  //     marker.setGeometry({ lat, lng });
-
-  //     map.getViewModel().setLookAtData({
-  //       position: { lat, lng },
-  //     });
-  //     setTimeout(moveAnimate, interval);
-  //   };
-
-  //   moveAnimate();
-  // }
 
   const updateUserLocation = () => {
     if (mapInstance && marker) {
@@ -228,28 +202,7 @@ export const DisplayMap = () => {
     }
   };
 
-  const moveMarker = (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
-    if (!mapInstance || !marker) return;
-
-    const lat = to.lat;
-    const lng = to.lng;
-
-    marker.setGeometry({ lat, lng });
-
-    mapInstance.getViewModel().setLookAtData({
-      position: { lat, lng },
-    });
-  };
-
-  const onZoomChange = () => {
-    if (mapInstance) {
-      console.log('Current Zoom Level:', mapInstance.getZoom());
-    }
-  };
-
-
-
-
+  
   return (
     <div
       ref={mapRef}
@@ -259,9 +212,6 @@ export const DisplayMap = () => {
       }}
     >
       <Modal>
-        <button onClick={() => moveMarker({ lat: 37.7749, lng: -122.4194 }, { lat: 37.7749, lng: -122.5194 })}>
-          Move Marker
-        </button>
         <button onClick={updateUserLocation}>
           Update User Location
         </button>
