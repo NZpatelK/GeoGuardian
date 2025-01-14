@@ -1,11 +1,11 @@
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import FieldApi from "../../services/FieldApi";
 
+const listFields: { label: string, polygon: { lat: number; lng: number }[] }[] = [];
 let polygonCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
-let listFields: { label: string, polygon: { lat: number; lng: number }[] }[] = [];
 let polygon = null;
 
 
@@ -151,10 +151,12 @@ export const closePolygon = (startPoint: { lat: number; lng: number }, label: st
 
     // const area = calculateGeodeticAreaInSquareKilometers(polygonCoordinates);
 
+    listFields.push({ label: label, polygon: polygonCoordinates });
     CompletedPolygon = [];
     CompletedPolygon = polygonCoordinates;
     FieldApi.addField(polygonCoordinates, label);
     polygonCoordinates = [];
+
 
     return { removeTempPolyline, removeTempMarker, polygon };
 }
@@ -273,9 +275,24 @@ export const createLabel = (labelName: string) => {
     return label
 }
 
+/**
+ * Retrieves the list of fields.
+ *
+ * @returns An array of objects, each containing a 'label' and 'polygon' property,
+ * where 'label' is a string and 'polygon' is an array of objects with 'lat' and 'lng' properties.
+ */
+
 export const getFields = () => {
     return listFields;
 }
+
+/**
+ * Determines if a given point is inside a polygon using the ray-casting algorithm.
+ *
+ * @param point - The point to check, with latitude and longitude properties.
+ * @param polygonCoords - An array of objects representing the vertices of the polygon, each containing 'lat' and 'lng' properties.
+ * @returns A boolean indicating whether the point is inside the polygon.
+ */
 
 export const isPointInPolygon = (point: { lat: number; lng: number }, polygonCoords: { lat: number; lng: number }[]): boolean => {
     let intersects = 0;
