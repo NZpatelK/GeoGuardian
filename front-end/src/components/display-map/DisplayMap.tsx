@@ -3,6 +3,8 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getFields, isPointInPolygon } from './BoundariesUtils';
 import FieldApi from '../../services/FieldApi';
 import { Modal } from '../modal/Modal';
+import './DisplayMap.css';
+
 export const DisplayMap = () => {
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
@@ -217,11 +219,19 @@ export const DisplayMap = () => {
       }}
     >
       <Modal>
-        <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
-        <input type="number" step="0.0001" value={currentPosition.lng} onChange={(e) => setCurrentPosition({ ...currentPosition, lng: parseFloat(e.target.value) })} />
-        <button onClick={updateUserLocation}>
-          Update User Location
-        </button>
+        <div className="modal-content">
+          <div className="lat-input input-container">
+            <h3> Latitude</h3>
+            <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
+          </div>
+          <div className="lng-input input-container">
+            <h3> Longitude</h3>
+            <input type="number" step="0.0001" value={currentPosition.lng} onChange={(e) => setCurrentPosition({ ...currentPosition, lng: parseFloat(e.target.value) })} />
+          </div>
+          <button onClick={updateUserLocation}>
+            Update User Location
+          </button>
+        </div>
       </Modal>
     </div>
   );
