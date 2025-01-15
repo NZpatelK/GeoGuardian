@@ -58,7 +58,7 @@ const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: numb
 
     for (let i = 0; i < n; i++) {
         const { lat: lat1, lng: lng1 } = polygonCoordinates[i];
-        const { lat: lat2, lng: lng2 } = polygonCoordinates[(i + 1) % n]; // Wrap around to the first point
+        const { lat: lat2, lng: lng2 } = polygonCoordinates[(i + 1) % n];
 
         // Convert coordinates to radians
         const lat1Rad = toRadians(lat1);
@@ -74,7 +74,7 @@ const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: numb
     area = Math.abs(area * (EARTH_RADIUS ** 2) / 2);
 
     // Convert square meters to square kilometers
-    return area / 1_000_000; // Area in square kilometers
+    return area / 1_000_000; 
 };
 
 /**
@@ -84,6 +84,7 @@ const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: numb
  * @returns The centroid of the polygon.
  */
 const calculateCentroid = () => {
+
     const centriod = CompletedPolygon.reduce(
         (acc, coord) => ({
             lat: acc.lat + coord.lat / CompletedPolygon.length,
@@ -127,7 +128,6 @@ export const getSpecifcPolygonCoordinates = (index: number) => {
  */
 export const startPolygon = (coords: { lat: number; lng: number }) => {
     polygonCoordinates = [{ lat: coords.lat, lng: coords.lng }];
-
     temporaryMarker = createMarker(coords);
 
     return temporaryMarker;
@@ -255,7 +255,6 @@ function cleanupTemporaryObjects() {
  * @param coordinates - An array of objects, each containing 'lat' and 'lng' properties representing the latitude and longitude of a point.
  * @returns A LineString object representing the path through the given coordinates.
  */
-
 function createLineString(coordinates: { lat: number; lng: number }[]) {
     const lineString = new H.geo.LineString();
     coordinates.forEach((coord) => lineString.pushLatLngAlt(coord.lat, coord.lng, 0));
@@ -275,13 +274,6 @@ export const createLabel = (labelName: string) => {
     return label
 }
 
-/**
- * Retrieves the list of fields.
- *
- * @returns An array of objects, each containing a 'label' and 'polygon' property,
- * where 'label' is a string and 'polygon' is an array of objects with 'lat' and 'lng' properties.
- */
-
 export const getFields = () => {
     return listFields;
 }
@@ -293,7 +285,6 @@ export const getFields = () => {
  * @param polygonCoords - An array of objects representing the vertices of the polygon, each containing 'lat' and 'lng' properties.
  * @returns A boolean indicating whether the point is inside the polygon.
  */
-
 export const isPointInPolygon = (point: { lat: number; lng: number }, polygonCoords: { lat: number; lng: number }[]): boolean => {
     let intersects = 0;
 

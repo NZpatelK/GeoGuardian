@@ -7,13 +7,14 @@ export const DisplayMap = () => {
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [marker, setMarker] = useState<H.map.Marker | null>(null);
-  let isMapLoaded = false;
+  const polygonState: Record<string, boolean> = {};
+  const isMapLoaded = useRef(false);
 
   useEffect(() => {
     const initializeMap = async () => {
 
-      if (!mapRef.current || isMapLoaded) return;
-      isMapLoaded = true;
+      if (!mapRef.current || isMapLoaded.current) return;
+      isMapLoaded.current = true;
 
       const HereApiKey = import.meta.env.VITE_HERE_API_KEY; // Load API key from .env
 
@@ -48,21 +49,19 @@ export const DisplayMap = () => {
         // Add UI controls
         const ui = H.ui.UI.createDefault(hereMap, defaultLayers);
 
-
+        // ---------------------------------------------------------------------------------------------------------------------------//
         //add marker of current position
-        const marker = new H.map.Marker({ lat: 37.78512314161305, lng: -122.41946859378548 }); // Adjust coordinates
+        const marker = new H.map.Marker({ lat: 37.77053080105853, lng: -122.43959978114759 }); // Adjust coordinates
         hereMap.addObject(marker);
-        // 37.78512314161305, -122.41946859378548
 
         let isDrawing = false;
-
         const existFieldCoordinates: any = await FieldApi.getFieldCoordinates();
 
         if (existFieldCoordinates) {
-
           for (const item of existFieldCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
             const existingPolygon = addExistingPolygon(coord, item.name);
+
             hereMap.addObject(existingPolygon.existingPolygon);
             hereMap.addObject(existingPolygon.labelMarker);
           }
@@ -75,25 +74,25 @@ export const DisplayMap = () => {
           );
 
           if (!isDrawing) {
-
             const tempMarker = startPolygon(coords as { lat: number; lng: number });
             isDrawing = true;
 
             hereMap.addObject(tempMarker as H.map.Marker);
           } else {
-
             const startPoint = getSpecifcPolygonCoordinates(0);
             const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
 
             if (distanceToStart < 10) {
               const inputName = prompt("Please enter the name of the field:");
 
-              const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
+              const result = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
 
-              hereMap.removeObject(removeTempPolyline as H.map.Polyline);
-              hereMap.removeObject(removeTempMarker as H.map.Marker);
-              hereMap.addObject(polygon);
-
+              if (result) {
+                const { removeTempPolyline, removeTempMarker, polygon } = result;
+                if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+                if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+                hereMap.addObject(polygon);
+              }
 
               const label = createLabel(inputName as string);
               hereMap.addObject(label);
@@ -101,7 +100,6 @@ export const DisplayMap = () => {
               isDrawing = false;
 
             } else {
-
               const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
 
               if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
@@ -112,114 +110,98 @@ export const DisplayMap = () => {
           }
         });
 
-
-
-        hereMap.addEventListener('mapviewchangeend', onZoomChange);
+        hereMap.addEventListener('mapviewchangeend', () => {
+          const zoom = hereMap.getZoom();
+          console.log(zoom);
+        });
 
         setMapInstance(hereMap);
         setMarker(marker);
 
-
         return () => {
           hereMap.dispose();
         };
-
       };
-
     }
     initializeMap();
   }, []);
 
 
-  useEffect(() => {
-    if (mapInstance && marker) {
-      // Simulated user location updates
-      const userMarker = marker;
-      mapInstance.addObject(marker);
+  // useEffect(() => {
+  // if (mapInstance && marker) {
+  // Simulated user location updates
+  // const userMarker = marker;
+  // mapInstance.addObject(marker);
 
-      const polygonState: Record<string, boolean> = {};
+  // const polygonState: Record<string, boolean> = {};
 
-      const updateUserLocation = () => {
-        // Simulate random movement
-        const newLat = marker.getGeometry().lat + (Math.random() - 0.5) * 0.001;
-        const newLng = marker.getGeometry().lng + (Math.random() - 0.5) * 0.001;
+  // const updateUserLocation = () => {
+  //   // Simulate random movement
+  //   const geometry = marker.getGeometry() as H.geo.Point;
 
-        userMarker.setGeometry({ lat: newLat, lng: newLng });
-        setMarker(userMarker);
+  //   const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
+  //   const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
 
-        const currentPoint = { lat: newLat, lng: newLng };
+  //   userMarker.setGeometry({ lat: newLat, lng: newLng });
+  //   setMarker(userMarker);
 
-        const polygonData = getFields();
+  //   const currentPoint = { lat: newLat, lng: newLng };
+  //   const polygonData = getFields();
 
-        polygonData.forEach((polygon) => {
-          const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+  //   polygonData.forEach((polygon) => {
+  //     const isInside = isPointInPolygon(currentPoint, polygon.polygon);
 
-          if (isInside && !polygonState[polygon.label]) {
-            alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-            polygonState[polygon.label] = true;
-          } else if (!isInside && polygonState[polygon.label]) {
-            alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-            polygonState[polygon.label] = false;
-          }
-        });
-      };
+  //     if (isInside && !polygonState[polygon.label]) {
+  //       alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //       polygonState[polygon.label] = true;
 
-      const interval = setInterval(updateUserLocation, 1000);
+  //     } else if (!isInside && polygonState[polygon.label]) {
+  //       alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //       polygonState[polygon.label] = false;
 
-      return () => clearInterval(interval);
-    }
-  }, [mapInstance]);
-
-  // const moveMarker = (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
-  //   if (!map || !marker) return;
-
-  //   const steps = 1;
-  //   const duration = 2000;
-  //   const interval = duration / steps;
-
-  //   let step = 0;
-
-  //   const moveAnimate = () => {
-  //     step++;
-
-  //     if (step > steps) {
-  //       return;
   //     }
+  //   });
+  // };
 
-  //     const lat = from.lat + (to.lat - from.lat) * step / steps;
-  //     const lng = from.lng + (to.lng - from.lng) * step / steps;
+  // const interval = setInterval(updateUserLocation, 1000);
 
-  //     marker.setGeometry({ lat, lng });
-
-  //     map.getViewModel().setLookAtData({
-  //       position: { lat, lng },
-  //     });
-  //     setTimeout(moveAnimate, interval);
-  //   };
-
-  //   moveAnimate();
+  // return () => clearInterval(interval);
   // }
+  // }, [mapInstance, marker]);
 
-  const moveMarker = (from: { lat: number; lng: number }, to: { lat: number; lng: number }) => {
-    if (!mapInstance || !marker) return;
+  //---------------------------------------------------------------------------------------------------------------------------//
 
-    const lat = to.lat;
-    const lng = to.lng;
 
-    marker.setGeometry({ lat, lng });
+  const updateUserLocation = () => {
+    if (mapInstance && marker) {
+      const userMarker = marker;
+      // Simulate random movement
+      const geometry = marker.getGeometry() as H.geo.Point;
 
-    mapInstance.getViewModel().setLookAtData({
-      position: { lat, lng },
-    });
-  };
+      const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
+      const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
 
-  const onZoomChange = () => {
-    if (mapInstance) {
-      console.log('Current Zoom Level:', mapInstance.getZoom());
+      userMarker.setGeometry({ lat: newLat, lng: newLng });
+      setMarker(userMarker);
+
+      const currentPoint = { lat: newLat, lng: newLng };
+      const polygonData = getFields();
+
+      polygonData.forEach((polygon) => {
+        const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+
+        if (isInside && !polygonState[polygon.label]) {
+          alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+          polygonState[polygon.label] = true;
+
+        } else if (!isInside && polygonState[polygon.label]) {
+          alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+          polygonState[polygon.label] = false;
+
+        }
+      });
     }
   };
-
-
 
 
   return (
@@ -231,8 +213,8 @@ export const DisplayMap = () => {
       }}
     >
       <Modal>
-        <button onClick={() => moveMarker({ lat: 37.7749, lng: -122.4194 }, { lat: 37.7749, lng: -122.5194 })}>
-          Move Marker
+        <button onClick={updateUserLocation}>
+          Update User Location
         </button>
       </Modal>
     </div>
