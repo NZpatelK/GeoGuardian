@@ -85,11 +85,14 @@ export const DisplayMap = () => {
             if (distanceToStart < 10) {
               const inputName = prompt("Please enter the name of the field:");
 
-              const { removeTempPolyline, removeTempMarker, polygon } = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
+              const result = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
 
-              hereMap.removeObject(removeTempPolyline as H.map.Polyline);
-              hereMap.removeObject(removeTempMarker as H.map.Marker);
-              hereMap.addObject(polygon);
+              if (result) {
+                const { removeTempPolyline, removeTempMarker, polygon } = result;
+                if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+                if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+                hereMap.addObject(polygon);
+              }
 
               const label = createLabel(inputName as string);
               hereMap.addObject(label);
@@ -118,9 +121,7 @@ export const DisplayMap = () => {
         return () => {
           hereMap.dispose();
         };
-
       };
-
     }
     initializeMap();
   }, []);
@@ -167,7 +168,7 @@ export const DisplayMap = () => {
   // return () => clearInterval(interval);
   // }
   // }, [mapInstance, marker]);
-  
+
   //---------------------------------------------------------------------------------------------------------------------------//
 
 
@@ -202,7 +203,7 @@ export const DisplayMap = () => {
     }
   };
 
-  
+
   return (
     <div
       ref={mapRef}
