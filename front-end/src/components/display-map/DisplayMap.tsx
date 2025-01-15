@@ -7,6 +7,7 @@ export const DisplayMap = () => {
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [marker, setMarker] = useState<H.map.Marker | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number }>({ lat: 37.7749, lng: -122.4194 });
   const polygonState: Record<string, boolean> = {};
   const isMapLoaded = useRef(false);
 
@@ -51,7 +52,7 @@ export const DisplayMap = () => {
 
         // ---------------------------------------------------------------------------------------------------------------------------//
         //add marker of current position
-        const marker = new H.map.Marker({ lat: 37.77053080105853, lng: -122.43959978114759 }); // Adjust coordinates
+        const marker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng }); // Adjust coordinates
         hereMap.addObject(marker);
 
         let isDrawing = false;
@@ -176,10 +177,13 @@ export const DisplayMap = () => {
     if (mapInstance && marker) {
       const userMarker = marker;
       // Simulate random movement
-      const geometry = marker.getGeometry() as H.geo.Point;
+      // const geometry = marker.getGeometry() as H.geo.Point;
 
-      const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
-      const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+      // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
+      // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+
+      const newLat = currentPosition.lat;
+      const newLng = currentPosition.lng;
 
       userMarker.setGeometry({ lat: newLat, lng: newLng });
       setMarker(userMarker);
@@ -213,6 +217,8 @@ export const DisplayMap = () => {
       }}
     >
       <Modal>
+        <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
+        <input type="number" step="0.0001" value={currentPosition.lng} onChange={(e) => setCurrentPosition({ ...currentPosition, lng: parseFloat(e.target.value) })} />
         <button onClick={updateUserLocation}>
           Update User Location
         </button>
