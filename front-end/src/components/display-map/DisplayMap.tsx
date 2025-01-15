@@ -3,11 +3,14 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getFields, isPointInPolygon } from './BoundariesUtils';
 import FieldApi from '../../services/FieldApi';
 import { Modal } from '../modal/Modal';
+import './DisplayMap.css';
+
 export const DisplayMap = () => {
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [marker, setMarker] = useState<H.map.Marker | null>(null);
-  const polygonState: Record<string, boolean> = {};
+  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number }>({ lat: 37.77047148374791, lng: -122.44336704677875 });
+  const [polygonState, setPolygonState] = useState<Record<string, boolean>>({});
   const isMapLoaded = useRef(false);
 
   useEffect(() => {
@@ -51,7 +54,7 @@ export const DisplayMap = () => {
 
         // ---------------------------------------------------------------------------------------------------------------------------//
         //add marker of current position
-        const marker = new H.map.Marker({ lat: 37.77053080105853, lng: -122.43959978114759 }); // Adjust coordinates
+        const marker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng }); // Adjust coordinates
         hereMap.addObject(marker);
 
         let isDrawing = false;
@@ -129,7 +132,7 @@ export const DisplayMap = () => {
 
   // useEffect(() => {
   // if (mapInstance && marker) {
-  // Simulated user location updates
+  // // Simulated user location updates
   // const userMarker = marker;
   // mapInstance.addObject(marker);
 
@@ -139,8 +142,8 @@ export const DisplayMap = () => {
   //   // Simulate random movement
   //   const geometry = marker.getGeometry() as H.geo.Point;
 
-  //   const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
-  //   const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+  //   const newLat = geometry.lat + (Math.random() - 0.5) * 0.01;
+  //   const newLng = geometry.lng + (Math.random() - 0.5) * 0.01;
 
   //   userMarker.setGeometry({ lat: newLat, lng: newLng });
   //   setMarker(userMarker);
@@ -172,14 +175,54 @@ export const DisplayMap = () => {
   //---------------------------------------------------------------------------------------------------------------------------//
 
 
+  // const updateUserLocation = () => {
+  //   if (mapInstance && marker) {
+  //     const userMarker = marker;
+  //     // Simulate random movement
+  //     // const geometry = marker.getGeometry() as H.geo.Point;
+
+  //     // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
+  //     // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+
+  //     const newLat = currentPosition.lat;
+  //     const newLng = currentPosition.lng;
+  //     console.log(newLat, newLng);
+
+  //     userMarker.setGeometry({ lat: newLat, lng: newLng });
+  //     setMarker(userMarker);
+
+  //     const currentPoint = { lat: newLat, lng: newLng };
+  //     const polygonData = getFields();
+
+  //     polygonData.forEach((polygon) => {
+  //       const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+
+  //       if (isInside && !polygonState[polygon.label]) {
+  //         alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //         polygonState[polygon.label] = true;
+
+  //       } else if (!isInside && polygonState[polygon.label]) {
+  //         alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //         polygonState[polygon.label] = false;
+  //       }
+  //     });
+  //   }
+  // };
+
+
   const updateUserLocation = () => {
     if (mapInstance && marker) {
       const userMarker = marker;
+
       // Simulate random movement
       const geometry = marker.getGeometry() as H.geo.Point;
 
       const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
       const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+
+      // Update user's simulated location
+      // const newLat = currentPosition.lat;
+      // const newLng = currentPosition.lng;
 
       userMarker.setGeometry({ lat: newLat, lng: newLng });
       setMarker(userMarker);
@@ -190,14 +233,14 @@ export const DisplayMap = () => {
       polygonData.forEach((polygon) => {
         const isInside = isPointInPolygon(currentPoint, polygon.polygon);
 
-        if (isInside && !polygonState[polygon.label]) {
+        const previousState = polygonState[polygon.label] || false;
+
+        if (isInside && !previousState) {
           alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          polygonState[polygon.label] = true;
-
-        } else if (!isInside && polygonState[polygon.label]) {
+          setPolygonState((prevState) => ({ ...prevState, [polygon.label]: true }));
+        } else if (!isInside && previousState) {
           alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          polygonState[polygon.label] = false;
-
+          setPolygonState((prevState) => ({ ...prevState, [polygon.label]: false }));
         }
       });
     }
@@ -213,9 +256,19 @@ export const DisplayMap = () => {
       }}
     >
       <Modal>
-        <button onClick={updateUserLocation}>
-          Update User Location
-        </button>
+        <div className="modal-content">
+          <div className="lat-input input-container">
+            <h3> Latitude</h3>
+            <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
+          </div>
+          <div className="lng-input input-container">
+            <h3> Longitude</h3>
+            <input type="number" step="0.0001" value={currentPosition.lng} onChange={(e) => setCurrentPosition({ ...currentPosition, lng: parseFloat(e.target.value) })} />
+          </div>
+          <button onClick={updateUserLocation}>
+            Update User Location
+          </button>
+        </div>
       </Modal>
     </div>
   );
