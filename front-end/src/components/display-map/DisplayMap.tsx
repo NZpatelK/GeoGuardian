@@ -174,55 +174,19 @@ export const DisplayMap = () => {
 
   //---------------------------------------------------------------------------------------------------------------------------//
 
-
-  // const updateUserLocation = () => {
-  //   if (mapInstance && marker) {
-  //     const userMarker = marker;
-  //     // Simulate random movement
-  //     // const geometry = marker.getGeometry() as H.geo.Point;
-
-  //     // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
-  //     // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
-
-  //     const newLat = currentPosition.lat;
-  //     const newLng = currentPosition.lng;
-  //     console.log(newLat, newLng);
-
-  //     userMarker.setGeometry({ lat: newLat, lng: newLng });
-  //     setMarker(userMarker);
-
-  //     const currentPoint = { lat: newLat, lng: newLng };
-  //     const polygonData = getFields();
-
-  //     polygonData.forEach((polygon) => {
-  //       const isInside = isPointInPolygon(currentPoint, polygon.polygon);
-
-  //       if (isInside && !polygonState[polygon.label]) {
-  //         alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-  //         polygonState[polygon.label] = true;
-
-  //       } else if (!isInside && polygonState[polygon.label]) {
-  //         alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-  //         polygonState[polygon.label] = false;
-  //       }
-  //     });
-  //   }
-  // };
-
-
   const updateUserLocation = () => {
     if (mapInstance && marker) {
       const userMarker = marker;
 
       // Simulate random movement
-      const geometry = marker.getGeometry() as H.geo.Point;
+      // const geometry = marker.getGeometry() as H.geo.Point;
 
-      const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
-      const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+      // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
+      // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
 
       // Update user's simulated location
-      // const newLat = currentPosition.lat;
-      // const newLng = currentPosition.lng;
+      const newLat = currentPosition.lat;
+      const newLng = currentPosition.lng;
 
       userMarker.setGeometry({ lat: newLat, lng: newLng });
       setMarker(userMarker);
@@ -245,7 +209,6 @@ export const DisplayMap = () => {
       });
     }
   };
-
 
   return (
     <div
