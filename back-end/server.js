@@ -10,7 +10,7 @@ app.use(express.json());
 
 
 
-const filePath = path.join(__dirname, './data/FieldData.json');
+const filePath = path.join(__dirname, '.src/data/FieldData.json');
  
 const dummyData = [
   {
