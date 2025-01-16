@@ -5,8 +5,10 @@ const path = require('path');
 const app = express();
 const port = 3000;
 const cors = require('cors');
+
 const fieldRoutes = require('./src/routes/fields');
 const animalRoutes = require('./src/routes/animals');
+
 const filePath = path.join(__dirname, 'src/data/FieldData.json');
 
 app.use(cors());

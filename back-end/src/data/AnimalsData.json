@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "name": "Dog",
+        "type": "Mammal",
+        "habitat": "Domestic",
+        "lifespan": "10-13 years",
+        "diet": "Omnivore",
+        "size": "Small to Large"
+    },
+    {
+        "id": 2,
+        "name": "Cat",
+        "type": "Mammal",
+        "habitat": "Domestic",
+        "lifespan": "10-15 years",
+        "diet": "Carnivore",
+        "size": "Small to Medium"
+    },
+    {
+        "id": 3,
+        "name": "Rabbit",
+        "type": "Mammal",
+        "habitat": "Wild",
+        "lifespan": "2-3 years",
+        "diet": "Omnivore",
+        "size": "Small"
+    }
+]
