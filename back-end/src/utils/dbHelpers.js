@@ -18,9 +18,21 @@ const getData = (filePath) => {
     });
 };
 
-const writeData = (filePath, data) => {
+const writeData = (filePath, data, existData) => {
     return new Promise((resolve, reject) => {
-        fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8', (err) => {
+        let currentData = [];
+        try {
+            currentData = existData;
+            if (!Array.isArray(currentData)) {
+                currentData = [];
+            }
+        } catch (parseError) {
+            reject(parseError);
+        }
+
+        currentData.push(data);
+
+        fs.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8', (err) => {
             if (err) {
                 reject(err);
             } else {
