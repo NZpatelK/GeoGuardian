@@ -5,13 +5,13 @@ const path = require('path');
 const app = express();
 const port = 3000;
 const cors = require('cors');
+const fieldRoutes = require('./src/routes/fields');
+const animalRoutes = require('./src/routes/animals');
+const filePath = path.join(__dirname, 'src/data/FieldData.json');
+
 app.use(cors());
 app.use(express.json());
 
-
-
-const filePath = path.join(__dirname, '.src/data/FieldData.json');
- 
 const dummyData = [
   {
     "id": "3EQgVfD9gFCJTS9ptainQ",
@@ -172,51 +172,8 @@ function initaliseDataFile() {
   }
 }
 
-app.get('/api/field-data', (req, res) => {
-  const filePath = path.join(__dirname, './data/FieldData.json');
-
-  fs.readFile(filePath, 'utf-8', (err, data) => {
-    if (err) {
-      return res.status(500).send('Error reading the data file');
-    }
-
-    res.json(JSON.parse(data));
-  });
-});
-
-app.post('/save-data', (req, res) => {
-  const data = req.body; // Get data from the request body
-  console.log(data);
-
-  // Read the existing data from the JSON file
-  fs.readFile(filePath, 'utf8', (err, jsonData) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error reading data file' });
-    }
-
-    let currentData = [];
-    try {
-      // Ensure the file content is parsed as an array
-      currentData = JSON.parse(jsonData);
-      if (!Array.isArray(currentData)) {
-        currentData = []; // Reset to an empty array if data is not an array
-      }
-    } catch (parseError) {
-      return res.status(500).json({ message: 'Error parsing data file' });
-    }
-
-    currentData.push(data); // Append the new data
-
-    // Write the updated data to the JSON file
-    fs.writeFile(filePath, JSON.stringify(currentData, null, 2), (err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Error saving data' });
-      }
-      res.status(200).json({ message: 'Data saved successfully' });
-    });
-  });
-});
-
+app.use('/api/fields', fieldRoutes);
+app.use('/api/animals', animalRoutes);
 
 app.listen(port, () => {
   initaliseDataFile();

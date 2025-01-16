@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 class FieldApi {
     static async getFieldCoordinates() {
         try {
-            const response = await axios.get('http://localhost:3000/api/field-data');
+            const response = await axios.get('http://localhost:3000/api/fields/getFields');
             return response.data;
         } catch (err) {
             console.error('Error fetching data:', err);
@@ -19,7 +19,7 @@ class FieldApi {
         };
         try {
             // Send data to the backend using axios
-            const response = await axios.post('http://localhost:3000/save-data', data, {
+            const response = await axios.post('http://localhost:3000/api/fields/addField', data, {
                 headers: {
                     'Content-Type': 'application/json', // Ensure the server expects JSON
                 },
