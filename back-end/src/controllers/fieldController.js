@@ -17,7 +17,6 @@ const addField = async (req, res) => {
 
     try {
         const existData = await getData(fieldFilePath);
-        // currentData.push(data);
         await writeData(fieldFilePath, data, existData);
         res.status(200).json({ message: 'Data saved successfully' });
     } catch (error) {
