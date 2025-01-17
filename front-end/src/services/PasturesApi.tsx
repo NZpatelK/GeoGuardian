@@ -1,17 +1,17 @@
 import axios from "axios";
 import { nanoid } from 'nanoid';
 
-class FieldApi {
-    static async getFieldCoordinates() {
+class PasturesApi {
+    static async getPasturesCoordinates() {
         try {
-            const response = await axios.get('http://localhost:3000/api/fields/getFields');
+            const response = await axios.get('http://localhost:3000/api/pastures/getPastures');
             return response.data;
         } catch (err) {
             console.error('Error fetching data:', err);
         }
     }
 
-    static async addField(polygonCoordinates: { lat: number; lng: number }[], label: string) {
+    static async addPasture(polygonCoordinates: { lat: number; lng: number }[], label: string) {
         const data = {
             id: nanoid(),
             name: label,
@@ -19,7 +19,7 @@ class FieldApi {
         };
         try {
             // Send data to the backend using axios
-            const response = await axios.post('http://localhost:3000/api/fields/addField', data, {
+            const response = await axios.post('http://localhost:3000/api/pastures/addPasture', data, {
                 headers: {
                     'Content-Type': 'application/json', // Ensure the server expects JSON
                 },
@@ -36,4 +36,4 @@ class FieldApi {
     }
 }
 
-export default FieldApi
+export default PasturesApi

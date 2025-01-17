@@ -1,7 +1,7 @@
 import { labelIcon, markerIcon } from "../../assets/Icon";
-import FieldApi from "../../services/FieldApi";
+import PasturesApi from "../../services/PasturesApi";
 
-const listFields: { label: string, polygon: { lat: number; lng: number }[] }[] = [];
+const listPastures: { label: string, polygon: { lat: number; lng: number }[] }[] = [];
 let polygonCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
@@ -151,10 +151,10 @@ export const closePolygon = (startPoint: { lat: number; lng: number }, label: st
 
     // const area = calculateGeodeticAreaInSquareKilometers(polygonCoordinates);
 
-    listFields.push({ label: label, polygon: polygonCoordinates });
+    listPastures.push({ label: label, polygon: polygonCoordinates });
     CompletedPolygon = [];
     CompletedPolygon = polygonCoordinates;
-    FieldApi.addField(polygonCoordinates, label);
+    PasturesApi.addPasture(polygonCoordinates, label);
     polygonCoordinates = [];
 
 
@@ -180,7 +180,7 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
     const labelMarker = createLabel(label);
     CompletedPolygon = [];
 
-    listFields.push({ label: label, polygon: coords });
+    listPastures.push({ label: label, polygon: coords });
     return { existingPolygon, labelMarker };
 }
 
@@ -274,8 +274,8 @@ export const createLabel = (labelName: string) => {
     return label
 }
 
-export const getFields = () => {
-    return listFields;
+export const getPastures = () => {
+    return listPastures;
 }
 
 /**
