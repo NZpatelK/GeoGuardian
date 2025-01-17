@@ -1,10 +1,10 @@
 const request = require('supertest');
-const { getFields, addField } = require('../controllers/fieldController'); // Adjust the path as necessary
+const { getPastures, addPasture } = require('../controllers/pastureController'); // Adjust the path as necessary
 const express = require('express');
 const app = express();
 app.use(express.json());
-app.get('/fields', getFields);
-app.post('/fields', addField);
+app.get('/pastures', getPastures);
+app.post('/pastures', addPasture);
 
 // Mocking the helper functions
 jest.mock('../utils/dbHelpers', () => ({
@@ -17,13 +17,13 @@ const { getData, writeData, handleDBError } = require('../utils/dbHelpers');
 
 describe('Field Controller Tests', () => {
     
-    describe('GET /fields', () => {
+    describe('GET /pastures', () => {
         it('should return a list of fields', async () => {
             // Mock the return value for getData
             const mockFields = [{ id: 1, name: 'Field 1' }];
             getData.mockResolvedValue(mockFields);
 
-            const response = await request(app).get('/fields');
+            const response = await request(app).get('/pastures');
             
             expect(response.status).toBe(200);
             expect(response.body).toEqual(mockFields);
@@ -35,7 +35,7 @@ describe('Field Controller Tests', () => {
             getData.mockRejectedValue(mockError);
             handleDBError.mockImplementation((res, error) => res.status(500).json({ message: error.message }));
 
-            const response = await request(app).get('/fields');
+            const response = await request(app).get('/pastures');
             
             expect(response.status).toBe(500);
             expect(response.body.message).toBe('DB error');
@@ -43,14 +43,14 @@ describe('Field Controller Tests', () => {
         });
     });
 
-    describe('POST /fields', () => {
+    describe('POST /pastures', () => {
         it('should add a new field and return success', async () => {
             const newField = { id: 2, name: 'Field 2' };
             const existingData = [{ id: 1, name: 'Field 1' }];
             getData.mockResolvedValue(existingData);
             writeData.mockResolvedValue(null); // Mocking successful data write
 
-            const response = await request(app).post('/fields').send(newField);
+            const response = await request(app).post('/pastures').send(newField);
 
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('Data saved successfully');
@@ -64,7 +64,7 @@ describe('Field Controller Tests', () => {
             writeData.mockRejectedValue(mockError);
             handleDBError.mockImplementation((res, error) => res.status(500).json({ message: error.message }));
 
-            const response = await request(app).post('/fields').send(newField);
+            const response = await request(app).post('/pastures').send(newField);
 
             expect(response.status).toBe(500);
             expect(response.body.message).toBe('DB error');

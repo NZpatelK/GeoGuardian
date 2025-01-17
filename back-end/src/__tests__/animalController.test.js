@@ -1,4 +1,4 @@
-const { getAnimals, addAnimal } = require('../controllers/animalsController');
+const { getAnimals, addAnimal } = require('../controllers/animalController');
 const { getData, writeData, handleDBError } = require('../utils/dbHelpers');
 const path = require('path');
 
