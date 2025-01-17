@@ -37,27 +37,13 @@ describe('File Operations', () => {
     describe('writeData', () => {
         it('should write data to file', async () => {
             const filePath = 'path/to/file.json';
-            
-            // Manually setting the data
-            const existingData = [{ key: 'oldValue' }];
             const data = { key: 'newValue' };
-    
-            // Mock the fs.writeFile method
-            fs.writeFile.mockImplementation((path, data, encoding, callback) => {
-                // You can check or manipulate the 'data' here manually
-                expect(path).toBe(filePath); // Ensure the file path is correct
-                expect(encoding).toBe('utf8'); // Ensure encoding is correct
-                const parsedData = JSON.parse(data);
-                expect(parsedData).toEqual([...existingData, data]); // Check the correct data is passed
-                
-                callback(null); // Simulate a successful write
-            });
-    
-            // Call writeData and ensure it behaves as expected
+            const existingData = [{ key: 'oldValue' }];
+            fs.writeFile.mockImplementation((path, data, encoding, callback) => callback(null));
+
             await writeData(filePath, data, existingData);
-    
-            // Now check if writeFile was called with the expected parameters
-            expect(fs.writeFile).toHaveBeenCalled();
+
+            expect(fs.writeFile).toHaveBeenCalledWith(filePath, JSON.stringify([...existingData], null, 2), 'utf8', expect.any(Function));
         });
 
         it('should reject with error if write fails', async () => {
