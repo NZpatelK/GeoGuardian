@@ -1,13 +1,17 @@
 // server.js
 const express = require('express');
 const fs = require('fs');
+const {faker} = require('@faker-js/faker')
 const path = require('path');
 const app = express();
 const port = 3000;
 const cors = require('cors');
-const fieldRoutes = require('./src/routes/fields');
+
+const pastureRoutes = require('./src/routes/pastures');
 const animalRoutes = require('./src/routes/animals');
-const filePath = path.join(__dirname, 'src/data/FieldData.json');
+
+const pastureFilePath = path.join(__dirname, 'src/data/PastureData.json');
+const animalFilePath = path.join(__dirname, 'src/data/AnimalsData.json');
 
 app.use(cors());
 app.use(express.json());
@@ -161,21 +165,59 @@ const dummyData = [
   }
 ];
 
-function initaliseDataFile() {
-  if (fs.existsSync(filePath)) {
-    console.log("File exists. Clearing and adding dummy data.");
-    fs.writeFileSync(filePath, JSON.stringify(dummyData, null, 2), 'utf8');
+function getRandomCoordinate(pasture) {
+  const latitudes = pasture.coordinates.map(coord => coord.lat);
+  const longitudes = pasture.coordinates.map(coord => coord.lng);
 
-  } else {
-    console.log("File does not exist. Creating new file with dummy data.");
-    fs.writeFileSync(filePath, JSON.stringify(dummyData, null, 2), 'utf8');
+  // Calculate min/max latitude and longitude
+  const minLat = Math.min(...latitudes);
+  const maxLat = Math.max(...latitudes);
+  const minLng = Math.min(...longitudes);
+  const maxLng = Math.max(...longitudes);
+
+  // Generate a random coordinate within the bounding box of the pasture
+  const randomLat = faker.number.float({ min: minLat, max: maxLat });
+  const randomLng = faker.number.float({ min: minLng, max: maxLng });
+
+  return { lat: randomLat, lng: randomLng };
+}
+
+function generateAnimal(){
+  return {
+    'id': faker.number.int({min: 1000, max: 9999}),
+    'name': faker.animal.petName(),
+    'type': faker.helpers.arrayElement(['Cow', 'Pig', 'Sheep', 'Goat']),
+    'coordinates': getRandomCoordinate(dummyData[faker.number.int({min: 0, max: dummyData.length - 1})])
   }
 }
 
-app.use('/api/fields', fieldRoutes);
+function initalisePastureDataFile() {
+  if (fs.existsSync(pastureFilePath)) {
+    console.log("File exists. Clearing and adding dummy data.");
+    fs.writeFileSync(pastureFilePath, JSON.stringify(dummyData, null, 2), 'utf8');
+
+  } else {
+    console.log("File does not exist. Creating new file with dummy data.");
+    fs.writeFileSync(pastureFilePath, JSON.stringify(dummyData, null, 2), 'utf8');
+  }
+}
+
+function initaliseAnimalDataFile() {
+  const animals = Array.from({length: 100}, generateAnimal);
+  if (fs.existsSync(animalFilePath)) {
+    console.log("File exists. Clearing and adding dummy data.");
+    fs.writeFileSync(animalFilePath, JSON.stringify(animals, null, 2), 'utf8');
+  } else {
+    console.log("File does not exist. Creating new file with dummy data.");
+    fs.writeFileSync(animalFilePath, JSON.stringify(animals, null, 2), 'utf8');
+  }
+}
+
+app.use('/api/pastures', pastureRoutes);
 app.use('/api/animals', animalRoutes);
 
 app.listen(port, () => {
-  initaliseDataFile();
+  initalisePastureDataFile();
+  initaliseAnimalDataFile();
   console.log(`Server running at http://localhost:${port}`);
 });

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getFields, isPointInPolygon } from './BoundariesUtils';
-import FieldApi from '../../services/FieldApi';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, isPointInPolygon, getPastures } from './BoundariesUtils';
+import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
 
@@ -58,10 +58,10 @@ export const DisplayMap = () => {
         hereMap.addObject(marker);
 
         let isDrawing = false;
-        const existFieldCoordinates: any = await FieldApi.getFieldCoordinates();
+        const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
 
-        if (existFieldCoordinates) {
-          for (const item of existFieldCoordinates) {
+        if (existPasturesCoordinates) {
+          for (const item of existPasturesCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
             const existingPolygon = addExistingPolygon(coord, item.name);
 
@@ -86,7 +86,7 @@ export const DisplayMap = () => {
             const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
 
             if (distanceToStart < 10) {
-              const inputName = prompt("Please enter the name of the field:");
+              const inputName = prompt("Please enter the name of the pasture:");
 
               const result = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
 
@@ -149,7 +149,7 @@ export const DisplayMap = () => {
   //   setMarker(userMarker);
 
   //   const currentPoint = { lat: newLat, lng: newLng };
-  //   const polygonData = getFields();
+  //   const polygonData = getPastures();
 
   //   polygonData.forEach((polygon) => {
   //     const isInside = isPointInPolygon(currentPoint, polygon.polygon);
@@ -192,7 +192,7 @@ export const DisplayMap = () => {
       setMarker(userMarker);
 
       const currentPoint = { lat: newLat, lng: newLng };
-      const polygonData = getFields();
+      const polygonData = getPastures();
 
       polygonData.forEach((polygon) => {
         const isInside = isPointInPolygon(currentPoint, polygon.polygon);
