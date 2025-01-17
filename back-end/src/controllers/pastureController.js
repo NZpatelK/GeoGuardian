@@ -1,23 +1,23 @@
 const fs = require('fs');
 const path = require('path');
-const fieldFilePath = path.join(__dirname, '../data/FieldData.json');
+const pastureFilePath = path.join(__dirname, '../data/PastureData.json');
 const { getData, writeData, handleDBError } = require('../utils/dbHelpers');
 
-const getFields = async (req, res) => {
+const getPastures = async (req, res) => {
     try {
-        const fetchData = await getData(fieldFilePath);
+        const fetchData = await getData(pastureFilePath);
         res.json(fetchData);
     } catch (error) {
         handleDBError(res, error);
     }
 };
 
-const addField = async (req, res) => {
+const addPasture = async (req, res) => {
     const data = req.body; 
 
     try {
-        const existData = await getData(fieldFilePath);
-        await writeData(fieldFilePath, data, existData);
+        const existData = await getData(pastureFilePath);
+        await writeData(pastureFilePath, data, existData);
         res.status(200).json({ message: 'Data saved successfully' });
     } catch (error) {
         handleDBError(res, error);
@@ -25,6 +25,6 @@ const addField = async (req, res) => {
 };
 
 module.exports = {
-    getFields,
-    addField
+    getPastures,
+    addPasture,
 };

@@ -7,10 +7,10 @@ const app = express();
 const port = 3000;
 const cors = require('cors');
 
-const fieldRoutes = require('./src/routes/fields');
+const pastureRoutes = require('./src/routes/pastures');
 const animalRoutes = require('./src/routes/animals');
 
-const filePath = path.join(__dirname, 'src/data/FieldData.json');
+const pastureFilePath = path.join(__dirname, 'src/data/PastureData.json');
 const animalFilePath = path.join(__dirname, 'src/data/AnimalsData.json');
 
 app.use(cors());
@@ -191,14 +191,14 @@ function generateAnimal(){
   }
 }
 
-function initaliseFieldDataFile() {
-  if (fs.existsSync(filePath)) {
+function initalisePastureDataFile() {
+  if (fs.existsSync(pastureFilePath)) {
     console.log("File exists. Clearing and adding dummy data.");
-    fs.writeFileSync(filePath, JSON.stringify(dummyData, null, 2), 'utf8');
+    fs.writeFileSync(pastureFilePath, JSON.stringify(dummyData, null, 2), 'utf8');
 
   } else {
     console.log("File does not exist. Creating new file with dummy data.");
-    fs.writeFileSync(filePath, JSON.stringify(dummyData, null, 2), 'utf8');
+    fs.writeFileSync(pastureFilePath, JSON.stringify(dummyData, null, 2), 'utf8');
   }
 }
 
@@ -213,11 +213,11 @@ function initaliseAnimalDataFile() {
   }
 }
 
-app.use('/api/fields', fieldRoutes);
+app.use('/api/pastures', pastureRoutes);
 app.use('/api/animals', animalRoutes);
 
 app.listen(port, () => {
-  initaliseFieldDataFile();
+  initalisePastureDataFile();
   initaliseAnimalDataFile();
   console.log(`Server running at http://localhost:${port}`);
 });
