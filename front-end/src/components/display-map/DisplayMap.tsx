@@ -7,11 +7,28 @@ import './DisplayMap.css';
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
+  const markerRef = useRef<Record<number, H.map.Marker>>({});
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [marker, setMarker] = useState<H.map.Marker | null>(null);
   const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number }>({ lat: 37.77047148374791, lng: -122.44336704677875 });
-  const [polygonState, setPolygonState] = useState<Record<string, boolean>>({});
+  const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const isMapLoaded = useRef(false);
+
+
+
+  const [locations, setLocations] = useState([
+    { id: 1, name: 'User A', lat: 37.7749, lng: -122.4194 },
+    { id: 2, name: 'User B', lat: 37.7790, lng: -122.4145 },
+    { id: 3, name: 'User C', lat: 37.7712, lng: -122.4230 },
+    { id: 4, name: 'User D', lat: 37.7785, lng: -122.4260 },
+    { id: 5, name: 'User E', lat: 37.7733, lng: -122.4170 },
+    { id: 6, name: 'User F', lat: 37.7720, lng: -122.4205 },
+    { id: 7, name: 'User G', lat: 37.7767, lng: -122.4189 },
+    { id: 8, name: 'User H', lat: 37.7745, lng: -122.4211 },
+    { id: 9, name: 'User I', lat: 37.7753, lng: -122.4244 },
+    { id: 10, name: 'User J', lat: 37.7778, lng: -122.4169 },
+]);
+
 
   useEffect(() => {
     const initializeMap = async () => {
@@ -54,8 +71,8 @@ export const DisplayMap = () => {
 
         // ---------------------------------------------------------------------------------------------------------------------------//
         //add marker of current position
-        const marker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng }); // Adjust coordinates
-        hereMap.addObject(marker);
+        // const marker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng }); // Adjust coordinates
+        // hereMap.addObject(marker);
 
         let isDrawing = false;
         const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
@@ -128,6 +145,92 @@ export const DisplayMap = () => {
     }
     initializeMap();
   }, []);
+
+  useEffect(() => {
+    if (mapInstance) {
+      const userGroup = new H.map.Group();
+      mapInstance.addObject(userGroup);
+  
+      const userMarker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng });
+      mapInstance.addObject(userMarker);
+      setMarker(userMarker);
+  
+      const userMarkers: Record<number, H.map.Marker> = {}; // Store markers by their id for updating purposes
+      locations.forEach((location) => {
+        const marker = new H.map.Marker({ lat: location.lat, lng: location.lng });
+        userMarkers[location.id] = marker; // Store the marker with its id
+        mapInstance.addObject(marker);
+      });
+  
+      // Store the markers in a ref to avoid dependency issues
+      markerRef.current = userMarkers;
+    }
+  }, [mapInstance]);
+
+  useEffect(() => {
+    // Update markers' positions at a regular interval
+    const updateUserLocation = () => {
+      if (!markerRef.current) return;
+  
+      // Select a random user
+      const randomIndex = Math.floor(Math.random() * locations.length);
+      const randomLocation = locations[randomIndex];
+
+      // Generate new random lat/lng within a small range
+      const newLat = randomLocation.lat + (Math.random() - 0.5) * 0.001;
+      const newLng = randomLocation.lng + (Math.random() - 0.5) * 0.001;
+  
+      // Update the corresponding marker's position
+      const marker = markerRef.current[randomLocation.id];
+      if (marker) {
+          marker.setGeometry(new H.geo.Point(newLat, newLng));
+      }
+  
+      // Check if the new position is inside any polygons
+      const currentPoint = { lat: newLat, lng: newLng };
+      const polygonData = getPastures(); // Retrieve polygon data
+  
+      polygonData.forEach((polygon) => {
+          const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+          const previousState = polygonState[polygon.label]?.[randomLocation.id] ?? false;
+  
+          // Handle Enter event
+          if (isInside && !previousState) {
+              alert(`Entered ${polygon.label} ${randomLocation.name} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+          }
+  
+          // Handle Exit event
+          if (!isInside && previousState) {
+              alert(`Exited ${polygon.label} ${randomLocation.name} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+          }
+  
+          // Update the polygon state for this location
+          setPolygonState((prevState) => ({
+              ...prevState,
+              [polygon.label]: {
+                  ...(prevState[polygon.label] || {}),
+                  [randomLocation.id]: isInside, // Track the state per location
+              },
+          }));
+      });
+  
+      // Update the selected location in the state
+      setLocations((prevLocations) =>
+          prevLocations.map((location) =>
+              location.id === randomLocation.id
+                  ? { ...location, lat: newLat, lng: newLng }
+                  : location
+          )
+      );
+    };
+
+    // Set interval for updating user locations
+    const interval = setInterval(updateUserLocation, 1000); // Update every second
+    return () => clearInterval(interval);
+}, [locations, polygonState]);
+
+
+
 
 
   // useEffect(() => {
