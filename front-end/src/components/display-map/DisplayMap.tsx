@@ -2,8 +2,19 @@ import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, isPointInPolygon, getPastures } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
+import AnimalApi from '../../services/AnimalApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
+
+interface Animal {
+  id: number;
+  name: string;
+  type: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+}
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
@@ -12,43 +23,30 @@ export const DisplayMap = () => {
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const isMapLoaded = useRef(false);
 
-
-
-  const [animals, setAnimals] = useState([
-    { id: 1, name: 'User A', lat: 37.7749, lng: -122.4194 },
-    { id: 2, name: 'User B', lat: 37.7790, lng: -122.4145 },
-    { id: 3, name: 'User C', lat: 37.7712, lng: -122.4230 },
-    { id: 4, name: 'User D', lat: 37.7785, lng: -122.4260 },
-    { id: 5, name: 'User E', lat: 37.7733, lng: -122.4170 },
-    { id: 6, name: 'User F', lat: 37.7720, lng: -122.4205 },
-    { id: 7, name: 'User G', lat: 37.7767, lng: -122.4189 },
-    { id: 8, name: 'User H', lat: 37.7745, lng: -122.4211 },
-    { id: 9, name: 'User I', lat: 37.7753, lng: -122.4244 },
-    { id: 10, name: 'User J', lat: 37.7778, lng: -122.4169 },
-]);
+  const [animals, setAnimals] = useState<Animal[]>([]);
 
 
   useEffect(() => {
-/**
- * Initializes the HERE map with default settings and pastures.
- * 
- * This function sets up the map using the HERE Maps API, and enables map events and UI controls.
- * It loads existing pastures from the API and adds them to the map. The map also listens for
- * user interactions to allow drawing new polygons (pastures) by tapping on the map.
- * 
- * Pre-requisites:
- * - The HERE Maps API key should be set in the environment variables.
- * 
- * Behavior:
- * - If the map has not been initialized, it sets the map center and zoom level.
- * - Loads and displays existing pastures as polygons with labels.
- * - Allows users to draw new polygons by tapping on the map, prompting for a name when completing a polygon.
- * - Handles the addition and removal of temporary map objects while drawing.
- * - Logs the current zoom level when the map view changes.
- * 
- * Returns:
- * - A cleanup function to dispose of the map when it's no longer needed.
- */
+    /**
+     * Initializes the HERE map with default settings and pastures.
+     * 
+     * This function sets up the map using the HERE Maps API, and enables map events and UI controls.
+     * It loads existing pastures from the API and adds them to the map. The map also listens for
+     * user interactions to allow drawing new polygons (pastures) by tapping on the map.
+     * 
+     * Pre-requisites:
+     * - The HERE Maps API key should be set in the environment variables.
+     * 
+     * Behavior:
+     * - If the map has not been initialized, it sets the map center and zoom level.
+     * - Loads and displays existing pastures as polygons with labels.
+     * - Allows users to draw new polygons by tapping on the map, prompting for a name when completing a polygon.
+     * - Handles the addition and removal of temporary map objects while drawing.
+     * - Logs the current zoom level when the map view changes.
+     * 
+     * Returns:
+     * - A cleanup function to dispose of the map when it's no longer needed.
+     */
 
     const initializeMap = async () => {
 
@@ -161,88 +159,101 @@ export const DisplayMap = () => {
     initializeMap();
   }, []);
 
-  
+
   useEffect(() => {
     if (mapInstance) {
+      // const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
+      const getAnimals = async () => {
+        try {
+          const response = await AnimalApi.getAnimalsCoordinates();
+          setAnimals(() => [...response]);
+          addExistingAnimalsIntoMap(response);
+        } catch (err) {
+          console.error('Error fetching data:', err);
+        }
+      }
 
-      const animalPosition: Record<number, H.map.Marker> = {};
-      animals.forEach((location) => {
-        const position = new H.map.Marker({ lat: location.lat, lng: location.lng });
-        animalPosition[location.id] = position; 
-        mapInstance.addObject(position);
-      });
-  
-      // Store the markers in a ref to avoid dependency issues
-      animalRef.current = animalPosition;
+      getAnimals();
+      const addExistingAnimalsIntoMap = (animalData: Animal[]) => {
+        if (animalData && animalData.length > 0) {
+          const animalPosition: Record<number, H.map.Marker> = {};
+          animalData.forEach((animal) => {
+            const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
+            animalPosition[animal.id] = position;
+            mapInstance.addObject(position);
+          });
+          animalRef.current = animalPosition;
+        }
+      };
     }
   }, [mapInstance]);
 
   useEffect(() => {
-  /**
-   * Periodically updates the animal's location to a new random point within a small range, checks if the new position is inside any polygons, and handles Enter/Exit events accordingly.
-   * 
-   * @remarks
-   * This method is called every 5 seconds to simulate the user's movement.
-   */
+    /**
+     * Periodically updates the animal's location to a new random point within a small range, checks if the new position is inside any polygons, and handles Enter/Exit events accordingly.
+     * 
+     * @remarks
+     * This method is called every 5 seconds to simulate the user's movement.
+     */
     const updateUserLocation = () => {
       if (!animalRef.current) return;
-  
+
       // Select a random animal
       const randomIndex = Math.floor(Math.random() * animals.length);
       const randomLocation = animals[randomIndex];
 
       // Generate new random lat/lng within a small range
-      const newLat = randomLocation.lat + (Math.random() - 0.5) * 0.001;
-      const newLng = randomLocation.lng + (Math.random() - 0.5) * 0.001;
-  
+      const newLat = randomLocation.coordinates.lat + (Math.random() - 0.5) * 0.001;
+      const newLng = randomLocation.coordinates.lng + (Math.random() - 0.5) * 0.001;
+
       // Update the corresponding animal's position
       const position = animalRef.current[randomLocation.id];
       if (position) {
-          position.setGeometry(new H.geo.Point(newLat, newLng));
+        position.setGeometry(new H.geo.Point(newLat, newLng));
       }
-  
+
       // Check if the new position is inside any polygons
       const currentPoint = { lat: newLat, lng: newLng };
-      const polygonData = getPastures(); 
-  
+      const polygonData = getPastures();
+
       polygonData.forEach((polygon) => {
-          const isInside = isPointInPolygon(currentPoint, polygon.polygon);
-          const previousState = polygonState[polygon.label]?.[randomLocation.id] ?? false;
-  
-          // Handle Enter event
-          if (isInside && !previousState) {
-              alert(`Entered ${polygon.label} ${randomLocation.name} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          }
-  
-          // Handle Exit event
-          if (!isInside && previousState) {
-              alert(`Exited ${polygon.label} ${randomLocation.name} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          }
-  
-          // Update the polygon state for this location
-          setPolygonState((prevState) => ({
-              ...prevState,
-              [polygon.label]: {
-                  ...(prevState[polygon.label] || {}),
-                  [randomLocation.id]: isInside, // Track the state per location
-              },
-          }));
+        const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+        const previousState = polygonState[polygon.label]?.[randomLocation.id] ?? false;
+
+        // Handle Enter event
+        if (isInside && !previousState) {
+          console.log(`${randomLocation.name} - ${randomLocation.id} Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+        }
+
+        // Handle Exit event
+        if (!isInside && previousState) {
+          console.log(`${randomLocation.name} - ${randomLocation.id} Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+        }
+
+        // Update the polygon state for this location
+        setPolygonState((prevState) => ({
+          ...prevState,
+          [polygon.label]: {
+            ...(prevState[polygon.label] || {}),
+            [randomLocation.id]: isInside, // Track the state per location
+          },
+        }));
       });
-  
+
       // Update the selected location in the state
       setAnimals((prevLocations) =>
-          prevLocations.map((location) =>
-              location.id === randomLocation.id
-                  ? { ...location, lat: newLat, lng: newLng }
-                  : location
-          )
+        prevLocations.map((location) =>
+          location.id === randomLocation.id
+            ? { ...location, lat: newLat, lng: newLng }
+            : location
+        )
       );
     };
 
     // Set interval for updating user animals
     const interval = setInterval(updateUserLocation, 500); // Update every second
     return () => clearInterval(interval);
-}, [animals, polygonState]);
+  }, [animals, polygonState]);
 
 
 
@@ -349,11 +360,12 @@ export const DisplayMap = () => {
           <button onClick={updateUserLocation}>
             Update User Location
           </button> */}
-          {animals.map((location) => (  
+          {animals.map((location) => (
             <div key={location.id} className="location-item">
-              <h3>{location.name}</h3>
-              <p>Latitude: {location.lat.toFixed(5)}</p>
-              <p>Longitude: {location.lng.toFixed(5)}</p>
+              <h3>{location.name} - {location.id} </h3>
+              <p>Type: {location.type}</p>
+              <p>Latitude: {location.coordinates.lat.toFixed(5)}</p>
+              <p>Longitude: {location.coordinates.lng.toFixed(5)}</p>
             </div>
           ))}
         </div>

@@ -203,7 +203,7 @@ function initalisePastureDataFile() {
 }
 
 function initaliseAnimalDataFile() {
-  const animals = Array.from({length: 100}, generateAnimal);
+  const animals = Array.from({length: 20}, generateAnimal);
   if (fs.existsSync(animalFilePath)) {
     console.log("File exists. Clearing and adding dummy data.");
     fs.writeFileSync(animalFilePath, JSON.stringify(animals, null, 2), 'utf8');
