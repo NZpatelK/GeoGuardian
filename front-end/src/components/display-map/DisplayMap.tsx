@@ -7,16 +7,14 @@ import './DisplayMap.css';
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
-  const markerRef = useRef<Record<number, H.map.Marker>>({});
+  const animalRef = useRef<Record<number, H.map.Marker>>({});
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
-  const [marker, setMarker] = useState<H.map.Marker | null>(null);
-  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number }>({ lat: 37.77047148374791, lng: -122.44336704677875 });
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const isMapLoaded = useRef(false);
 
 
 
-  const [locations, setLocations] = useState([
+  const [animals, setAnimals] = useState([
     { id: 1, name: 'User A', lat: 37.7749, lng: -122.4194 },
     { id: 2, name: 'User B', lat: 37.7790, lng: -122.4145 },
     { id: 3, name: 'User C', lat: 37.7712, lng: -122.4230 },
@@ -31,6 +29,27 @@ export const DisplayMap = () => {
 
 
   useEffect(() => {
+/**
+ * Initializes the HERE map with default settings and pastures.
+ * 
+ * This function sets up the map using the HERE Maps API, and enables map events and UI controls.
+ * It loads existing pastures from the API and adds them to the map. The map also listens for
+ * user interactions to allow drawing new polygons (pastures) by tapping on the map.
+ * 
+ * Pre-requisites:
+ * - The HERE Maps API key should be set in the environment variables.
+ * 
+ * Behavior:
+ * - If the map has not been initialized, it sets the map center and zoom level.
+ * - Loads and displays existing pastures as polygons with labels.
+ * - Allows users to draw new polygons by tapping on the map, prompting for a name when completing a polygon.
+ * - Handles the addition and removal of temporary map objects while drawing.
+ * - Logs the current zoom level when the map view changes.
+ * 
+ * Returns:
+ * - A cleanup function to dispose of the map when it's no longer needed.
+ */
+
     const initializeMap = async () => {
 
       if (!mapRef.current || isMapLoaded.current) return;
@@ -70,9 +89,6 @@ export const DisplayMap = () => {
         const ui = H.ui.UI.createDefault(hereMap, defaultLayers);
 
         // ---------------------------------------------------------------------------------------------------------------------------//
-        //add marker of current position
-        // const marker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng }); // Adjust coordinates
-        // hereMap.addObject(marker);
 
         let isDrawing = false;
         const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
@@ -136,7 +152,6 @@ export const DisplayMap = () => {
         });
 
         setMapInstance(hereMap);
-        setMarker(marker);
 
         return () => {
           hereMap.dispose();
@@ -146,49 +161,49 @@ export const DisplayMap = () => {
     initializeMap();
   }, []);
 
+  
   useEffect(() => {
     if (mapInstance) {
-      const userGroup = new H.map.Group();
-      mapInstance.addObject(userGroup);
-  
-      const userMarker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng });
-      mapInstance.addObject(userMarker);
-      setMarker(userMarker);
-  
-      const userMarkers: Record<number, H.map.Marker> = {}; // Store markers by their id for updating purposes
-      locations.forEach((location) => {
-        const marker = new H.map.Marker({ lat: location.lat, lng: location.lng });
-        userMarkers[location.id] = marker; // Store the marker with its id
-        mapInstance.addObject(marker);
+
+      const animalPosition: Record<number, H.map.Marker> = {};
+      animals.forEach((location) => {
+        const position = new H.map.Marker({ lat: location.lat, lng: location.lng });
+        animalPosition[location.id] = position; 
+        mapInstance.addObject(position);
       });
   
       // Store the markers in a ref to avoid dependency issues
-      markerRef.current = userMarkers;
+      animalRef.current = animalPosition;
     }
   }, [mapInstance]);
 
   useEffect(() => {
-    // Update markers' positions at a regular interval
+  /**
+   * Periodically updates the animal's location to a new random point within a small range, checks if the new position is inside any polygons, and handles Enter/Exit events accordingly.
+   * 
+   * @remarks
+   * This method is called every 5 seconds to simulate the user's movement.
+   */
     const updateUserLocation = () => {
-      if (!markerRef.current) return;
+      if (!animalRef.current) return;
   
-      // Select a random user
-      const randomIndex = Math.floor(Math.random() * locations.length);
-      const randomLocation = locations[randomIndex];
+      // Select a random animal
+      const randomIndex = Math.floor(Math.random() * animals.length);
+      const randomLocation = animals[randomIndex];
 
       // Generate new random lat/lng within a small range
       const newLat = randomLocation.lat + (Math.random() - 0.5) * 0.001;
       const newLng = randomLocation.lng + (Math.random() - 0.5) * 0.001;
   
-      // Update the corresponding marker's position
-      const marker = markerRef.current[randomLocation.id];
-      if (marker) {
-          marker.setGeometry(new H.geo.Point(newLat, newLng));
+      // Update the corresponding animal's position
+      const position = animalRef.current[randomLocation.id];
+      if (position) {
+          position.setGeometry(new H.geo.Point(newLat, newLng));
       }
   
       // Check if the new position is inside any polygons
       const currentPoint = { lat: newLat, lng: newLng };
-      const polygonData = getPastures(); // Retrieve polygon data
+      const polygonData = getPastures(); 
   
       polygonData.forEach((polygon) => {
           const isInside = isPointInPolygon(currentPoint, polygon.polygon);
@@ -215,7 +230,7 @@ export const DisplayMap = () => {
       });
   
       // Update the selected location in the state
-      setLocations((prevLocations) =>
+      setAnimals((prevLocations) =>
           prevLocations.map((location) =>
               location.id === randomLocation.id
                   ? { ...location, lat: newLat, lng: newLng }
@@ -224,10 +239,10 @@ export const DisplayMap = () => {
       );
     };
 
-    // Set interval for updating user locations
-    const interval = setInterval(updateUserLocation, 1000); // Update every second
+    // Set interval for updating user animals
+    const interval = setInterval(updateUserLocation, 500); // Update every second
     return () => clearInterval(interval);
-}, [locations, polygonState]);
+}, [animals, polygonState]);
 
 
 
@@ -277,41 +292,41 @@ export const DisplayMap = () => {
 
   //---------------------------------------------------------------------------------------------------------------------------//
 
-  const updateUserLocation = () => {
-    if (mapInstance && marker) {
-      const userMarker = marker;
+  // const updateUserLocation = () => {
+  //   if (mapInstance && marker) {
+  //     const userMarker = marker;
 
-      // Simulate random movement
-      // const geometry = marker.getGeometry() as H.geo.Point;
+  //     // Simulate random movement
+  //     // const geometry = marker.getGeometry() as H.geo.Point;
 
-      // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
-      // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+  //     // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
+  //     // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
 
-      // Update user's simulated location
-      const newLat = currentPosition.lat;
-      const newLng = currentPosition.lng;
+  //     // Update user's simulated location
+  //     const newLat = currentPosition.lat;
+  //     const newLng = currentPosition.lng;
 
-      userMarker.setGeometry({ lat: newLat, lng: newLng });
-      setMarker(userMarker);
+  //     userMarker.setGeometry({ lat: newLat, lng: newLng });
+  //     setMarker(userMarker);
 
-      const currentPoint = { lat: newLat, lng: newLng };
-      const polygonData = getPastures();
+  //     const currentPoint = { lat: newLat, lng: newLng };
+  //     const polygonData = getPastures();
 
-      polygonData.forEach((polygon) => {
-        const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+  //     polygonData.forEach((polygon) => {
+  //       const isInside = isPointInPolygon(currentPoint, polygon.polygon);
 
-        const previousState = polygonState[polygon.label] || false;
+  //       const previousState = polygonState[polygon.label] || false;
 
-        if (isInside && !previousState) {
-          alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          setPolygonState((prevState) => ({ ...prevState, [polygon.label]: true }));
-        } else if (!isInside && previousState) {
-          alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          setPolygonState((prevState) => ({ ...prevState, [polygon.label]: false }));
-        }
-      });
-    }
-  };
+  //       if (isInside && !previousState) {
+  //         alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //         setPolygonState((prevState) => ({ ...prevState, [polygon.label]: true }));
+  //       } else if (!isInside && previousState) {
+  //         alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //         setPolygonState((prevState) => ({ ...prevState, [polygon.label]: false }));
+  //       }
+  //     });
+  //   }
+  // };
 
   return (
     <div
@@ -323,7 +338,7 @@ export const DisplayMap = () => {
     >
       <Modal>
         <div className="modal-content">
-          <div className="lat-input input-container">
+          {/* <div className="lat-input input-container">
             <h3> Latitude</h3>
             <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
           </div>
@@ -333,7 +348,14 @@ export const DisplayMap = () => {
           </div>
           <button onClick={updateUserLocation}>
             Update User Location
-          </button>
+          </button> */}
+          {animals.map((location) => (  
+            <div key={location.id} className="location-item">
+              <h3>{location.name}</h3>
+              <p>Latitude: {location.lat.toFixed(5)}</p>
+              <p>Longitude: {location.lng.toFixed(5)}</p>
+            </div>
+          ))}
         </div>
       </Modal>
     </div>
