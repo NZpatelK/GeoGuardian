@@ -1,19 +1,53 @@
 import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getFields, isPointInPolygon } from './BoundariesUtils';
-import FieldApi from '../../services/FieldApi';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, isPointInPolygon, getPastures } from './BoundariesUtils';
+import PasturesApi from '../../services/PasturesApi';
+import AnimalApi from '../../services/AnimalApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
 
+interface Animal {
+  id: number;
+  name: string;
+  type: string;
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+}
+
 export const DisplayMap = () => {
   const mapRef = useRef(null);
+  const animalRef = useRef<Record<number, H.map.Marker>>({});
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
-  const [marker, setMarker] = useState<H.map.Marker | null>(null);
-  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number }>({ lat: 37.77047148374791, lng: -122.44336704677875 });
-  const [polygonState, setPolygonState] = useState<Record<string, boolean>>({});
+  const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const isMapLoaded = useRef(false);
 
+  const [animals, setAnimals] = useState<Animal[]>([]);
+
+
   useEffect(() => {
+    /**
+     * Initializes the HERE map with default settings and pastures.
+     * 
+     * This function sets up the map using the HERE Maps API, and enables map events and UI controls.
+     * It loads existing pastures from the API and adds them to the map. The map also listens for
+     * user interactions to allow drawing new polygons (pastures) by tapping on the map.
+     * 
+     * Pre-requisites:
+     * - The HERE Maps API key should be set in the environment variables.
+     * 
+     * Behavior:
+     * - If the map has not been initialized, it sets the map center and zoom level.
+     * - Loads and displays existing pastures as polygons with labels.
+     * - Allows users to draw new polygons by tapping on the map, prompting for a name when completing a polygon.
+     * - Handles the addition and removal of temporary map objects while drawing.
+     * - Logs the current zoom level when the map view changes.
+     * 
+     * Returns:
+     * - A cleanup function to dispose of the map when it's no longer needed.
+     */
+
     const initializeMap = async () => {
 
       if (!mapRef.current || isMapLoaded.current) return;
@@ -53,15 +87,12 @@ export const DisplayMap = () => {
         const ui = H.ui.UI.createDefault(hereMap, defaultLayers);
 
         // ---------------------------------------------------------------------------------------------------------------------------//
-        //add marker of current position
-        const marker = new H.map.Marker({ lat: currentPosition.lat, lng: currentPosition.lng }); // Adjust coordinates
-        hereMap.addObject(marker);
 
         let isDrawing = false;
-        const existFieldCoordinates: any = await FieldApi.getFieldCoordinates();
+        const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
 
-        if (existFieldCoordinates) {
-          for (const item of existFieldCoordinates) {
+        if (existPasturesCoordinates) {
+          for (const item of existPasturesCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
             const existingPolygon = addExistingPolygon(coord, item.name);
 
@@ -86,7 +117,7 @@ export const DisplayMap = () => {
             const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
 
             if (distanceToStart < 10) {
-              const inputName = prompt("Please enter the name of the field:");
+              const inputName = prompt("Please enter the name of the pasture:");
 
               const result = closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
 
@@ -119,7 +150,6 @@ export const DisplayMap = () => {
         });
 
         setMapInstance(hereMap);
-        setMarker(marker);
 
         return () => {
           hereMap.dispose();
@@ -128,6 +158,105 @@ export const DisplayMap = () => {
     }
     initializeMap();
   }, []);
+
+
+  useEffect(() => {
+    if (mapInstance) {
+      // const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
+      const getAnimals = async () => {
+        try {
+          const response = await AnimalApi.getAnimalsCoordinates();
+          setAnimals(() => [...response]);
+          addExistingAnimalsIntoMap(response);
+        } catch (err) {
+          console.error('Error fetching data:', err);
+        }
+      }
+
+      getAnimals();
+      const addExistingAnimalsIntoMap = (animalData: Animal[]) => {
+        if (animalData && animalData.length > 0) {
+          const animalPosition: Record<number, H.map.Marker> = {};
+          animalData.forEach((animal) => {
+            const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
+            animalPosition[animal.id] = position;
+            mapInstance.addObject(position);
+          });
+          animalRef.current = animalPosition;
+        }
+      };
+    }
+  }, [mapInstance]);
+
+  useEffect(() => {
+    /**
+     * Periodically updates the animal's location to a new random point within a small range, checks if the new position is inside any polygons, and handles Enter/Exit events accordingly.
+     * 
+     * @remarks
+     * This method is called every 5 seconds to simulate the user's movement.
+     */
+    const updateUserLocation = () => {
+      if (!animalRef.current) return;
+
+      // Select a random animal
+      const randomIndex = Math.floor(Math.random() * animals.length);
+      const randomLocation = animals[randomIndex];
+
+      // Generate new random lat/lng within a small range
+      const newLat = randomLocation.coordinates.lat + (Math.random() - 0.5) * 0.001;
+      const newLng = randomLocation.coordinates.lng + (Math.random() - 0.5) * 0.001;
+
+      // Update the corresponding animal's position
+      const position = animalRef.current[randomLocation.id];
+      if (position) {
+        position.setGeometry(new H.geo.Point(newLat, newLng));
+      }
+
+      // Check if the new position is inside any polygons
+      const currentPoint = { lat: newLat, lng: newLng };
+      const polygonData = getPastures();
+
+      polygonData.forEach((polygon) => {
+        const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+        const previousState = polygonState[polygon.label]?.[randomLocation.id] ?? false;
+
+        // Handle Enter event
+        if (isInside && !previousState) {
+          console.log(`${randomLocation.name} - ${randomLocation.id} Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+        }
+
+        // Handle Exit event
+        if (!isInside && previousState) {
+          console.log(`${randomLocation.name} - ${randomLocation.id} Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+        }
+
+        // Update the polygon state for this location
+        setPolygonState((prevState) => ({
+          ...prevState,
+          [polygon.label]: {
+            ...(prevState[polygon.label] || {}),
+            [randomLocation.id]: isInside, // Track the state per location
+          },
+        }));
+      });
+
+      // Update the selected location in the state
+      setAnimals((prevLocations) =>
+        prevLocations.map((location) =>
+          location.id === randomLocation.id
+            ? { ...location, lat: newLat, lng: newLng }
+            : location
+        )
+      );
+    };
+
+    // Set interval for updating user animals
+    const interval = setInterval(updateUserLocation, 500); // Update every second
+    return () => clearInterval(interval);
+  }, [animals, polygonState]);
+
+
+
 
 
   // useEffect(() => {
@@ -149,7 +278,7 @@ export const DisplayMap = () => {
   //   setMarker(userMarker);
 
   //   const currentPoint = { lat: newLat, lng: newLng };
-  //   const polygonData = getFields();
+  //   const polygonData = getPastures();
 
   //   polygonData.forEach((polygon) => {
   //     const isInside = isPointInPolygon(currentPoint, polygon.polygon);
@@ -174,41 +303,41 @@ export const DisplayMap = () => {
 
   //---------------------------------------------------------------------------------------------------------------------------//
 
-  const updateUserLocation = () => {
-    if (mapInstance && marker) {
-      const userMarker = marker;
+  // const updateUserLocation = () => {
+  //   if (mapInstance && marker) {
+  //     const userMarker = marker;
 
-      // Simulate random movement
-      // const geometry = marker.getGeometry() as H.geo.Point;
+  //     // Simulate random movement
+  //     // const geometry = marker.getGeometry() as H.geo.Point;
 
-      // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
-      // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
+  //     // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
+  //     // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
 
-      // Update user's simulated location
-      const newLat = currentPosition.lat;
-      const newLng = currentPosition.lng;
+  //     // Update user's simulated location
+  //     const newLat = currentPosition.lat;
+  //     const newLng = currentPosition.lng;
 
-      userMarker.setGeometry({ lat: newLat, lng: newLng });
-      setMarker(userMarker);
+  //     userMarker.setGeometry({ lat: newLat, lng: newLng });
+  //     setMarker(userMarker);
 
-      const currentPoint = { lat: newLat, lng: newLng };
-      const polygonData = getFields();
+  //     const currentPoint = { lat: newLat, lng: newLng };
+  //     const polygonData = getPastures();
 
-      polygonData.forEach((polygon) => {
-        const isInside = isPointInPolygon(currentPoint, polygon.polygon);
+  //     polygonData.forEach((polygon) => {
+  //       const isInside = isPointInPolygon(currentPoint, polygon.polygon);
 
-        const previousState = polygonState[polygon.label] || false;
+  //       const previousState = polygonState[polygon.label] || false;
 
-        if (isInside && !previousState) {
-          alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          setPolygonState((prevState) => ({ ...prevState, [polygon.label]: true }));
-        } else if (!isInside && previousState) {
-          alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-          setPolygonState((prevState) => ({ ...prevState, [polygon.label]: false }));
-        }
-      });
-    }
-  };
+  //       if (isInside && !previousState) {
+  //         alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //         setPolygonState((prevState) => ({ ...prevState, [polygon.label]: true }));
+  //       } else if (!isInside && previousState) {
+  //         alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
+  //         setPolygonState((prevState) => ({ ...prevState, [polygon.label]: false }));
+  //       }
+  //     });
+  //   }
+  // };
 
   return (
     <div
@@ -220,7 +349,7 @@ export const DisplayMap = () => {
     >
       <Modal>
         <div className="modal-content">
-          <div className="lat-input input-container">
+          {/* <div className="lat-input input-container">
             <h3> Latitude</h3>
             <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
           </div>
@@ -230,7 +359,15 @@ export const DisplayMap = () => {
           </div>
           <button onClick={updateUserLocation}>
             Update User Location
-          </button>
+          </button> */}
+          {animals.map((location) => (
+            <div key={location.id} className="location-item">
+              <h3>{location.name} - {location.id} </h3>
+              <p>Type: {location.type}</p>
+              <p>Latitude: {location.coordinates.lat.toFixed(5)}</p>
+              <p>Longitude: {location.coordinates.lng.toFixed(5)}</p>
+            </div>
+          ))}
         </div>
       </Modal>
     </div>

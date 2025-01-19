@@ -1,17 +1,21 @@
 // server.js
 const express = require('express');
 const fs = require('fs');
+const {faker} = require('@faker-js/faker')
 const path = require('path');
 const app = express();
 const port = 3000;
 const cors = require('cors');
+
+const pastureRoutes = require('./src/routes/pastures');
+const animalRoutes = require('./src/routes/animals');
+
+const pastureFilePath = path.join(__dirname, 'src/data/PastureData.json');
+const animalFilePath = path.join(__dirname, 'src/data/AnimalsData.json');
+
 app.use(cors());
 app.use(express.json());
 
-
-
-const filePath = path.join(__dirname, './data/FieldData.json');
- 
 const dummyData = [
   {
     "id": "3EQgVfD9gFCJTS9ptainQ",
@@ -161,64 +165,59 @@ const dummyData = [
   }
 ];
 
-function initaliseDataFile() {
-  if (fs.existsSync(filePath)) {
-    console.log("File exists. Clearing and adding dummy data.");
-    fs.writeFileSync(filePath, JSON.stringify(dummyData, null, 2), 'utf8');
+function getRandomCoordinate(pasture) {
+  const latitudes = pasture.coordinates.map(coord => coord.lat);
+  const longitudes = pasture.coordinates.map(coord => coord.lng);
 
-  } else {
-    console.log("File does not exist. Creating new file with dummy data.");
-    fs.writeFileSync(filePath, JSON.stringify(dummyData, null, 2), 'utf8');
+  // Calculate min/max latitude and longitude
+  const minLat = Math.min(...latitudes);
+  const maxLat = Math.max(...latitudes);
+  const minLng = Math.min(...longitudes);
+  const maxLng = Math.max(...longitudes);
+
+  // Generate a random coordinate within the bounding box of the pasture
+  const randomLat = faker.number.float({ min: minLat, max: maxLat });
+  const randomLng = faker.number.float({ min: minLng, max: maxLng });
+
+  return { lat: randomLat, lng: randomLng };
+}
+
+function generateAnimal(){
+  return {
+    'id': faker.number.int({min: 1000, max: 9999}),
+    'name': faker.animal.petName(),
+    'type': faker.helpers.arrayElement(['Cow', 'Pig', 'Sheep', 'Goat']),
+    'coordinates': getRandomCoordinate(dummyData[faker.number.int({min: 0, max: dummyData.length - 1})])
   }
 }
 
-app.get('/api/field-data', (req, res) => {
-  const filePath = path.join(__dirname, './data/FieldData.json');
+function initalisePastureDataFile() {
+  if (fs.existsSync(pastureFilePath)) {
+    console.log("File exists. Clearing and adding dummy data.");
+    fs.writeFileSync(pastureFilePath, JSON.stringify(dummyData, null, 2), 'utf8');
 
-  fs.readFile(filePath, 'utf-8', (err, data) => {
-    if (err) {
-      return res.status(500).send('Error reading the data file');
-    }
+  } else {
+    console.log("File does not exist. Creating new file with dummy data.");
+    fs.writeFileSync(pastureFilePath, JSON.stringify(dummyData, null, 2), 'utf8');
+  }
+}
 
-    res.json(JSON.parse(data));
-  });
-});
+function initaliseAnimalDataFile() {
+  const animals = Array.from({length: 20}, generateAnimal);
+  if (fs.existsSync(animalFilePath)) {
+    console.log("File exists. Clearing and adding dummy data.");
+    fs.writeFileSync(animalFilePath, JSON.stringify(animals, null, 2), 'utf8');
+  } else {
+    console.log("File does not exist. Creating new file with dummy data.");
+    fs.writeFileSync(animalFilePath, JSON.stringify(animals, null, 2), 'utf8');
+  }
+}
 
-app.post('/save-data', (req, res) => {
-  const data = req.body; // Get data from the request body
-  console.log(data);
-
-  // Read the existing data from the JSON file
-  fs.readFile(filePath, 'utf8', (err, jsonData) => {
-    if (err) {
-      return res.status(500).json({ message: 'Error reading data file' });
-    }
-
-    let currentData = [];
-    try {
-      // Ensure the file content is parsed as an array
-      currentData = JSON.parse(jsonData);
-      if (!Array.isArray(currentData)) {
-        currentData = []; // Reset to an empty array if data is not an array
-      }
-    } catch (parseError) {
-      return res.status(500).json({ message: 'Error parsing data file' });
-    }
-
-    currentData.push(data); // Append the new data
-
-    // Write the updated data to the JSON file
-    fs.writeFile(filePath, JSON.stringify(currentData, null, 2), (err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Error saving data' });
-      }
-      res.status(200).json({ message: 'Data saved successfully' });
-    });
-  });
-});
-
+app.use('/api/pastures', pastureRoutes);
+app.use('/api/animals', animalRoutes);
 
 app.listen(port, () => {
-  initaliseDataFile();
+  initalisePastureDataFile();
+  initaliseAnimalDataFile();
   console.log(`Server running at http://localhost:${port}`);
 });

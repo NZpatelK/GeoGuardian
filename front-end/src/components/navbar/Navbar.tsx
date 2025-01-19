@@ -17,7 +17,7 @@ export const Navbar: React.FC = () => {
         aria-expanded={isOpened}
       >
         <div className="menu-container">
-          <div data-title="Fields" className="menu-item">
+          <div data-title="Pastures" className="menu-item">
             <img src={map} alt="" className='map-icon' />
           </div>
           <div data-title="Animals" className="menu-item">
