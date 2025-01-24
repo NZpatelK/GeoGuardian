@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, isPointInPolygon, getPastures } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, checkAnimalInPasture } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
-import AnimalApi from '../../services/AnimalApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
+import AnimalUtils from './AnimalUtils';
 
 interface Animal {
   id: number;
@@ -21,10 +21,8 @@ export const DisplayMap = () => {
   const animalRef = useRef<Record<number, H.map.Marker>>({});
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
+  const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const isMapLoaded = useRef(false);
-
-  const [animals, setAnimals] = useState<Animal[]>([]);
-
 
   useEffect(() => {
     /**
@@ -159,32 +157,40 @@ export const DisplayMap = () => {
     initializeMap();
   }, []);
 
-
   useEffect(() => {
     if (mapInstance) {
       // const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
-      const getAnimals = async () => {
-        try {
-          const response = await AnimalApi.getAnimalsCoordinates();
-          setAnimals(() => [...response]);
-          addExistingAnimalsIntoMap(response);
-        } catch (err) {
-          console.error('Error fetching data:', err);
-        }
-      }
+      // const getAnimals = async () => {
+      //   try {
+      //     const response = await AnimalApi.getAnimalsCoordinates();
+      //     setAnimals(() => [...response]);
+      //     addExistingAnimalsIntoMap(response);
+      //   } catch (err) {
+      //     console.error('Error fetching data:', err);
+      //   }
+      // }
 
-      getAnimals();
-      const addExistingAnimalsIntoMap = (animalData: Animal[]) => {
+      // getAnimals();
+      const initialiseAndaddExistingAnimalsIntoMap = async () => {
+        await AnimalUtils.intialiseAnimals()
+        const animalData = AnimalUtils.getAnimals();
+        console.log(animalData);
         if (animalData && animalData.length > 0) {
           const animalPosition: Record<number, H.map.Marker> = {};
           animalData.forEach((animal) => {
+            // const newlabel = labelIcon(animal.id.toString());
+            // const position = new H.map.Marker(
+            //   { lat: animal.coordinates.lat, lng: animal.coordinates.lng }, 
+            //   { icon: newlabel, data: {} } );
             const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
           });
           animalRef.current = animalPosition;
         }
+        setDisplayAnimal(animalData);
       };
+      initialiseAndaddExistingAnimalsIntoMap();
     }
   }, [mapInstance]);
 
@@ -198,146 +204,27 @@ export const DisplayMap = () => {
     const updateUserLocation = () => {
       if (!animalRef.current) return;
 
-      // Select a random animal
-      const randomIndex = Math.floor(Math.random() * animals.length);
-      const randomLocation = animals[randomIndex];
-
-      // Generate new random lat/lng within a small range
-      const newLat = randomLocation.coordinates.lat + (Math.random() - 0.5) * 0.001;
-      const newLng = randomLocation.coordinates.lng + (Math.random() - 0.5) * 0.001;
+      const updateAnimalPosition = AnimalUtils.randomiseAnimalCoordinates();
 
       // Update the corresponding animal's position
-      const position = animalRef.current[randomLocation.id];
+      const position = animalRef.current[updateAnimalPosition.id];
       if (position) {
-        position.setGeometry(new H.geo.Point(newLat, newLng));
+        position.setGeometry(new H.geo.Point(updateAnimalPosition.coordinates.lat, updateAnimalPosition.coordinates.lng));
       }
 
-      // Check if the new position is inside any polygons
-      const currentPoint = { lat: newLat, lng: newLng };
-      const polygonData = getPastures();
 
-      polygonData.forEach((polygon) => {
-        const isInside = isPointInPolygon(currentPoint, polygon.polygon);
-        const previousState = polygonState[polygon.label]?.[randomLocation.id] ?? false;
-
-        // Handle Enter event
-        if (isInside && !previousState) {
-          console.log(`${randomLocation.name} - ${randomLocation.id} Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-        }
-
-        // Handle Exit event
-        if (!isInside && previousState) {
-          console.log(`${randomLocation.name} - ${randomLocation.id} Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-        }
-
-        // Update the polygon state for this location
-        setPolygonState((prevState) => ({
-          ...prevState,
-          [polygon.label]: {
-            ...(prevState[polygon.label] || {}),
-            [randomLocation.id]: isInside, // Track the state per location
-          },
-        }));
-      });
-
-      // Update the selected location in the state
-      setAnimals((prevLocations) =>
-        prevLocations.map((location) =>
-          location.id === randomLocation.id
-            ? { ...location, lat: newLat, lng: newLng }
-            : location
-        )
-      );
+      const updatePolygonState = checkAnimalInPasture(updateAnimalPosition, polygonState);
+      setPolygonState(updatePolygonState);
+      AnimalUtils.updateAnimal(updateAnimalPosition.id, updateAnimalPosition.coordinates);
+      const newDisplayAnimal = AnimalUtils.getAnimals();
+      setDisplayAnimal([...newDisplayAnimal]);
+      console.log(displayAnimal);
     };
 
     // Set interval for updating user animals
     const interval = setInterval(updateUserLocation, 500); // Update every second
     return () => clearInterval(interval);
-  }, [animals, polygonState]);
-
-
-
-
-
-  // useEffect(() => {
-  // if (mapInstance && marker) {
-  // // Simulated user location updates
-  // const userMarker = marker;
-  // mapInstance.addObject(marker);
-
-  // const polygonState: Record<string, boolean> = {};
-
-  // const updateUserLocation = () => {
-  //   // Simulate random movement
-  //   const geometry = marker.getGeometry() as H.geo.Point;
-
-  //   const newLat = geometry.lat + (Math.random() - 0.5) * 0.01;
-  //   const newLng = geometry.lng + (Math.random() - 0.5) * 0.01;
-
-  //   userMarker.setGeometry({ lat: newLat, lng: newLng });
-  //   setMarker(userMarker);
-
-  //   const currentPoint = { lat: newLat, lng: newLng };
-  //   const polygonData = getPastures();
-
-  //   polygonData.forEach((polygon) => {
-  //     const isInside = isPointInPolygon(currentPoint, polygon.polygon);
-
-  //     if (isInside && !polygonState[polygon.label]) {
-  //       alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-  //       polygonState[polygon.label] = true;
-
-  //     } else if (!isInside && polygonState[polygon.label]) {
-  //       alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-  //       polygonState[polygon.label] = false;
-
-  //     }
-  //   });
-  // };
-
-  // const interval = setInterval(updateUserLocation, 1000);
-
-  // return () => clearInterval(interval);
-  // }
-  // }, [mapInstance, marker]);
-
-  //---------------------------------------------------------------------------------------------------------------------------//
-
-  // const updateUserLocation = () => {
-  //   if (mapInstance && marker) {
-  //     const userMarker = marker;
-
-  //     // Simulate random movement
-  //     // const geometry = marker.getGeometry() as H.geo.Point;
-
-  //     // const newLat = geometry.lat + (Math.random() - 0.5) * 0.001;
-  //     // const newLng = geometry.lng + (Math.random() - 0.5) * 0.001;
-
-  //     // Update user's simulated location
-  //     const newLat = currentPosition.lat;
-  //     const newLng = currentPosition.lng;
-
-  //     userMarker.setGeometry({ lat: newLat, lng: newLng });
-  //     setMarker(userMarker);
-
-  //     const currentPoint = { lat: newLat, lng: newLng };
-  //     const polygonData = getPastures();
-
-  //     polygonData.forEach((polygon) => {
-  //       const isInside = isPointInPolygon(currentPoint, polygon.polygon);
-
-  //       const previousState = polygonState[polygon.label] || false;
-
-  //       if (isInside && !previousState) {
-  //         alert(`Entered ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-  //         setPolygonState((prevState) => ({ ...prevState, [polygon.label]: true }));
-  //       } else if (!isInside && previousState) {
-  //         alert(`Exited ${polygon.label} at ${newLat.toFixed(5)}, ${newLng.toFixed(5)}`);
-  //         setPolygonState((prevState) => ({ ...prevState, [polygon.label]: false }));
-  //       }
-  //     });
-  //   }
-  // };
+  }, [displayAnimal, polygonState]);
 
   return (
     <div
@@ -360,7 +247,7 @@ export const DisplayMap = () => {
           <button onClick={updateUserLocation}>
             Update User Location
           </button> */}
-          {animals.map((location) => (
+          {displayAnimal.map((location) => (
             <div key={location.id} className="location-item">
               <h3>{location.name} - {location.id} </h3>
               <p>Type: {location.type}</p>

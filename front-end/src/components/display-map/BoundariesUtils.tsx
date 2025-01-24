@@ -9,6 +9,9 @@ let CompletedPolygon: { lat: number; lng: number }[] = [];
 let polygon = null;
 
 
+export const getPastures = () => {
+    return listPastures;
+}
 /**
  * Calculates the distance between two geographical points using the Haversine formula.
  * 
@@ -74,7 +77,7 @@ const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: numb
     area = Math.abs(area * (EARTH_RADIUS ** 2) / 2);
 
     // Convert square meters to square kilometers
-    return area / 1_000_000; 
+    return area / 1_000_000;
 };
 
 /**
@@ -274,10 +277,6 @@ export const createLabel = (labelName: string) => {
     return label
 }
 
-export const getPastures = () => {
-    return listPastures;
-}
-
 /**
  * Determines if a given point is inside a polygon using the ray-casting algorithm.
  *
@@ -302,3 +301,36 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, polygonCoo
 
     return intersects % 2 === 1;
 };
+
+/**
+ * Checks if an animal is inside a pasture and logs an event if its state changed.
+ *
+ * @param animalData - The data of the animal, including its id, name and coordinates.
+ * @param polygonState - The current state of the polygons, with the keys being the labels of the polygons and the values being another object with the keys being the ids of the animals and the values being booleans indicating if the animal is inside the polygon.
+ * @returns The updated polygonState.
+ */
+export const checkAnimalInPasture = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
+    listPastures.forEach((polygon) => {
+        const isInside = isPointInPolygon(animalData.coordinates, polygon.polygon);
+        const previousState = polygonState[polygon.label]?.[animalData.id] ?? false;
+
+        // Handle Enter event
+        if (isInside && !previousState) {
+            console.log(`${animalData.name} - ${animalData.id} Entered ${polygon.label} at ${animalData.coordinates.lat.toFixed(5)}, ${animalData.coordinates.lng.toFixed(5)}`);
+        }
+
+        // Handle Exit event
+        if (!isInside && previousState) {
+            console.log(`${animalData.name} - ${animalData.id} Exited ${polygon.label} at ${animalData.coordinates.lat.toFixed(5)}, ${animalData.coordinates.lng.toFixed(5)}`);
+        }
+
+        // Update the polygonState
+        polygonState[polygon.label] = {
+            ...(polygonState[polygon.label] || {}),
+            [animalData.id]: isInside, // Track the state per location
+        };
+    });
+
+    return polygonState;
+};
+
