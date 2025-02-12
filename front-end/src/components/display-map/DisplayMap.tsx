@@ -239,11 +239,9 @@ export const DisplayMap = () => {
         const getPasture = pastures.find((pasture) => pasture.id === animal.pastureId);
         if (position) {
           const isAnimalExitedPasture = await AnimalUtils.checkAnimalInPasture(animal.id);
-          // console.log('isAnimalExitedPasture', isAnimalExitedPasture);
           if (isAnimalExitedPasture) {
             if (getPasture) {
               const newCoord = AnimalUtils.moveAnimalBackToTheirPasture(animal.coordinates, { coordinates: getPasture.polygon });
-              console.log(`Animal ${animal.id} is outside of pasture ${getPasture.label}. Moving back to ${newCoord.lat}, ${newCoord.lng}`);
               position.setGeometry(new H.geo.Point(newCoord.lat, newCoord.lng) );
 
               AnimalUtils.updateAnimal(animal.id, newCoord);

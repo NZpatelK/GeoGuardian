@@ -85,9 +85,6 @@ export class AnimalUtils {
     }
 
     static moveAnimalBackToTheirPasture = (animalLocation: Coordinates, pastureCoordinates: PastureCoord): Coordinates => {
-        // const index = animals.findIndex(animal => animal.id === id);
-        // animals[index].coordinates = animals[index].coordinates;
-
         let minDistance = Infinity;
         let closestBoundaryPoint: Coordinates = animalLocation;
 
