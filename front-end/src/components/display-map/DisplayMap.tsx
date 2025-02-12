@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, checkAnimalInPasture } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getPastures, updatePolygonState } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -92,7 +92,7 @@ export const DisplayMap = () => {
         if (existPasturesCoordinates) {
           for (const item of existPasturesCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
-            const existingPolygon = addExistingPolygon(coord, item.name);
+            const existingPolygon = addExistingPolygon(coord, item.name, item.id);
 
             hereMap.addObject(existingPolygon.existingPolygon);
             hereMap.addObject(existingPolygon.labelMarker);
@@ -171,10 +171,9 @@ export const DisplayMap = () => {
       // }
 
       // getAnimals();
-      const initialiseAndaddExistingAnimalsIntoMap = async () => {
+      const initialiseAndAddExistingAnimalsIntoMap = async () => {
         await AnimalUtils.intialiseAnimals()
         const animalData = AnimalUtils.getAnimals();
-        console.log(animalData);
         if (animalData && animalData.length > 0) {
           const animalPosition: Record<number, H.map.Marker> = {};
           animalData.forEach((animal) => {
@@ -190,9 +189,10 @@ export const DisplayMap = () => {
         }
         setDisplayAnimal(animalData);
       };
-      initialiseAndaddExistingAnimalsIntoMap();
+      initialiseAndAddExistingAnimalsIntoMap();
     }
   }, [mapInstance]);
+
 
   useEffect(() => {
     /**
@@ -201,7 +201,7 @@ export const DisplayMap = () => {
      * @remarks
      * This method is called every 5 seconds to simulate the user's movement.
      */
-    const updateUserLocation = () => {
+    const updateAnimalLocation = () => {
       if (!animalRef.current) return;
 
       const updateAnimalPosition = AnimalUtils.randomiseAnimalCoordinates();
@@ -213,18 +213,53 @@ export const DisplayMap = () => {
       }
 
 
-      const updatePolygonState = checkAnimalInPasture(updateAnimalPosition, polygonState);
-      setPolygonState(updatePolygonState);
+      const latestPolygonState = updatePolygonState(updateAnimalPosition, polygonState);
+      setPolygonState(latestPolygonState);
       AnimalUtils.updateAnimal(updateAnimalPosition.id, updateAnimalPosition.coordinates);
       const newDisplayAnimal = AnimalUtils.getAnimals();
       setDisplayAnimal([...newDisplayAnimal]);
-      console.log(displayAnimal);
     };
 
     // Set interval for updating user animals
-    const interval = setInterval(updateUserLocation, 500); // Update every second
+    const interval = setInterval(updateAnimalLocation, 500); // Update every second
     return () => clearInterval(interval);
-  }, [displayAnimal, polygonState]);
+  }, []);
+
+  useEffect(() => {
+
+    const bringAnimalIntoTheirPasture = async () => {
+      console.log('entering into their pastures');
+      if (!animalRef.current) return;
+
+      const animalData = AnimalUtils.getAnimals();
+      const pastures = getPastures();
+
+      for (const animal of animalData) {
+        const position = animalRef.current[animal.id];
+        const getPasture = pastures.find((pasture) => pasture.id === animal.pastureId);
+        if (position) {
+          const isAnimalExitedPasture = await AnimalUtils.checkAnimalInPasture(animal.id);
+          // console.log('isAnimalExitedPasture', isAnimalExitedPasture);
+          if (isAnimalExitedPasture) {
+            if (getPasture) {
+              const newCoord = AnimalUtils.moveAnimalBackToTheirPasture(animal.coordinates, { coordinates: getPasture.polygon });
+              console.log(`Animal ${animal.id} is outside of pasture ${getPasture.label}. Moving back to ${newCoord.lat}, ${newCoord.lng}`);
+              position.setGeometry(new H.geo.Point(newCoord.lat, newCoord.lng) );
+
+              AnimalUtils.updateAnimal(animal.id, newCoord);
+              const newDisplayAnimal = AnimalUtils.getAnimals();
+              setDisplayAnimal([...newDisplayAnimal]);
+            }
+          }
+        }
+      }
+    };
+
+    // bringAnimalIntoTheirPasture();
+    const interval = setInterval(bringAnimalIntoTheirPasture, 10000); // Update every second
+    return () => clearInterval(interval);
+
+  }, []);
 
   return (
     <div
