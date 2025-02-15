@@ -201,10 +201,13 @@ export const DisplayMap = () => {
      * @remarks
      * This method is called every 5 seconds to simulate the user's movement.
      */
-    const updateAnimalLocation = () => {
+    const updateAnimalLocation = async() => {
       if (!animalRef.current) return;
 
-      const updateAnimalPosition = AnimalUtils.randomiseAnimalCoordinates();
+      // const updateAnimalPosition = AnimalUtils.randomiseAnimalCoordinates();
+      const updateAnimalPosition = await AnimalUtils.getRandomPositionInsidePasture();
+
+      if(!updateAnimalPosition) return; 
 
       // Update the corresponding animal's position
       const position = animalRef.current[updateAnimalPosition.id];
@@ -254,8 +257,8 @@ export const DisplayMap = () => {
     };
 
     // bringAnimalIntoTheirPasture();
-    const interval = setInterval(bringAnimalIntoTheirPasture, 10000); // Update every second
-    return () => clearInterval(interval);
+    // const interval = setInterval(bringAnimalIntoTheirPasture, 10000); // Update every second
+    // return () => clearInterval(interval);
 
   }, []);
 

@@ -71,6 +71,29 @@ export class AnimalUtils {
         return { id: randomLocation.id, name: randomLocation.name, coordinates: coordinates };
     }
 
+    static getRandomPositionInsidePasture = async () => {
+        const randomIndex = Math.floor(Math.random() * animals.length);
+        const animal = animals[randomIndex];
+
+        if (!animal) return;
+        const pasture: Pasture = await PasturesApi.getPastureById(animal.pastureId);
+        if (!pasture) return;
+        const pastureCoordinates = pasture.coordinates;
+        const animalCoordinates = animal.coordinates;
+
+        for (let attempt = 0; attempt < 100; attempt++) {
+            const angle = Math.random() * 2 * Math.PI;
+            const newLat = animalCoordinates.lat + Math.sin(angle) * MOVE_INCREMENT;
+            const newLng = animalCoordinates.lng + Math.cos(angle) * MOVE_INCREMENT;
+
+            if (isPointInPolygon({ lat: newLat, lng: newLng }, pastureCoordinates)) {
+                return { id: animal.id, name: animal.name, coordinates: { lat: newLat, lng: newLng } };
+            }
+        }
+
+        return { id: animal.id, name: animal.name, coordinates: animalCoordinates };
+    }
+
     static checkAnimalInPasture = async (animalId: number) => {
         const animal = animals.find(animal => animal.id === animalId);
         if (!animal) return;
@@ -91,7 +114,7 @@ export class AnimalUtils {
         for (let i = 0; i < pastureCoordinates.coordinates.length; i++) {
             const pointA = pastureCoordinates.coordinates[i];
             const pointB = pastureCoordinates.coordinates[(i + 1) % pastureCoordinates.coordinates.length];
-            
+
             const deltaX1 = animalLocation.lat - pointA.lat;
             const deltaY1 = animalLocation.lng - pointA.lng;
             const deltaX2 = animalLocation.lat - pointB.lat;
@@ -108,7 +131,7 @@ export class AnimalUtils {
             } else if (projectionFactor > 0) {
                 projectedPoint = pointB;
             } else {
-               projectedPoint = {lng: pointA.lng + projectionFactor * deltaX2, lat: pointA.lat + projectionFactor * deltaY2};
+                projectedPoint = { lng: pointA.lng + projectionFactor * deltaX2, lat: pointA.lat + projectionFactor * deltaY2 };
             }
 
             const diffX = animalLocation.lng - projectedPoint.lng;
@@ -125,8 +148,8 @@ export class AnimalUtils {
         const moveY = closestBoundaryPoint.lat - animalLocation.lat;
         const moveDistance = Math.sqrt(moveX * moveX + moveY * moveY);
 
-        if(moveDistance < MOVE_INCREMENT) {
-            return closestBoundaryPoint;    
+        if (moveDistance < MOVE_INCREMENT) {
+            return closestBoundaryPoint;
         }
 
         const stepLongitude = (moveX / moveDistance) * MOVE_INCREMENT;
