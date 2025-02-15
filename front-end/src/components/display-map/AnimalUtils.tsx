@@ -159,27 +159,18 @@ export class AnimalUtils {
     static controlAnimalMovement = async () => {
         const randomIndex = Math.floor(Math.random() * animals.length);
         const animal = animals[randomIndex];
-        const pasture = PasturesApi.getPastureById(animal.pastureId);
 
-        // const randomMovementType = Math.floor(Math.random() * 2);
-        const randomMovementType = 0;
+        const randomMovementType = Math.floor(Math.random() * 2);
 
-        // return AnimalUtils.randomiseAnimalCoordinates(animal);
-        return await AnimalUtils.getRandomPositionInsidePasture(animal);
+        switch (randomMovementType) {
+            case 0:
+                // Random movement
+                return AnimalUtils.randomiseAnimalCoordinates(animal);
 
-
-        // switch (randomMovementType) {
-        //     case 0:
-        //         // Random movement
-        //         return AnimalUtils.randomiseAnimalCoordinates();
-        //     case 1:
-        //     // Movement towards pasture
-        //     // return AnimalUtils.moveAnimalBackToTheirPasture(animal.coordinates, pasture);
-        //     default:
-        //     // return AnimalUtils.randomiseAnimalCoordinates();
-        // }
-
-
+            default:
+                // Random movement inside pasture
+                return await AnimalUtils.getRandomPositionInsidePasture(animal);
+        }
     }
 }
 
