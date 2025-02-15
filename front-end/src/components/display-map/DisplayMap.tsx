@@ -204,8 +204,8 @@ export const DisplayMap = () => {
     const updateAnimalLocation = async() => {
       if (!animalRef.current) return;
 
-      // const updateAnimalPosition = AnimalUtils.randomiseAnimalCoordinates();
-      const updateAnimalPosition = await AnimalUtils.getRandomPositionInsidePasture();
+      const updateAnimalPosition =  await AnimalUtils.controlAnimalMovement();
+      // const updateAnimalPosition = await AnimalUtils.getRandomPositionInsidePasture();
 
       if(!updateAnimalPosition) return; 
 

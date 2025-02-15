@@ -55,26 +55,24 @@ export class AnimalUtils {
         animals[index].coordinates = newCoordinates;
     }
 
-    static randomiseAnimalCoordinates = () => {
+
+    static randomiseAnimalCoordinates = (animal: Animal) => {
         // Select a random animal
         const randomIndex = Math.floor(Math.random() * animals.length);
-        const randomLocation = animals[randomIndex];
+        // const randomLocation = animals[randomIndex];
 
         // Generate new random lat/lng within a small range
-        const newLat = randomLocation.coordinates.lat + (Math.random() - 0.5) * MOVE_INCREMENT;
-        const newLng = randomLocation.coordinates.lng + (Math.random() - 0.5) * MOVE_INCREMENT;
+        const newLat = animal.coordinates.lat + (Math.random() - 0.5) * MOVE_INCREMENT;
+        const newLng = animal.coordinates.lng + (Math.random() - 0.5) * MOVE_INCREMENT;
 
         const coordinates = { lat: newLat, lng: newLng };
 
         animals[randomIndex].coordinates = coordinates;
 
-        return { id: randomLocation.id, name: randomLocation.name, coordinates: coordinates };
+        return { id: animal.id, name: animal.name, coordinates: coordinates };
     }
 
-    static getRandomPositionInsidePasture = async () => {
-        const randomIndex = Math.floor(Math.random() * animals.length);
-        const animal = animals[randomIndex];
-
+    static getRandomPositionInsidePasture = async (animal: Animal) => {
         if (!animal) return;
         const pasture: Pasture = await PasturesApi.getPastureById(animal.pastureId);
         if (!pasture) return;
@@ -156,6 +154,32 @@ export class AnimalUtils {
         const stepLatitude = (moveY / moveDistance) * MOVE_INCREMENT;
 
         return { lng: animalLocation.lng + stepLongitude, lat: animalLocation.lat + stepLatitude };
+    }
+
+    static controlAnimalMovement = async () => {
+        const randomIndex = Math.floor(Math.random() * animals.length);
+        const animal = animals[randomIndex];
+        const pasture = PasturesApi.getPastureById(animal.pastureId);
+
+        // const randomMovementType = Math.floor(Math.random() * 2);
+        const randomMovementType = 0;
+
+        // return AnimalUtils.randomiseAnimalCoordinates(animal);
+        return await AnimalUtils.getRandomPositionInsidePasture(animal);
+
+
+        // switch (randomMovementType) {
+        //     case 0:
+        //         // Random movement
+        //         return AnimalUtils.randomiseAnimalCoordinates();
+        //     case 1:
+        //     // Movement towards pasture
+        //     // return AnimalUtils.moveAnimalBackToTheirPasture(animal.coordinates, pasture);
+        //     default:
+        //     // return AnimalUtils.randomiseAnimalCoordinates();
+        // }
+
+
     }
 }
 
