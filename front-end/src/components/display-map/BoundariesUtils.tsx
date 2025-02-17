@@ -1,7 +1,7 @@
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
 
-const listPastures: { label: string, polygon: { lat: number; lng: number }[] }[] = [];
+const listPastures: { label: string, polygon: { lat: number; lng: number }[], id: string}[] = [];
 let polygonCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
@@ -9,6 +9,13 @@ let CompletedPolygon: { lat: number; lng: number }[] = [];
 let polygon = null;
 
 
+export const getPastures = () => {
+    return listPastures;
+}
+
+// export const getSpecficPasture = (label: string) => {
+//     return listPastures.find(pasture => pasture.label === label);
+// }
 /**
  * Calculates the distance between two geographical points using the Haversine formula.
  * 
@@ -74,7 +81,7 @@ const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: numb
     area = Math.abs(area * (EARTH_RADIUS ** 2) / 2);
 
     // Convert square meters to square kilometers
-    return area / 1_000_000; 
+    return area / 1_000_000;
 };
 
 /**
@@ -169,7 +176,7 @@ export const closePolygon = (startPoint: { lat: number; lng: number }, label: st
  * @param label - The label for the polygon.
  * @returns An object containing the newly created H.map.Polygon and H.map.Marker.
  */
-export const addExistingPolygon = (coords: { lat: number; lng: number }[], label: string) => {
+export const addExistingPolygon = (coords: { lat: number; lng: number }[], label: string , id: string) => {
     const lineString = createLineString(coords);
     const existingPolygon = new H.map.Polygon(lineString, {
         style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
@@ -180,7 +187,7 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
     const labelMarker = createLabel(label);
     CompletedPolygon = [];
 
-    listPastures.push({ label: label, polygon: coords });
+    listPastures.push({ label: label, polygon: coords, id: id });
     return { existingPolygon, labelMarker };
 }
 
@@ -274,10 +281,6 @@ export const createLabel = (labelName: string) => {
     return label
 }
 
-export const getPastures = () => {
-    return listPastures;
-}
-
 /**
  * Determines if a given point is inside a polygon using the ray-casting algorithm.
  *
@@ -302,3 +305,50 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, polygonCoo
 
     return intersects % 2 === 1;
 };
+
+/**
+ * Checks if an animal is inside a pasture and logs an event if its state changed.
+ *
+ * @param animalData - The data of the animal, including its id, name and coordinates.
+ * @param polygonState - The current state of the polygons, with the keys being the labels of the polygons and the values being another object with the keys being the ids of the animals and the values being booleans indicating if the animal is inside the polygon.
+ * @returns The updated polygonState.
+ */
+// export const checkAnimalInPasture = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
+//     listPastures.forEach((polygon) => {
+//         const isInside = isPointInPolygon(animalData.coordinates, polygon.polygon);
+//         // const previousState = polygonState[polygon.label]?.[animalData.id] ?? false;
+
+//         // Handle Enter event
+//         // if (isInside && !previousState) {
+//         //     console.log(`${animalData.name} - ${animalData.id} Entered ${polygon.label} at ${animalData.coordinates.lat.toFixed(5)}, ${animalData.coordinates.lng.toFixed(5)}`);
+//         // }
+
+//         // // Handle Exit event
+//         // if (!isInside && previousState) {
+//         //     console.log(`${animalData.name} - ${animalData.id} Exited ${polygon.label} at ${animalData.coordinates.lat.toFixed(5)}, ${animalData.coordinates.lng.toFixed(5)}`);
+//         // }
+
+//         // Update the polygonState
+//         polygonState[polygon.label] = {
+//             ...(polygonState[polygon.label] || {}),
+//             [animalData.id]: isInside, // Track the state per location
+//         };
+//     });
+
+//     return polygonState;
+// };
+
+export const updatePolygonState = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
+    listPastures.forEach((polygon) => {
+        const isInside = isPointInPolygon(animalData.coordinates, polygon.polygon);
+
+        // Update the polygonState
+        polygonState[polygon.label] = {
+            ...(polygonState[polygon.label] || {}),
+            [animalData.id]: isInside, // Track the state per location
+        };
+    });
+
+    return polygonState;
+};
+

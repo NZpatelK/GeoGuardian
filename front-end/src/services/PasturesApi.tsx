@@ -11,6 +11,15 @@ class PasturesApi {
         }
     }
 
+    static async getPastureById(id: string) {
+        try {
+            const response = await axios.get(`http://localhost:3000/api/pastures/getPastureById/${id}`);
+            return response.data;
+        } catch (err) {
+            console.error('Error fetching data:', err);
+        }
+    }
+
     static async addPasture(polygonCoordinates: { lat: number; lng: number }[], label: string) {
         const data = {
             id: nanoid(),

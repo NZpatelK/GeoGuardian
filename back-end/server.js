@@ -183,11 +183,13 @@ function getRandomCoordinate(pasture) {
 }
 
 function generateAnimal(){
+  const pasture = dummyData[faker.number.int({min: 0, max: dummyData.length - 1})];
   return {
     'id': faker.number.int({min: 1000, max: 9999}),
     'name': faker.animal.petName(),
     'type': faker.helpers.arrayElement(['Cow', 'Pig', 'Sheep', 'Goat']),
-    'coordinates': getRandomCoordinate(dummyData[faker.number.int({min: 0, max: dummyData.length - 1})])
+    'pastureId': pasture.id,
+    'coordinates': getRandomCoordinate(pasture)
   }
 }
 

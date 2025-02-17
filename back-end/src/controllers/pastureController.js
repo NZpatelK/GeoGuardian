@@ -12,6 +12,16 @@ const getPastures = async (req, res) => {
     }
 };
 
+const getPastureById = async (req, res) => {    
+    try {
+        const fetchData = await getData(pastureFilePath);
+        const pasture = fetchData.find((pasture) => pasture.id === req.params.id);
+        res.json(pasture);
+    } catch (error) {
+        handleDBError(res, error);
+    }
+};
+
 const addPasture = async (req, res) => {
     const data = req.body; 
 
@@ -26,5 +36,6 @@ const addPasture = async (req, res) => {
 
 module.exports = {
     getPastures,
+    getPastureById,
     addPasture,
 };
