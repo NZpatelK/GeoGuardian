@@ -5,6 +5,7 @@ import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
 import AnimalUtils from './AnimalUtils';
+import { labelIcon } from '../../assets/Icon';
 
 interface Animal {
   id: number;
@@ -177,11 +178,11 @@ export const DisplayMap = () => {
         if (animalData && animalData.length > 0) {
           const animalPosition: Record<number, H.map.Marker> = {};
           animalData.forEach((animal) => {
-            // const newlabel = labelIcon(animal.id.toString());
-            // const position = new H.map.Marker(
-            //   { lat: animal.coordinates.lat, lng: animal.coordinates.lng }, 
-            //   { icon: newlabel, data: {} } );
-            const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
+            const newlabel = labelIcon(animal.id.toString());
+            const position = new H.map.Marker(
+              { lat: animal.coordinates.lat, lng: animal.coordinates.lng }, 
+              { icon: newlabel, data: {} } );
+            // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
           });
@@ -195,19 +196,35 @@ export const DisplayMap = () => {
 
 
   useEffect(() => {
-    /**
-     * Periodically updates the animal's location to a new random point within a small range, checks if the new position is inside any polygons, and handles Enter/Exit events accordingly.
-     * 
-     * @remarks
-     * This method is called every 5 seconds to simulate the user's movement.
-     */
-    const updateAnimalLocation = async() => {
+  /**
+   * Updates the location of an animal on the map.
+   *
+   * This function retrieves the current position of an animal, updates its location
+   * on the map, and checks if it remains inside its designated pasture. If the animal
+   * exits its pasture, attempts are made to move it back inside. The function also updates
+   * the polygon state to reflect the animal's location and updates the display with
+   * the latest animal data.
+   *
+   * Behavior:
+   * - Updates the position of the animal on the map using HERE Maps API.
+   * - Checks if the animal is inside its pasture and logs an error if the maximum attempts
+   *   to move it back inside are reached.
+   * - Updates the state of polygons and the display animal list.
+   *
+   * Preconditions:
+   * - `animalRef.current` should contain the current map markers for animals.
+   *
+   * Postconditions:
+   * - The position of the animal on the map and polygon states are updated.
+   * - The display list of animals is refreshed with the latest data.
+   */
+
+    const updateAnimalLocation = async () => {
       if (!animalRef.current) return;
 
-      const updateAnimalPosition =  await AnimalUtils.controlAnimalMovement();
-      // const updateAnimalPosition = await AnimalUtils.getRandomPositionInsidePasture();
+      const updateAnimalPosition = await AnimalUtils.controlAnimalMovement();
 
-      if(!updateAnimalPosition) return; 
+      if (!updateAnimalPosition) return;
 
       // Update the corresponding animal's position
       const position = animalRef.current[updateAnimalPosition.id];
@@ -215,10 +232,28 @@ export const DisplayMap = () => {
         position.setGeometry(new H.geo.Point(updateAnimalPosition.coordinates.lat, updateAnimalPosition.coordinates.lng));
       }
 
+      let isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
 
+      let attempts = 0;
+      const maxAttempts = 100;  // Prevent infinite loop
+      
+      while (!isInside && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+        const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
+        updateAnimalPosition.coordinates = updateAnimalCoord;
+        position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
+      
+        isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+        attempts++;
+      }
+      
+      if (attempts >= maxAttempts) {
+        console.error("Max attempts reached. Animal might be stuck.");
+      }
+      
       const latestPolygonState = updatePolygonState(updateAnimalPosition, polygonState);
       setPolygonState(latestPolygonState);
-      AnimalUtils.updateAnimal(updateAnimalPosition.id, updateAnimalPosition.coordinates);
       const newDisplayAnimal = AnimalUtils.getAnimals();
       setDisplayAnimal([...newDisplayAnimal]);
     };
@@ -228,39 +263,39 @@ export const DisplayMap = () => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    const bringAnimalIntoTheirPasture = async () => {
-      console.log('entering into their pastures');
-      if (!animalRef.current) return;
+  //   const bringAnimalIntoTheirPasture = async () => {
+  //     console.log('entering into their pastures');
+  //     if (!animalRef.current) return;
 
-      const animalData = AnimalUtils.getAnimals();
-      const pastures = getPastures();
+  //     const animalData = AnimalUtils.getAnimals();
+  //     const pastures = getPastures();
 
-      for (const animal of animalData) {
-        const position = animalRef.current[animal.id];
-        const getPasture = pastures.find((pasture) => pasture.id === animal.pastureId);
-        if (position) {
-          const isAnimalExitedPasture = await AnimalUtils.checkAnimalInPasture(animal.id);
-          if (isAnimalExitedPasture) {
-            if (getPasture) {
-              const newCoord = AnimalUtils.moveAnimalBackToTheirPasture(animal.coordinates, { coordinates: getPasture.polygon });
-              position.setGeometry(new H.geo.Point(newCoord.lat, newCoord.lng) );
+  //     for (const animal of animalData) {
+  //       const position = animalRef.current[animal.id];
+  //       const getPasture = pastures.find((pasture) => pasture.id === animal.pastureId);
+  //       if (position) {
+  //         const isAnimalExitedPasture = await AnimalUtils.checkAnimalInPasture(animal.id);
+  //         if (isAnimalExitedPasture) {
+  //           if (getPasture) {
+  //             const newCoord = AnimalUtils.moveAnimalBackToTheirPasture(animal.coordinates, { coordinates: getPasture.polygon });
+  //             position.setGeometry(new H.geo.Point(newCoord.lat, newCoord.lng));
 
-              AnimalUtils.updateAnimal(animal.id, newCoord);
-              const newDisplayAnimal = AnimalUtils.getAnimals();
-              setDisplayAnimal([...newDisplayAnimal]);
-            }
-          }
-        }
-      }
-    };
+  //             AnimalUtils.updateAnimal(animal.id, newCoord);
+  //             const newDisplayAnimal = AnimalUtils.getAnimals();
+  //             setDisplayAnimal([...newDisplayAnimal]);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   };
 
-    // bringAnimalIntoTheirPasture();
-    // const interval = setInterval(bringAnimalIntoTheirPasture, 10000); // Update every second
-    // return () => clearInterval(interval);
+  //   // bringAnimalIntoTheirPasture();
+  //   // const interval = setInterval(bringAnimalIntoTheirPasture, 10000); // Update every second
+  //   // return () => clearInterval(interval);
 
-  }, []);
+  // }, []);
 
   return (
     <div

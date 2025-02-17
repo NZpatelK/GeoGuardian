@@ -55,19 +55,15 @@ export class AnimalUtils {
         animals[index].coordinates = newCoordinates;
     }
 
-
     static randomiseAnimalCoordinates = (animal: Animal) => {
-        // Select a random animal
-        const randomIndex = Math.floor(Math.random() * animals.length);
-        // const randomLocation = animals[randomIndex];
 
         // Generate new random lat/lng within a small range
-        const newLat = animal.coordinates.lat + (Math.random() - 0.5) * MOVE_INCREMENT;
-        const newLng = animal.coordinates.lng + (Math.random() - 0.5) * MOVE_INCREMENT;
+        const newLat = animal.coordinates.lat + (Math.random() - 1.5) * MOVE_INCREMENT;
+        const newLng = animal.coordinates.lng + (Math.random() - 1.5) * MOVE_INCREMENT;
 
         const coordinates = { lat: newLat, lng: newLng };
 
-        animals[randomIndex].coordinates = coordinates;
+        AnimalUtils.updateAnimal(animal.id, coordinates);
 
         return { id: animal.id, name: animal.name, coordinates: coordinates };
     }
@@ -85,9 +81,11 @@ export class AnimalUtils {
             const newLng = animalCoordinates.lng + Math.cos(angle) * MOVE_INCREMENT;
 
             if (isPointInPolygon({ lat: newLat, lng: newLng }, pastureCoordinates)) {
+                AnimalUtils.updateAnimal(animal.id, {lat: newLat, lng: newLng });
                 return { id: animal.id, name: animal.name, coordinates: { lat: newLat, lng: newLng } };
             }
         }
+
 
         return { id: animal.id, name: animal.name, coordinates: animalCoordinates };
     }
@@ -101,11 +99,21 @@ export class AnimalUtils {
         const animalCoordinates = animal.coordinates;
         const isInside = isPointInPolygon(animalCoordinates, pastureCoordinates);
         // console.log(`Animal ${animalId} is inside pasture ${pasture.name}: ${isInside}`);
-        return !isInside;
+        return isInside;
 
     }
 
-    static moveAnimalBackToTheirPasture = (animalLocation: Coordinates, pastureCoordinates: PastureCoord): Coordinates => {
+    static moveAnimalBackToTheirPasture = async (animalId: number): Promise<Coordinates> => {
+        const animal = animals.find(animal => animal.id === animalId);
+
+        if (!animal) return { lat: 0, lng: 0 };
+        const animalLocation = animal.coordinates;
+
+        const pasture = await PasturesApi.getPastureById(animal.pastureId);
+        if (!pasture) return animalLocation;
+
+        const pastureCoordinates: PastureCoord = pasture;
+
         let minDistance = Infinity;
         let closestBoundaryPoint: Coordinates = animalLocation;
 
@@ -153,6 +161,8 @@ export class AnimalUtils {
         const stepLongitude = (moveX / moveDistance) * MOVE_INCREMENT;
         const stepLatitude = (moveY / moveDistance) * MOVE_INCREMENT;
 
+        AnimalUtils.updateAnimal(animalId, { lat: animalLocation.lat + stepLatitude, lng: animalLocation.lng + stepLongitude });
+
         return { lng: animalLocation.lng + stepLongitude, lat: animalLocation.lat + stepLatitude };
     }
 
@@ -165,10 +175,11 @@ export class AnimalUtils {
         switch (randomMovementType) {
             case 0:
                 // Random movement
+                // console.log('Random movement');
                 return AnimalUtils.randomiseAnimalCoordinates(animal);
-
             default:
                 // Random movement inside pasture
+                // console.log('Random movement inside pasture');
                 return await AnimalUtils.getRandomPositionInsidePasture(animal);
         }
     }
