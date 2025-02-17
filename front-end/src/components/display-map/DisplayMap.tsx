@@ -262,40 +262,8 @@ export const DisplayMap = () => {
     const interval = setInterval(updateAnimalLocation, 500); // Update every second
     return () => clearInterval(interval);
   }, []);
+  
 
-  // useEffect(() => {
-
-  //   const bringAnimalIntoTheirPasture = async () => {
-  //     console.log('entering into their pastures');
-  //     if (!animalRef.current) return;
-
-  //     const animalData = AnimalUtils.getAnimals();
-  //     const pastures = getPastures();
-
-  //     for (const animal of animalData) {
-  //       const position = animalRef.current[animal.id];
-  //       const getPasture = pastures.find((pasture) => pasture.id === animal.pastureId);
-  //       if (position) {
-  //         const isAnimalExitedPasture = await AnimalUtils.checkAnimalInPasture(animal.id);
-  //         if (isAnimalExitedPasture) {
-  //           if (getPasture) {
-  //             const newCoord = AnimalUtils.moveAnimalBackToTheirPasture(animal.coordinates, { coordinates: getPasture.polygon });
-  //             position.setGeometry(new H.geo.Point(newCoord.lat, newCoord.lng));
-
-  //             AnimalUtils.updateAnimal(animal.id, newCoord);
-  //             const newDisplayAnimal = AnimalUtils.getAnimals();
-  //             setDisplayAnimal([...newDisplayAnimal]);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   };
-
-  //   // bringAnimalIntoTheirPasture();
-  //   // const interval = setInterval(bringAnimalIntoTheirPasture, 10000); // Update every second
-  //   // return () => clearInterval(interval);
-
-  // }, []);
 
   return (
     <div

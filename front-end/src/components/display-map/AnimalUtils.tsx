@@ -81,7 +81,7 @@ export class AnimalUtils {
             const newLng = animalCoordinates.lng + Math.cos(angle) * MOVE_INCREMENT;
 
             if (isPointInPolygon({ lat: newLat, lng: newLng }, pastureCoordinates)) {
-                AnimalUtils.updateAnimal(animal.id, {lat: newLat, lng: newLng });
+                AnimalUtils.updateAnimal(animal.id, { lat: newLat, lng: newLng });
                 return { id: animal.id, name: animal.name, coordinates: { lat: newLat, lng: newLng } };
             }
         }
@@ -170,17 +170,14 @@ export class AnimalUtils {
         const randomIndex = Math.floor(Math.random() * animals.length);
         const animal = animals[randomIndex];
 
-        const randomMovementType = Math.floor(Math.random() * 2);
+        const randomMovementType = Math.random(); // Generates a number between 0 and 1
 
-        switch (randomMovementType) {
-            case 0:
-                // Random movement
-                // console.log('Random movement');
-                return AnimalUtils.randomiseAnimalCoordinates(animal);
-            default:
-                // Random movement inside pasture
-                // console.log('Random movement inside pasture');
-                return await AnimalUtils.getRandomPositionInsidePasture(animal);
+        if (randomMovementType < 0.8) {
+            // 80% chance: Move inside pasture
+            return await AnimalUtils.getRandomPositionInsidePasture(animal);
+        } else {
+            // 20% chance: Random movement
+            return AnimalUtils.randomiseAnimalCoordinates(animal);
         }
     }
 }
