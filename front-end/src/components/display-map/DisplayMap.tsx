@@ -239,12 +239,21 @@ export const DisplayMap = () => {
       const maxAttempts = 100;  // Prevent infinite loop
 
       while (!isInside && attempts < maxAttempts) {
+        const updatePolygonState  = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
+  
+        setPolygonState(updatePolygonState.polygonState);
+      
+        if (updatePolygonState.notificationMsg) {
+          toast(updatePolygonState.notificationMsg, {
+            type: updatePolygonState.notificationMsg.includes("Entered") ? "success" : "error",
+          });
+        }
+        
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
         updateAnimalPosition.coordinates = updateAnimalCoord;
         position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
-
         isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
         attempts++;
       }
@@ -255,8 +264,8 @@ export const DisplayMap = () => {
 
       // toast("Animal moved back to pasture", { type: "info" });
 
-      const latestPolygonState = updatePolygonState(updateAnimalPosition, polygonState);
-      setPolygonState(latestPolygonState);
+      // const latestPolygonState = updatePolygonState(updateAnimalPosition, polygonState);
+      // setPolygonState(latestPolygonState);
       const newDisplayAnimal = AnimalUtils.getAnimals();
       setDisplayAnimal([...newDisplayAnimal]);
     };
