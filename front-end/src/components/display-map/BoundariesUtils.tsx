@@ -3,7 +3,7 @@ import PasturesApi from "../../services/PasturesApi";
 // import { nanoid } from "nanoid";
 
 const listPastures: { name: string, coordinates: { lat: number; lng: number }[], id: string}[] = [];
-let polygonCoordinates: { lat: number; lng: number }[] = [];
+let pastureCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
@@ -48,25 +48,25 @@ export const calculateDistanceBetweenPoints = (point1: { lat: number; lng: numbe
 /**
  * Calculates the area of a polygon in square kilometers on the surface of the Earth.
  * 
- * @param polygonCoordinates - The coordinates of the polygon in the format of an array of objects containing 'lat' and 'lng' properties.
+ * @param pastureCoordinates - The coordinates of the polygon in the format of an array of objects containing 'lat' and 'lng' properties.
  * @returns The area in square kilometers.
  * @throws {Error} If the polygon has fewer than three vertices.
  */
-const calculateGeodeticAreaInSquareKilometers = (polygonCoordinates: { lat: number; lng: number }[]): number => {
+const calculateGeodeticAreaInSquareKilometers = (pastureCoordinates: { lat: number; lng: number }[]): number => {
 
     const EARTH_RADIUS = 6371000;
     const toRadians = (degrees: number): number => (degrees * Math.PI) / 180;
 
-    if (polygonCoordinates.length < 3) {
+    if (pastureCoordinates.length < 3) {
         throw new Error("A polygon must have at least three vertices.");
     }
 
     let area = 0;
-    const n = polygonCoordinates.length;
+    const n = pastureCoordinates.length;
 
     for (let i = 0; i < n; i++) {
-        const { lat: lat1, lng: lng1 } = polygonCoordinates[i];
-        const { lat: lat2, lng: lng2 } = polygonCoordinates[(i + 1) % n];
+        const { lat: lat1, lng: lng1 } = pastureCoordinates[i];
+        const { lat: lat2, lng: lng2 } = pastureCoordinates[(i + 1) % n];
 
         // Convert coordinates to radians
         const lat1Rad = toRadians(lat1);
@@ -124,7 +124,7 @@ export const createMarker = (coords: { lat: number; lng: number }) => {
  * @returns The coordinates of the polygon at the specified index.
  */
 export const getSpecifcPolygonCoordinates = (index: number) => {
-    return polygonCoordinates[index];
+    return pastureCoordinates[index];
 }
 
 /**
@@ -135,38 +135,38 @@ export const getSpecifcPolygonCoordinates = (index: number) => {
  * @returns The newly created marker.
  */
 export const startPolygon = (coords: { lat: number; lng: number }) => {
-    polygonCoordinates = [{ lat: coords.lat, lng: coords.lng }];
+    pastureCoordinates = [{ lat: coords.lat, lng: coords.lng }];
     temporaryMarker = createMarker(coords);
 
     return temporaryMarker;
 }
 
 export const closePolygon = async (startPoint: { lat: number; lng: number }, label: string) => {
-    polygonCoordinates.push(startPoint);
+    pastureCoordinates.push(startPoint);
 
-    if (polygonCoordinates.length < 3) {
+    if (pastureCoordinates.length < 3) {
         return;
     }
 
     const { removeTempPolyline, removeTempMarker } = cleanupTemporaryObjects();
 
-    const lineString = createLineString(polygonCoordinates);
+    const lineString = createLineString(pastureCoordinates);
 
     polygon = new H.map.Polygon(lineString, {
         style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
         data: {}
     });
 
-    // const area = calculateGeodeticAreaInSquareKilometers(polygonCoordinates);
+    // const area = calculateGeodeticAreaInSquareKilometers(pastureCoordinates);
 
-    // listPastures.push({ label: label, polygon: polygonCoordinates, id: nanoid() });
+    // listPastures.push({ label: label, polygon: pastureCoordinates, id: nanoid() });
     CompletedPolygon = [];
-    CompletedPolygon = polygonCoordinates;
-    const pastureDetail = await PasturesApi.addPasture(polygonCoordinates, label);
+    CompletedPolygon = pastureCoordinates;
+    const pastureDetail = await PasturesApi.addPasture(pastureCoordinates, label);
     if (pastureDetail) {
         listPastures.push(pastureDetail);
     }
-    polygonCoordinates = [];
+    pastureCoordinates = [];
 
 
     return { removeTempPolyline, removeTempMarker, polygon };
@@ -206,12 +206,12 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
  *  - addTempMarker: The new temporary marker that has been added to the map.
  */
 export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
-    polygonCoordinates.push({ lat: coords.lat, lng: coords.lng });
+    pastureCoordinates.push({ lat: coords.lat, lng: coords.lng });
 
     let removeTempPolyline;
     let removeTempMarker;
 
-    const lineString = createLineString(polygonCoordinates);
+    const lineString = createLineString(pastureCoordinates);
 
     if (temporaryPolyline) {
         removeTempPolyline = temporaryPolyline;
