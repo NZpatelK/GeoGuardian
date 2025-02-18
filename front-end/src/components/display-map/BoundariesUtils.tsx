@@ -1,7 +1,8 @@
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
+// import { nanoid } from "nanoid";
 
-const listPastures: { label: string, polygon: { lat: number; lng: number }[], id: string}[] = [];
+const listPastures: { name: string, coordinates: { lat: number; lng: number }[], id: string}[] = [];
 let polygonCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
@@ -140,7 +141,7 @@ export const startPolygon = (coords: { lat: number; lng: number }) => {
     return temporaryMarker;
 }
 
-export const closePolygon = (startPoint: { lat: number; lng: number }, label: string) => {
+export const closePolygon = async (startPoint: { lat: number; lng: number }, label: string) => {
     polygonCoordinates.push(startPoint);
 
     if (polygonCoordinates.length < 3) {
@@ -158,10 +159,13 @@ export const closePolygon = (startPoint: { lat: number; lng: number }, label: st
 
     // const area = calculateGeodeticAreaInSquareKilometers(polygonCoordinates);
 
-    listPastures.push({ label: label, polygon: polygonCoordinates });
+    // listPastures.push({ label: label, polygon: polygonCoordinates, id: nanoid() });
     CompletedPolygon = [];
     CompletedPolygon = polygonCoordinates;
-    PasturesApi.addPasture(polygonCoordinates, label);
+    const pastureDetail = await PasturesApi.addPasture(polygonCoordinates, label);
+    if (pastureDetail) {
+        listPastures.push(pastureDetail);
+    }
     polygonCoordinates = [];
 
 
@@ -187,7 +191,7 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
     const labelMarker = createLabel(label);
     CompletedPolygon = [];
 
-    listPastures.push({ label: label, polygon: coords, id: id });
+    listPastures.push({ name: label, coordinates: coords, id: id });
     return { existingPolygon, labelMarker };
 }
 
@@ -306,12 +310,12 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, pastureCoo
 };
 
 export const updatePolygonState = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
-    listPastures.forEach((polygon) => {
-        const isInside = isPointInPolygon(animalData.coordinates, polygon.polygon);
+    listPastures.forEach((pasutre) => {
+        const isInside = isPointInPolygon(animalData.coordinates, pasutre.coordinates);
 
         // Update the polygonState
-        polygonState[polygon.label] = {
-            ...(polygonState[polygon.label] || {}),
+        polygonState[pasutre.name] = {
+            ...(polygonState[pasutre.name] || {}),
             [animalData.id]: isInside, // Track the state per location
         };
     });
