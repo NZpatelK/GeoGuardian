@@ -108,24 +108,24 @@ export class AnimalUtils {
         const listPastures = await PasturesApi.getPasturesCoordinates();
         let notificationMsg = "";
 
-        listPastures.forEach((polygon) => {
+        listPastures.forEach((pasture: Pasture) => {
             // console.log(animalData);
-            const isInside = isPointInPolygon(animalData.coordinates, polygon.coordinates);
-            const previousState = polygonState[polygon.name]?.[animalData.id] ?? false;
+            const isInside = isPointInPolygon(animalData.coordinates, pasture.coordinates);
+            const previousState = polygonState[pasture.name]?.[animalData.id] ?? false;
 
             // Handle Enter event
             if (isInside && !previousState) {
-                notificationMsg = (`${animalData.name} - ${animalData.id} Entered ${polygon.name}`);
+                notificationMsg = (`${animalData.name} - ${animalData.id} Entered ${pasture.name}`);
             }
 
             // Handle Exit event
             if (!isInside && previousState) {
-                notificationMsg = (`${animalData.name} - ${animalData.id} Exited ${polygon.name} `);
+                notificationMsg = (`${animalData.name} - ${animalData.id} Exited ${pasture.name} `);
             }
 
             // Update the polygonState
-            polygonState[polygon.name] = {
-                ...(polygonState[polygon.name] || {}),
+            polygonState[pasture.name] = {
+                ...(polygonState[pasture.name] || {}),
                 [animalData.id]: isInside, // Track the state per location
             };
         });
