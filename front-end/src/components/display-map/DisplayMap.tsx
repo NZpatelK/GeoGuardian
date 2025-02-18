@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
+import { ToastContainer, toast } from 'react-toastify';
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getPastures, updatePolygonState } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
@@ -180,8 +181,8 @@ export const DisplayMap = () => {
           animalData.forEach((animal) => {
             const newlabel = labelIcon(animal.id.toString());
             const position = new H.map.Marker(
-              { lat: animal.coordinates.lat, lng: animal.coordinates.lng }, 
-              { icon: newlabel, data: {} } );
+              { lat: animal.coordinates.lat, lng: animal.coordinates.lng },
+              { icon: newlabel, data: {} });
             // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
@@ -196,28 +197,28 @@ export const DisplayMap = () => {
 
 
   useEffect(() => {
-  /**
-   * Updates the location of an animal on the map.
-   *
-   * This function retrieves the current position of an animal, updates its location
-   * on the map, and checks if it remains inside its designated pasture. If the animal
-   * exits its pasture, attempts are made to move it back inside. The function also updates
-   * the polygon state to reflect the animal's location and updates the display with
-   * the latest animal data.
-   *
-   * Behavior:
-   * - Updates the position of the animal on the map using HERE Maps API.
-   * - Checks if the animal is inside its pasture and logs an error if the maximum attempts
-   *   to move it back inside are reached.
-   * - Updates the state of polygons and the display animal list.
-   *
-   * Preconditions:
-   * - `animalRef.current` should contain the current map markers for animals.
-   *
-   * Postconditions:
-   * - The position of the animal on the map and polygon states are updated.
-   * - The display list of animals is refreshed with the latest data.
-   */
+    /**
+     * Updates the location of an animal on the map.
+     *
+     * This function retrieves the current position of an animal, updates its location
+     * on the map, and checks if it remains inside its designated pasture. If the animal
+     * exits its pasture, attempts are made to move it back inside. The function also updates
+     * the polygon state to reflect the animal's location and updates the display with
+     * the latest animal data.
+     *
+     * Behavior:
+     * - Updates the position of the animal on the map using HERE Maps API.
+     * - Checks if the animal is inside its pasture and logs an error if the maximum attempts
+     *   to move it back inside are reached.
+     * - Updates the state of polygons and the display animal list.
+     *
+     * Preconditions:
+     * - `animalRef.current` should contain the current map markers for animals.
+     *
+     * Postconditions:
+     * - The position of the animal on the map and polygon states are updated.
+     * - The display list of animals is refreshed with the latest data.
+     */
 
     const updateAnimalLocation = async () => {
       if (!animalRef.current) return;
@@ -236,22 +237,24 @@ export const DisplayMap = () => {
 
       let attempts = 0;
       const maxAttempts = 100;  // Prevent infinite loop
-      
+
       while (!isInside && attempts < maxAttempts) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
-      
+
         const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
         updateAnimalPosition.coordinates = updateAnimalCoord;
         position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
-      
+
         isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
         attempts++;
       }
-      
+
       if (attempts >= maxAttempts) {
         console.error("Max attempts reached. Animal might be stuck.");
       }
-      
+
+      // toast("Animal moved back to pasture", { type: "info" });
+
       const latestPolygonState = updatePolygonState(updateAnimalPosition, polygonState);
       setPolygonState(latestPolygonState);
       const newDisplayAnimal = AnimalUtils.getAnimals();
@@ -262,7 +265,7 @@ export const DisplayMap = () => {
     const interval = setInterval(updateAnimalLocation, 500); // Update every second
     return () => clearInterval(interval);
   }, []);
-  
+
 
 
   return (
@@ -296,6 +299,8 @@ export const DisplayMap = () => {
           ))}
         </div>
       </Modal>
+      <ToastContainer 
+      stacked/>
     </div>
   );
 }
