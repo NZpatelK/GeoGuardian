@@ -191,7 +191,6 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
     return { existingPolygon, labelMarker };
 }
 
-
 /**
  * Adds a point to the current polygon.
  *
@@ -285,15 +284,15 @@ export const createLabel = (labelName: string) => {
  * Determines if a given point is inside a polygon using the ray-casting algorithm.
  *
  * @param point - The point to check, with latitude and longitude properties.
- * @param polygonCoords - An array of objects representing the vertices of the polygon, each containing 'lat' and 'lng' properties.
+ * @param pastureCoord - An array of objects representing the vertices of the polygon, each containing 'lat' and 'lng' properties.
  * @returns A boolean indicating whether the point is inside the polygon.
  */
-export const isPointInPolygon = (point: { lat: number; lng: number }, polygonCoords: { lat: number; lng: number }[]): boolean => {
+export const isPointInPolygon = (point: { lat: number; lng: number }, pastureCoord: { lat: number; lng: number }[]): boolean => {
     let intersects = 0;
 
-    for (let i = 0; i < polygonCoords.length; i++) {
-        const vertex1 = polygonCoords[i];
-        const vertex2 = polygonCoords[(i + 1) % polygonCoords.length];
+    for (let i = 0; i < pastureCoord.length; i++) {
+        const vertex1 = pastureCoord[i];
+        const vertex2 = pastureCoord[(i + 1) % pastureCoord.length];
 
         if (
             ((vertex1.lat > point.lat) !== (vertex2.lat > point.lat)) &&
@@ -305,38 +304,6 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, polygonCoo
 
     return intersects % 2 === 1;
 };
-
-/**
- * Checks if an animal is inside a pasture and logs an event if its state changed.
- *
- * @param animalData - The data of the animal, including its id, name and coordinates.
- * @param polygonState - The current state of the polygons, with the keys being the labels of the polygons and the values being another object with the keys being the ids of the animals and the values being booleans indicating if the animal is inside the polygon.
- * @returns The updated polygonState.
- */
-// export const checkAnimalInPasture = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
-//     listPastures.forEach((polygon) => {
-//         const isInside = isPointInPolygon(animalData.coordinates, polygon.polygon);
-//         // const previousState = polygonState[polygon.label]?.[animalData.id] ?? false;
-
-//         // Handle Enter event
-//         // if (isInside && !previousState) {
-//         //     console.log(`${animalData.name} - ${animalData.id} Entered ${polygon.label} at ${animalData.coordinates.lat.toFixed(5)}, ${animalData.coordinates.lng.toFixed(5)}`);
-//         // }
-
-//         // // Handle Exit event
-//         // if (!isInside && previousState) {
-//         //     console.log(`${animalData.name} - ${animalData.id} Exited ${polygon.label} at ${animalData.coordinates.lat.toFixed(5)}, ${animalData.coordinates.lng.toFixed(5)}`);
-//         // }
-
-//         // Update the polygonState
-//         polygonState[polygon.label] = {
-//             ...(polygonState[polygon.label] || {}),
-//             [animalData.id]: isInside, // Track the state per location
-//         };
-//     });
-
-//     return polygonState;
-// };
 
 export const updatePolygonState = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
     listPastures.forEach((polygon) => {
