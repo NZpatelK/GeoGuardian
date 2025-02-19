@@ -25,16 +25,7 @@ This project is not just about technology – it’s about **empowering farmers*
 
 ### 🌳 **Pasture Management**  
 - **Add, Edit, Update, or Remove** pastures.  
-- Define **virtual boundaries** for each pasture using HERE Maps API.  
-
-### 🛠️ **Current Implementation**  
-- **Frontend**: Built with **React + Vite + TypeScript** for a blazing-fast and modern UI.  
-- **Backend**: Powered by **Node.js + Express.js** for robust server-side logic.  
-- **Database**: Currently using **local storage (JSON files)**. Future plans include migrating to **AWS** for scalable data storage.  
-- **Map Integration**: Leverages the **HERE Maps API** for precise geolocation and mapping.  
-
-### 🧪 **Testing**  
-- Backend testing is done using **Jest + Supertest** to ensure reliability.  
+- Define **virtual boundaries** for each pasture using HERE Maps API.
 
 ---
 
