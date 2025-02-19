@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getPastures } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getPastures, updatePolygonState } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -187,6 +187,7 @@ export const DisplayMap = () => {
             // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
+            setPolygonState(updatePolygonState(animal, polygonState));
           });
           animalRef.current = animalPosition;
         }

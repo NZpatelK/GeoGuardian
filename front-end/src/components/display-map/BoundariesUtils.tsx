@@ -312,7 +312,7 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, pastureCoo
 export const updatePolygonState = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
     listPastures.forEach((pasutre) => {
         const isInside = isPointInPolygon(animalData.coordinates, pasutre.coordinates);
-
+        console.log(animalData.id, pasutre.name, isInside);
         // Update the polygonState
         polygonState[pasutre.name] = {
             ...(polygonState[pasutre.name] || {}),
