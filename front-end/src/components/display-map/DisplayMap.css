@@ -35,3 +35,18 @@
     background: #000;
     color: #fff;
 }
+
+.animal-item{
+    border-bottom: 2px solid #ccc;
+    padding: 0 0 10px 0;
+}
+
+.animal-item h3{
+    margin: 10px 0;
+    padding: 0;
+}
+
+.animal-item p{
+    margin: 0;
+    padding: 0;
+}

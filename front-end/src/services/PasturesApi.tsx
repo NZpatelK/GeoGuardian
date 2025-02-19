@@ -35,6 +35,7 @@ class PasturesApi {
             });
 
             console.log(response.data.message); // Success message
+            return data;
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
