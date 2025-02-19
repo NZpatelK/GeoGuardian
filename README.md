@@ -29,14 +29,6 @@ This project is not just about technology – it’s about **empowering farmers*
 
 ---
 
-## 🎥 Demo Video  
-
-Check out the current progress of GeoGuardian in action! 🎬  
-[![Watch the Demo](https://via.placeholder.com/300)](https://youtu.be/your-demo-video-link)  
-*(Replace with your actual demo video link)*  
-
----
-
 ## 🚀 Future Features  
 
 GeoGuardian is just getting started! Here’s what’s coming next:  
