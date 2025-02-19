@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
 import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getPastures, updatePolygonState } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
@@ -162,18 +164,6 @@ export const DisplayMap = () => {
 
   useEffect(() => {
     if (mapInstance) {
-      // const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
-      // const getAnimals = async () => {
-      //   try {
-      //     const response = await AnimalApi.getAnimalsCoordinates();
-      //     setAnimals(() => [...response]);
-      //     addExistingAnimalsIntoMap(response);
-      //   } catch (err) {
-      //     console.error('Error fetching data:', err);
-      //   }
-      // }
-
-      // getAnimals();
       const initialiseAndAddExistingAnimalsIntoMap = async () => {
         await AnimalUtils.intialiseAnimals()
         const animalData = AnimalUtils.getAnimals();
@@ -260,6 +250,20 @@ export const DisplayMap = () => {
       }
 
       if (attempts >= maxAttempts) {
+        toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {  
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          icon: <FontAwesomeIcon icon={faExclamationTriangle} size="lg" color="white" />,
+          progress: undefined,
+          style: {
+            backgroundColor: "red",
+            color: "white",
+            fontWeight: "bold",
+          },
+        });
         console.error("Max attempts reached. Animal might be stuck.");
       }
 
