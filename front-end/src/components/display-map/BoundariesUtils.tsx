@@ -1,6 +1,5 @@
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
-// import { nanoid } from "nanoid";
 
 const listPastures: {id: string, name: string, coordinates: { lat: number; lng: number }[]}[] = [];
 let pastureCoordinates: { lat: number; lng: number }[] = [];
@@ -8,8 +7,6 @@ let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
 let polygon = null;
-
-
 
 
 export const getPastures = () => {
