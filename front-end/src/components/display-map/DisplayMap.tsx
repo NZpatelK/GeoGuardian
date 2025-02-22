@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getPastures, updatePolygonState } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -27,7 +27,49 @@ export const DisplayMap = () => {
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
   const isMapLoaded = useRef(false);
+
+  const createNewPasture = async (coords: { lat: number; lng: number }, hereMap: HMap, isDrawing: boolean) => {
+    if (!isDrawing) {
+      const tempMarker = startPolygon(coords as { lat: number; lng: number });
+      isDrawing = true;
+
+      hereMap.addObject(tempMarker as H.map.Marker);
+    } else {
+      const startPoint = getSpecifcPolygonCoordinates(0);
+      const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
+
+      if (distanceToStart < 10) {
+        const inputName = prompt("Please enter the name of the pasture:");
+
+        const result = await closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
+
+        if (result) {
+          const { removeTempPolyline, removeTempMarker, polygon } = result;
+          if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+          if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+          hereMap.addObject(polygon);
+        }
+
+        const label = createLabel(inputName as string);
+        hereMap.addObject(label);
+
+        isDrawing = false;
+
+      } else {
+        const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
+
+        if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+        if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+        hereMap.addObject(addTempPolyline as H.map.Polyline);
+        hereMap.addObject(addTempMarker as H.map.Marker);
+      }
+    }
+
+    return isDrawing;
+  }
+
 
   useEffect(() => {
     /**
@@ -97,54 +139,64 @@ export const DisplayMap = () => {
         if (existPasturesCoordinates) {
           for (const item of existPasturesCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
-            const existingPolygon = addExistingPolygon(coord, item.name, item.id);
+            const existingPasture = addExistingPasture(coord, item.name, item.id);
 
-            hereMap.addObject(existingPolygon.existingPolygon);
-            hereMap.addObject(existingPolygon.labelMarker);
+            // existingPasture.pasture.addEventListener('tap', () => {
+            //   //TODO: Add logic to show animal in the pasture
+
+            // })
+
+            hereMap.addObject(existingPasture.pasture);
+            hereMap.addObject(existingPasture.labelMarker);
           }
         }
 
         hereMap.addEventListener("tap", async (evt: any) => {
+          // if (!isEditMode) return;
+
           const coords = hereMap.screenToGeo(
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
           );
 
-          if (!isDrawing) {
-            const tempMarker = startPolygon(coords as { lat: number; lng: number });
-            isDrawing = true;
+          if (!coords) return;
+          isDrawing = await createNewPasture(coords, hereMap, isDrawing);
 
-            hereMap.addObject(tempMarker as H.map.Marker);
-          } else {
-            const startPoint = getSpecifcPolygonCoordinates(0);
-            const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
+          // if (!isDrawing) {
+          //   const tempMarker = startPolygon(coords as { lat: number; lng: number });
+          //   isDrawing = true;
 
-            if (distanceToStart < 10) {
-              const inputName = prompt("Please enter the name of the pasture:");
+          //   hereMap.addObject(tempMarker as H.map.Marker);
+          // } else {
+          //   const startPoint = getSpecifcPolygonCoordinates(0);
+          //   const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
 
-              const result = await closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
+          //   if (distanceToStart < 10) {
+          //     const inputName = prompt("Please enter the name of the pasture:");
 
-              if (result) {
-                const { removeTempPolyline, removeTempMarker, polygon } = result;
-                if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
-                if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-                hereMap.addObject(polygon);
-              }
+          //     const result = await closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
 
-              const label = createLabel(inputName as string);
-              hereMap.addObject(label);
+          //     if (result) {
+          //       const { removeTempPolyline, removeTempMarker, polygon } = result;
+          //       if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+          //       if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+          //       hereMap.addObject(polygon);
+          //     }
 
-              isDrawing = false;
+          //     const label = createLabel(inputName as string);
+          //     hereMap.addObject(label);
 
-            } else {
-              const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
+          //     isDrawing = false;
 
-              if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
-              if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-              hereMap.addObject(addTempPolyline as H.map.Polyline);
-              hereMap.addObject(addTempMarker as H.map.Marker);
-            }
-          }
+          //   } else {
+          //     const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
+
+          //     if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+          //     if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+          //     hereMap.addObject(addTempPolyline as H.map.Polyline);
+          //     hereMap.addObject(addTempMarker as H.map.Marker);
+          //   }
+          // }
         });
 
         hereMap.addEventListener('mapviewchangeend', () => {
@@ -250,7 +302,7 @@ export const DisplayMap = () => {
       }
 
       if (attempts >= maxAttempts) {
-        toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {  
+        toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -264,7 +316,6 @@ export const DisplayMap = () => {
             fontWeight: "bold",
           },
         });
-        console.error("Max attempts reached. Animal might be stuck.");
       }
 
       const newDisplayAnimal = AnimalUtils.getAnimals();

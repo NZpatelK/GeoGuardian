@@ -2,12 +2,14 @@ import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
 // import { nanoid } from "nanoid";
 
-const listPastures: { name: string, coordinates: { lat: number; lng: number }[], id: string}[] = [];
+const listPastures: {id: string, name: string, coordinates: { lat: number; lng: number }[]}[] = [];
 let pastureCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
 let CompletedPolygon: { lat: number; lng: number }[] = [];
 let polygon = null;
+
+
 
 
 export const getPastures = () => {
@@ -180,9 +182,9 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
  * @param label - The label for the polygon.
  * @returns An object containing the newly created H.map.Polygon and H.map.Marker.
  */
-export const addExistingPolygon = (coords: { lat: number; lng: number }[], label: string , id: string) => {
+export const addExistingPasture = (coords: { lat: number; lng: number }[], label: string , id: string) => {
     const lineString = createLineString(coords);
-    const existingPolygon = new H.map.Polygon(lineString, {
+    const pasture = new H.map.Polygon(lineString, {
         style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
         data: {}
     });
@@ -192,7 +194,7 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
     CompletedPolygon = [];
 
     listPastures.push({ name: label, coordinates: coords, id: id });
-    return { existingPolygon, labelMarker };
+    return { pasture, labelMarker };
 }
 
 /**
@@ -232,6 +234,16 @@ export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
     const addTempMarker = temporaryMarker;
 
     return { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker };
+}
+
+export const setMarkerInSelectedPasture = (pasture: H.map.Polygon, geometry: H.geo.Polygon, index: number) => {
+
+    const exteriors = geometry.getExterior();
+    const point = exteriors.extractPoint(index);
+    const marker = createMarker({ lat: point.lat, lng: point.lng });
+    marker.draggable = true;
+
+    return marker;
 }
 
 /**
@@ -312,7 +324,6 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, pastureCoo
 export const updatePolygonState = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
     listPastures.forEach((pasutre) => {
         const isInside = isPointInPolygon(animalData.coordinates, pasutre.coordinates);
-        console.log(animalData.id, pasutre.name, isInside);
         // Update the polygonState
         polygonState[pasutre.name] = {
             ...(polygonState[pasutre.name] || {}),
