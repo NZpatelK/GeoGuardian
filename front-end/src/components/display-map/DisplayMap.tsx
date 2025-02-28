@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasturePoint } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -27,6 +27,7 @@ export const DisplayMap = () => {
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
+  const [selectedPasture, setSelectedPasture] = useState<H.map.Polygon | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const isMapLoaded = useRef(false);
 
@@ -102,8 +103,11 @@ export const DisplayMap = () => {
             const existingPasture = addExistingPasture(coord, item.name, item.id);
 
             existingPasture.pasture.addEventListener('tap', () => {
-              //TODO: Add logic to show animal in the pasture
+              const markers =selectPasture(existingPasture.pasture, hereMap, behavior);
 
+              for(const marker of markers){
+                hereMap.addObject(marker);
+              }
             })
 
             hereMap.addObject(existingPasture.pasture);
@@ -328,7 +332,62 @@ export const DisplayMap = () => {
     return isDrawing;
   }
 
+  const selectPasture = (pasture: H.map.Polygon, hereMap: HMap, behavior: H.mapevents.Behavior) => {
+    // if(!isEditMode) return;
+    // setSelectedPasture(pasture);
+    console.log(pasture);
+    console.log(selectedPasture);
 
+    const geometry = pasture.getGeometry() as H.geo.Polygon;
+    const exterior = geometry.getExterior();
+
+    const markers = [];
+
+    for(let i = 0; i < exterior.getPointCount(); i++) {
+      const point = exterior.extractPoint(i);
+      const marker = createMarker(point);
+      marker.draggable = true;
+
+      marker.addEventListener("dragstart", (ev) => {
+        console.log("dragstart");
+        if(behavior) behavior.disable();
+        // ev.target.setData(ev.target.getGeometry());
+      });
+
+      marker.addEventListener("drag", (ev) => {
+        console.log("drag");
+        if(!hereMap) return;
+        const newPoint = hereMap.screenToGeo(ev.currentPointer.viewportX, ev.currentPointer.viewportY);
+        console.log(pasture);
+        if(!newPoint || !pasture) return;
+        console.log(newPoint);
+        const updatedLineString = updatePasturePoint(i, newPoint, pasture); 
+        if(updatedLineString){
+          pasture.setGeometry(new H.geo.Polygon(updatedLineString));
+        }
+      });
+
+
+
+      marker.addEventListener("dragend", (ev) => {
+        console.log("dragend");
+        if (behavior) behavior.enable();
+        if(!hereMap) return;
+        const newPoint = hereMap.screenToGeo(ev.currentPointer.viewportX, ev.currentPointer.viewportY);
+        if(!newPoint || !pasture) return;
+        const updatedLineString = updatePasturePoint(i, newPoint, pasture); 
+        if(updatedLineString){
+          pasture.setGeometry(new H.geo.Polygon(updatedLineString));
+        }
+      });
+
+
+      // mapInstance.addObject(marker);
+      markers.push(marker);
+    }
+
+    return markers;
+  }
 
   return (
     <div

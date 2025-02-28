@@ -233,16 +233,17 @@ export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
     return { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker };
 }
 
-export const setMarkerInSelectedPasture = (pasture: H.map.Polygon, geometry: H.geo.Polygon, index: number) => {
+export const updatePasturePoint = (index: number, newPoint: H.geo.Point, selectedPasture: H.map.Polygon) => {
+    if (!selectedPasture) return;
 
-    const exteriors = geometry.getExterior();
-    const point = exteriors.extractPoint(index);
-    const marker = createMarker({ lat: point.lat, lng: point.lng });
-    marker.draggable = true;
+    const geometry = selectedPasture.getGeometry() as H.geo.Polygon;
+    const lineString = geometry.getExterior();
 
-    return marker;
+    lineString.removePoint(index);
+    lineString.insertPoint(index, newPoint);
+
+    return lineString;
 }
-
 /**
  * Removes the temporary polyline and marker from the map, if any, and returns them.
  * This function is used to clean up the temporary objects after a polygon has been completed.
