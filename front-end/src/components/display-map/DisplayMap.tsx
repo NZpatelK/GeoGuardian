@@ -27,7 +27,7 @@ export const DisplayMap = () => {
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
-  const [selectedPasture, setSelectedPasture] = useState<H.map.Polygon | null>(null);
+  const [selectedPasture, setSelectedPasture] = useState<boolean>(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const isMapLoaded = useRef(false);
 
@@ -103,12 +103,32 @@ export const DisplayMap = () => {
             const existingPasture = addExistingPasture(coord, item.name, item.id);
 
             existingPasture.pasture.addEventListener('tap', () => {
-              const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
 
-              for (const marker of markers) {
-                hereMap.addObject(marker);
-              }
+              setSelectedPasture((prevSelected) => {
+                if (prevSelected) return prevSelected; // Already selected, no update
+                console.log("Selecting pasture...");
+                
+                const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+                console.log("created markers");
+            
+                if (markers) {
+                  for (const marker of markers) {
+                    hereMap.addObject(marker);
+                  }
+                }
+            
+                return true; // Update the state to `true`
+              });
+
+              // const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+              // console.log("created markers");
+              // if (markers) {
+              //   for (const marker of markers) {
+              //     hereMap.addObject(marker);
+              //   }
+              // }
             })
+
 
             hereMap.addObject(existingPasture.pasture);
             hereMap.addObject(existingPasture.labelMarker);
@@ -117,7 +137,6 @@ export const DisplayMap = () => {
 
         hereMap.addEventListener("tap", async (evt: any) => {
           if (!isEditMode) return;
-
           const coords = hereMap.screenToGeo(
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
@@ -334,75 +353,75 @@ export const DisplayMap = () => {
 
   const selectPasture = (pasture: H.map.Polygon, hereMap: HMap, behavior: H.mapevents.Behavior) => {
     if (!pasture || !hereMap) return;
-  
+
     const geometry = pasture.getGeometry() as H.geo.Polygon;
     const exterior = geometry.getExterior();
     const markers: H.map.Marker[] = [];
-  
+
     // Extract all points except the duplicate last one
     const points: H.geo.Point[] = [];
     for (let i = 0; i < exterior.getPointCount(); i++) {
       points.push(exterior.extractPoint(i));
     }
-  
+
     // Function to update pasture geometry
     const updatePasture = () => {
       const updatedLineString = new H.geo.LineString();
       points.forEach((p) => updatedLineString.pushPoint(p));
       updatedLineString.pushPoint(points[0]); // Close the shape
-  
+
       pasture.setGeometry(new H.geo.Polygon(updatedLineString));
     };
-  
+
     // Create markers for each unique point
     points.forEach((point, i) => {
       const marker = createMarker(point);
       marker.draggable = true;
-  
+
       // Hide the last marker (but keep it functional)
       if (i === points.length - 1) {
         marker.setVisibility(false);
       }
-  
+
       marker.addEventListener("dragstart", () => {
         console.log("dragstart");
         if (behavior) behavior.disable();
       });
-  
+
       marker.addEventListener("drag", (ev) => {
         if (!hereMap) return;
-  
+
         // Get new position
         const newPoint = hereMap.screenToGeo(ev.currentPointer.viewportX, ev.currentPointer.viewportY);
         if (!newPoint) return;
-  
+
         // Update point in array
         points[i] = newPoint;
-  
+
         // Ensure first and last point remain the same
         if (i === 0) points[points.length - 1] = newPoint;
         if (i === points.length - 1) points[0] = newPoint;
-  
+
         // Update marker position
         marker.setGeometry(newPoint);
-  
+
         // Update pasture geometry
         updatePasture();
       });
-  
+
       marker.addEventListener("dragend", () => {
         console.log("dragend");
         if (behavior) behavior.enable();
       });
-  
+
       hereMap.addObject(marker);
       markers.push(marker);
     });
-  
+
     return markers;
   };
-  
-  
+
+
 
 
 
