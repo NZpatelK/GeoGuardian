@@ -27,7 +27,7 @@ export const DisplayMap = () => {
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
-  const [selectedPasture, setSelectedPasture] = useState<boolean>(false);
+  const [selectedPasture, setSelectedPasture] = useState<any>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const isMapLoaded = useRef(false);
 
@@ -102,32 +102,29 @@ export const DisplayMap = () => {
             const coord = item.coordinates as { lat: number; lng: number }[];
             const existingPasture = addExistingPasture(coord, item.name, item.id);
 
+            let tapDisabled = false; // Flag to track if tap is disabled
+
             existingPasture.pasture.addEventListener('tap', () => {
+              if (tapDisabled) return; // Prevent further tap events if disabled
 
-              setSelectedPasture((prevSelected) => {
-                if (prevSelected) return prevSelected; // Already selected, no update
-                console.log("Selecting pasture...");
-                
-                const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
-                console.log("created markers");
-            
-                if (markers) {
-                  for (const marker of markers) {
-                    hereMap.addObject(marker);
-                  }
+              console.log("Selected pasture:", existingPasture.pasture);
+
+              const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+
+              if (markers) {
+                for (const marker of markers) {
+                  hereMap.addObject(marker);
                 }
-            
-                return true; // Update the state to `true`
-              });
+              }
 
-              // const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
-              // console.log("created markers");
-              // if (markers) {
-              //   for (const marker of markers) {
-              //     hereMap.addObject(marker);
-              //   }
-              // }
-            })
+
+
+              // Disable the tap for 1000ms (1 second)
+              tapDisabled = true;
+              setTimeout(() => {
+                tapDisabled = false; // Re-enable tap after 1000ms
+              }, 1000);
+            });
 
 
             hereMap.addObject(existingPasture.pasture);
@@ -384,33 +381,26 @@ export const DisplayMap = () => {
       }
 
       marker.addEventListener("dragstart", () => {
-        console.log("dragstart");
         if (behavior) behavior.disable();
       });
 
       marker.addEventListener("drag", (ev) => {
         if (!hereMap) return;
-
         // Get new position
         const newPoint = hereMap.screenToGeo(ev.currentPointer.viewportX, ev.currentPointer.viewportY);
         if (!newPoint) return;
-
         // Update point in array
         points[i] = newPoint;
-
         // Ensure first and last point remain the same
         if (i === 0) points[points.length - 1] = newPoint;
         if (i === points.length - 1) points[0] = newPoint;
-
-        // Update marker position
+        // Update marker positon
         marker.setGeometry(newPoint);
-
         // Update pasture geometry
         updatePasture();
       });
 
       marker.addEventListener("dragend", () => {
-        console.log("dragend");
         if (behavior) behavior.enable();
       });
 
