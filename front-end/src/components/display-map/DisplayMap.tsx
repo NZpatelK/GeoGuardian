@@ -109,7 +109,6 @@ export const DisplayMap = () => {
               if (tapDisabled) return; // Prevent further tap events if disabled
               if (item.id === currentPositionId) return;
               currentPositionId = item.id;
-              console.log("Selected pasture:", existingPasture.pasture);
 
               const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
 
@@ -409,6 +408,93 @@ export const DisplayMap = () => {
       hereMap.addObject(marker);
       markers.push(marker);
     });
+
+    pasture.addEventListener("tap", (evt) => {
+      if (!hereMap) return;
+    
+      // Get the clicked geo-coordinates
+      const newPoint = hereMap.screenToGeo(
+        evt.currentPointer.viewportX,
+        evt.currentPointer.viewportY
+      );
+    
+      if (!newPoint) return;
+    
+      // Find the closest edge to insert the new point
+      let insertIndex = -1;
+      let minDistance = Number.MAX_VALUE;
+    
+      for (let i = 0; i < points.length - 1; i++) {
+        const segmentStart = points[i];
+        const segmentEnd = points[i + 1];
+    
+        // Calculate midpoint of the segment
+        const midPoint = new H.geo.Point(
+          (segmentStart.lat + segmentEnd.lat) / 2,
+          (segmentStart.lng + segmentEnd.lng) / 2
+        );
+    
+        // Calculate distance to the clicked point
+        const distance = Math.hypot(midPoint.lat - newPoint.lat, midPoint.lng - newPoint.lng);
+    
+        if (distance < minDistance) {
+          minDistance = distance;
+          insertIndex = i + 1;
+        }
+      }
+    
+      if (insertIndex === -1) return;
+    
+      // Insert new point into the array
+      points.splice(insertIndex, 0, newPoint);
+    
+      // **Remove all old markers from the map**
+      markers.forEach((marker) => hereMap.removeObject(marker));
+      markers.length = 0; // Clear the array
+    
+      // Function to create and add markers
+      const createAndAddMarker = (point: H.geo.Point, index: number) => {
+        const marker = createMarker(point);
+        marker.draggable = true;
+    
+        marker.addEventListener("dragstart", () => {
+          if (behavior) behavior.disable();
+        });
+    
+        marker.addEventListener("drag", (ev) => {
+          if (!hereMap) return;
+          const draggedPoint = hereMap.screenToGeo(
+            ev.currentPointer.viewportX,
+            ev.currentPointer.viewportY
+          );
+    
+          if (!draggedPoint) return;
+    
+          // Update point in array
+          points[index] = draggedPoint;
+          // Update marker position
+          marker.setGeometry(draggedPoint);
+          // Update pasture geometry
+          updatePasture();
+        });
+    
+        marker.addEventListener("dragend", () => {
+          if (behavior) behavior.enable();
+        });
+    
+        hereMap.addObject(marker);
+        return marker;
+      };
+    
+      // Recreate all markers including the new one
+      points.forEach((point, i) => {
+        markers.push(createAndAddMarker(point, i));
+      });
+    
+      // Update the polygon shape
+      updatePasture();
+    });
+    
 
     return markers;
   };
