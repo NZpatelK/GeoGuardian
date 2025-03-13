@@ -1,7 +1,7 @@
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
 
-const listPastures: {id: string, name: string, coordinates: { lat: number; lng: number }[]}[] = [];
+const listPastures: { id: string, name: string, coordinates: { lat: number; lng: number }[] }[] = [];
 let pastureCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
@@ -179,7 +179,7 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
  * @param label - The label for the polygon.
  * @returns An object containing the newly created H.map.Polygon and H.map.Marker.
  */
-export const addExistingPasture = (coords: { lat: number; lng: number }[], label: string , id: string) => {
+export const addExistingPasture = (coords: { lat: number; lng: number }[], label: string, id: string) => {
     const lineString = createLineString(coords);
     const pasture = new H.map.Polygon(lineString, {
         style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
@@ -233,17 +233,6 @@ export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
     return { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker };
 }
 
-export const updatePasturePoint = (index: number, newPoint: H.geo.Point, selectedPasture: H.map.Polygon) => {
-    if (!selectedPasture) return;
-
-    const geometry = selectedPasture.getGeometry() as H.geo.Polygon;
-    const lineString = geometry.getExterior();
-
-    lineString.removePoint(index);
-    lineString.insertPoint(index, newPoint);
-
-    return lineString;
-}
 /**
  * Removes the temporary polyline and marker from the map, if any, and returns them.
  * This function is used to clean up the temporary objects after a polygon has been completed.
