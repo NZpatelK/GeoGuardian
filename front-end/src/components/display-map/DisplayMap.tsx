@@ -95,6 +95,7 @@ export const DisplayMap = () => {
         // ---------------------------------------------------------------------------------------------------------------------------//
 
         let isDrawing = false;
+        let currentPositionId: any;
         const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
 
         if (existPasturesCoordinates) {
@@ -106,7 +107,8 @@ export const DisplayMap = () => {
 
             existingPasture.pasture.addEventListener('tap', () => {
               if (tapDisabled) return; // Prevent further tap events if disabled
-
+              if (item.id === currentPositionId) return;
+              currentPositionId = item.id;
               console.log("Selected pasture:", existingPasture.pasture);
 
               const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
