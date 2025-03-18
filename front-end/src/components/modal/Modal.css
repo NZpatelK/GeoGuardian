@@ -2,11 +2,11 @@
     position: fixed;
     top: 100px;
     left: 100px;
-    width: 250px;
+    width: 280px;
     height: 400px;
     /* transform: translate(-50%, -50%);    */
     background-color: #ffffff;
-    padding: 0.5rem 2rem;
+    padding: 0.5rem 1rem;
     border-radius: 10px;
     z-index: 1;
     color: #000;

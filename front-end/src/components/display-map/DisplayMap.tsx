@@ -9,6 +9,7 @@ import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
 import AnimalUtils from './AnimalUtils';
 import { labelIcon } from '../../assets/Icon';
+import { Navbar } from '../navbar/Navbar';
 
 interface Animal {
   id: number;
@@ -28,6 +29,9 @@ export const DisplayMap = () => {
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isAddMode, setIsAddMode] = useState(false);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const isMapLoaded = useRef(false);
 
 
@@ -442,6 +446,9 @@ export const DisplayMap = () => {
     return markers;
   };
 
+  const toggleModal = (modal: string) => {
+    setModalIsSelected(modal);
+  };
 
 
   return (
@@ -454,26 +461,31 @@ export const DisplayMap = () => {
     >
       <Modal>
         <div className="modal-content">
-          {/* <div className="lat-input input-container">
-            <h3> Latitude</h3>
-            <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
-          </div>
-          <div className="lng-input input-container">
-            <h3> Longitude</h3>
-            <input type="number" step="0.0001" value={currentPosition.lng} onChange={(e) => setCurrentPosition({ ...currentPosition, lng: parseFloat(e.target.value) })} />
-          </div>
-          <button onClick={updateUserLocation}>
-            Update User Location
-          </button> */}
-          {displayAnimal.map((animal) => (
+          {modalIsSelected === "animals" && displayAnimal.map((animal) => (
             <div key={animal.id} className="animal-item">
               <h3>{animal.name} - {animal.id} </h3>
               <p>Type: {animal.type}</p>
               <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
             </div>
           ))}
+
+          {modalIsSelected === "pastures" && (
+            <>
+              {getPastures().map((pasture) => (
+                <div key={pasture.id} className="pasture-item">
+                  <h3>{pasture.name}</h3>
+                  <p>Id: {pasture.id}</p>
+                </div>))}
+              <div className="button-group">
+                <button onClick={() => setIsAddMode(true)} style={{marginLeft:"0"}}>Add</button>
+                <button onClick={() => setIsEditMode(true)}>Edit</button>
+                <button onClick={() => setIsDeleteMode(true)} style={{marginRight:"0"}}>Delete</button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
+      <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
     </div>

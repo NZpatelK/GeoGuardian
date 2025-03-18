@@ -3,7 +3,11 @@ import './Navbar.css'
 import map from '../../assets/map.png'
 import animals from '../../assets/livestock.png';
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  toggleModal: (type: string) => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({toggleModal}) => {
   const [isOpened, setIsOpened] = useState(false);
 
   const toggleMenu = () => {
@@ -17,10 +21,10 @@ export const Navbar: React.FC = () => {
         aria-expanded={isOpened}
       >
         <div className="menu-container">
-          <div data-title="Pastures" className="menu-item">
+          <div data-title="Pastures" className="menu-item" onClick={() => toggleModal('pastures')}>
             <img src={map} alt="" className='map-icon' />
           </div>
-          <div data-title="Animals" className="menu-item">
+          <div data-title="Animals" className="menu-item" onClick={() => toggleModal('animals')}>
             <img src={animals} alt="" className='animals-icon' />
           </div>
         </div>
