@@ -34,6 +34,10 @@ export const DisplayMap = () => {
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const isMapLoaded = useRef(false);
 
+  const isSelectedPasture = useRef(false);
+  const isAddModeRef = useRef(isAddMode);
+  const isDeleteModeRef = useRef(isDeleteMode);
+  const isEditModeRef = useRef(isEditMode);
 
   useEffect(() => {
     /**
@@ -110,16 +114,18 @@ export const DisplayMap = () => {
 
             existingPasture.pasture.addEventListener('tap', () => {
               if (tapDisabled) return; // Prevent further tap events if disabled
+              if (!isEditModeRef.current) return;
+              if (isSelectedPasture.current) return;
               if (item.id === currentPositionId) return;
               currentPositionId = item.id;
 
               const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
-
               if (markers) {
                 for (const marker of markers) {
                   hereMap.addObject(marker);
                 }
               }
+              isSelectedPasture.current = true;
               // Disable the tap for 1000ms (1 second)
               tapDisabled = true;
               setTimeout(() => {
@@ -133,8 +139,8 @@ export const DisplayMap = () => {
           }
         }
 
-        hereMap.addEventListener("tap", async (evt: any) => {
-          if (!isEditMode) return;
+        const addNewPasture = async (evt: any) => {
+          if (!isAddModeRef.current) return;
           const coords = hereMap.screenToGeo(
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
@@ -142,43 +148,9 @@ export const DisplayMap = () => {
 
           if (!coords) return;
           isDrawing = await createNewPasture(coords, hereMap, isDrawing);
+        };
 
-          // if (!isDrawing) {
-          //   const tempMarker = startPolygon(coords as { lat: number; lng: number });
-          //   isDrawing = true;
-
-          //   hereMap.addObject(tempMarker as H.map.Marker);
-          // } else {
-          //   const startPoint = getSpecifcPolygonCoordinates(0);
-          //   const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
-
-          //   if (distanceToStart < 10) {
-          //     const inputName = prompt("Please enter the name of the pasture:");
-
-          //     const result = await closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
-
-          //     if (result) {
-          //       const { removeTempPolyline, removeTempMarker, polygon } = result;
-          //       if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
-          //       if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-          //       hereMap.addObject(polygon);
-          //     }
-
-          //     const label = createLabel(inputName as string);
-          //     hereMap.addObject(label);
-
-          //     isDrawing = false;
-
-          //   } else {
-          //     const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
-
-          //     if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
-          //     if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-          //     hereMap.addObject(addTempPolyline as H.map.Polyline);
-          //     hereMap.addObject(addTempMarker as H.map.Marker);
-          //   }
-          // }
-        });
+        hereMap.addEventListener("tap", addNewPasture);
 
         hereMap.addEventListener('mapviewchangeend', () => {
           const zoom = hereMap.getZoom();
@@ -188,6 +160,7 @@ export const DisplayMap = () => {
         setMapInstance(hereMap);
 
         return () => {
+          hereMap.removeEventListener('tap', addNewPasture);
           hereMap.dispose();
         };
       };
@@ -196,24 +169,36 @@ export const DisplayMap = () => {
   }, []);
 
   useEffect(() => {
+    isAddModeRef.current = isAddMode;
+    isDeleteModeRef.current = isDeleteMode;
+    isEditModeRef.current = isEditMode;
+  }, [isAddMode, isDeleteMode, isEditMode]);
+
+  useEffect(() => {
     if (mapInstance) {
       const initialiseAndAddExistingAnimalsIntoMap = async () => {
         await AnimalUtils.intialiseAnimals()
         const animalData = AnimalUtils.getAnimals();
+
         if (animalData && animalData.length > 0) {
           const animalPosition: Record<number, H.map.Marker> = {};
+
           animalData.forEach((animal) => {
             const newlabel = labelIcon(animal.id.toString());
+
             const position = new H.map.Marker(
               { lat: animal.coordinates.lat, lng: animal.coordinates.lng },
               { icon: newlabel, data: {} });
             // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
+
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
+
             setPolygonState(updatePolygonState(animal, polygonState));
           });
           animalRef.current = animalPosition;
         }
+
         setDisplayAnimal(animalData);
       };
       initialiseAndAddExistingAnimalsIntoMap();
@@ -386,9 +371,11 @@ export const DisplayMap = () => {
       const marker = createMarker(point);
       marker.draggable = true;
 
-      marker.addEventListener("dbltap", () => deleteMarker(index));
+      marker.addEventListener("tap", () =>
+        isDeleteMode && deleteMarker(index));
 
-      marker.addEventListener("dragstart", () => behavior?.disable());
+      marker.addEventListener("dragstart", () =>
+        behavior?.disable());
 
       marker.addEventListener("drag", (ev) => {
         const draggedPoint = hereMap.screenToGeo(ev.currentPointer.viewportX, ev.currentPointer.viewportY);
@@ -399,7 +386,8 @@ export const DisplayMap = () => {
         updatePasture();
       });
 
-      marker.addEventListener("dragend", () => behavior?.enable());
+      marker.addEventListener("dragend", () =>
+        behavior?.enable());
 
       hereMap.addObject(marker);
       return marker;
@@ -417,6 +405,7 @@ export const DisplayMap = () => {
     updateMarkers(); // Initialize markers
 
     pasture.addEventListener("tap", (evt) => {
+      if (!isEditMode) return;
       const newPoint = hereMap.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
       if (!newPoint) return;
 
@@ -450,6 +439,13 @@ export const DisplayMap = () => {
     setModalIsSelected(modal);
   };
 
+  const togglePastureControl = (selectButton: number) => {
+    setIsAddMode(() => { return selectButton === 1 });
+    setIsEditMode(selectButton === 2);
+    setIsDeleteMode(selectButton === 3);
+  };
+
+
 
   return (
     <div
@@ -477,9 +473,9 @@ export const DisplayMap = () => {
                   <p>Id: {pasture.id}</p>
                 </div>))}
               <div className="button-group">
-                <button onClick={() => setIsAddMode(true)} style={{marginLeft:"0"}}>Add</button>
-                <button onClick={() => setIsEditMode(true)}>Edit</button>
-                <button onClick={() => setIsDeleteMode(true)} style={{marginRight:"0"}}>Delete</button>
+                <button onClick={() => togglePastureControl(1)} style={{ marginLeft: "0" }}>Add</button>
+                <button onClick={() => togglePastureControl(2)}>Edit</button>
+                <button onClick={() => togglePastureControl(3)} style={{ marginRight: "0" }}>Delete</button>
               </div>
             </>
           )}
