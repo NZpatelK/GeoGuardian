@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -116,19 +116,19 @@ export const DisplayMap = () => {
 
             existingPasture.pasture.addEventListener('tap', () => {
               if (tapDisabled || !modeRefs.current.isEdit || isSelectedPastureRef.current || item.id === currentPositionId) return;
-              
+
               currentPositionId = item.id;
-            
+
               const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
               markers?.forEach(marker => hereMap.addObject(marker));
-            
+
               isSelectedPastureRef.current = true;
-            
+
               // Disable tap for 1000ms (1 second)
               tapDisabled = true;
               setTimeout(() => tapDisabled = false, 1000);
             });
-            
+
             hereMap.addObject(existingPasture.pasture);
             hereMap.addObject(existingPasture.labelMarker);
           }
@@ -294,38 +294,38 @@ export const DisplayMap = () => {
       hereMap.addObject(tempMarker as H.map.Marker);
       return true;
     }
-  
+
     const startPoint = getSpecifcPolygonCoordinates(0);
     const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords);
-  
+
     if (distanceToStart < 10) {
       const inputName = prompt("Please enter the name of the pasture:");
       const result = await closePolygon(startPoint, inputName as string);
-  
+
       if (result) {
         const { removeTempPolyline, removeTempMarker, polygon } = result;
         if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
         if (removeTempMarker) hereMap.removeObject(removeTempMarker);
         hereMap.addObject(polygon);
       }
-  
+
       const label = createLabel(inputName as string);
       hereMap.addObject(label);
-  
+
       return false;
     }
-  
+
     const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords);
-  
+
     if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
     if (removeTempMarker) hereMap.removeObject(removeTempMarker);
     hereMap.addObject(addTempPolyline as H.map.Polyline);
     hereMap.addObject(addTempMarker as H.map.Marker);
-  
+
     return true;
   };
-  
-  
+
+
   const selectPasture = (pasture: H.map.Polygon, hereMap: HMap, behavior: H.mapevents.Behavior) => {
     if (!pasture || !hereMap) return;
 
@@ -338,12 +338,12 @@ export const DisplayMap = () => {
       points.push(exterior.extractPoint(i));
     }
 
-    const updatePasture = () => {
-      const updatedLineString = new H.geo.LineString();
-      points.forEach((p) => updatedLineString.pushPoint(p));
-      updatedLineString.pushPoint(points[0]); // Close the shape
-      pasture.setGeometry(new H.geo.Polygon(updatedLineString));
-    };
+    // const updatePasture = () => {
+    //   const updatedLineString = new H.geo.LineString();
+    //   points.forEach((p) => updatedLineString.pushPoint(p));
+    //   updatedLineString.pushPoint(points[0]); // Close the shape
+    //   pasture.setGeometry(new H.geo.Polygon(updatedLineString));
+    // };
 
     const deleteMarker = (index: number) => {
       if (points.length <= 3) {
@@ -356,7 +356,7 @@ export const DisplayMap = () => {
       markers.splice(index, 1);
 
       updateMarkers();
-      updatePasture();
+      pasture = updatePasture(points, pasture);
     };
 
     const createAndAddMarker = (point: H.geo.Point, index: number) => {
@@ -373,7 +373,7 @@ export const DisplayMap = () => {
 
         points[index] = draggedPoint;
         marker.setGeometry(draggedPoint);
-        updatePasture();
+        pasture = updatePasture(points, pasture);
       });
 
       marker.addEventListener("dragend", () =>
@@ -419,7 +419,7 @@ export const DisplayMap = () => {
 
       points.splice(insertIndex, 0, newPoint);
       updateMarkers();
-      updatePasture();
+      pasture = updatePasture(points, pasture);
     });
 
     return markers;

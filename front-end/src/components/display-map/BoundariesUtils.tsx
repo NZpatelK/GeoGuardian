@@ -13,9 +13,6 @@ export const getPastures = () => {
     return listPastures;
 }
 
-// export const getSpecficPasture = (label: string) => {
-//     return listPastures.find(pasture => pasture.label === label);
-// }
 /**
  * Calculates the distance between two geographical points using the Haversine formula.
  * 
@@ -319,5 +316,14 @@ export const updatePolygonState = (animalData: { id: number, name: string, coord
     });
 
     return polygonState;
+};
+
+export const updatePasture = (points: H.geo.Point[], pasture: H.map.Polygon) => {
+    const updatedLineString = new H.geo.LineString();
+    points.forEach((p) => updatedLineString.pushPoint(p));
+    updatedLineString.pushPoint(points[0]); // Close the shape
+    pasture.setGeometry(new H.geo.Polygon(updatedLineString));
+
+    return pasture;
 };
 
