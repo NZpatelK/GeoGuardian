@@ -114,27 +114,6 @@ export const DisplayMap = () => {
 
             let tapDisabled = false; // Flag to track if tap is disabled
 
-            // existingPasture.pasture.addEventListener('tap', () => {
-            //   if (tapDisabled) return; // Prevent further tap events if disabled
-            //   if (!modeRefs.current.isEdit) return;
-            //   if (isSelectedPastureRef.current) return;
-            //   if (item.id === currentPositionId) return;
-            //   currentPositionId = item.id;
-
-            //   const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
-            //   if (markers) {
-            //     for (const marker of markers) {
-            //       hereMap.addObject(marker);
-            //     }
-            //   }
-            //   isSelectedPastureRef.current = true;
-            //   // Disable the tap for 1000ms (1 second)
-            //   tapDisabled = true;
-            //   setTimeout(() => {
-            //     tapDisabled = false; // Re-enable tap after 1000ms
-            //   }, 1000);
-            // });
-
             existingPasture.pasture.addEventListener('tap', () => {
               if (tapDisabled || !modeRefs.current.isEdit || isSelectedPastureRef.current || item.id === currentPositionId) return;
               
@@ -150,8 +129,6 @@ export const DisplayMap = () => {
               setTimeout(() => tapDisabled = false, 1000);
             });
             
-
-
             hereMap.addObject(existingPasture.pasture);
             hereMap.addObject(existingPasture.labelMarker);
           }
@@ -307,46 +284,48 @@ export const DisplayMap = () => {
   }, []);
 
 
-  const createNewPasture = async (coords: { lat: number; lng: number }, hereMap: HMap, isDrawing: boolean) => {
+  const createNewPasture = async (
+    coords: { lat: number; lng: number },
+    hereMap: HMap,
+    isDrawing: boolean
+  ): Promise<boolean> => {
     if (!isDrawing) {
-      const tempMarker = startPolygon(coords as { lat: number; lng: number });
-      isDrawing = true;
-
+      const tempMarker = startPolygon(coords);
       hereMap.addObject(tempMarker as H.map.Marker);
-    } else {
-      const startPoint = getSpecifcPolygonCoordinates(0);
-      const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
-
-      if (distanceToStart < 10) {
-        const inputName = prompt("Please enter the name of the pasture:");
-
-        const result = await closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
-
-        if (result) {
-          const { removeTempPolyline, removeTempMarker, polygon } = result;
-          if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
-          if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-          hereMap.addObject(polygon);
-        }
-
-        const label = createLabel(inputName as string);
-        hereMap.addObject(label);
-
-        isDrawing = false;
-
-      } else {
-        const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
-
+      return true;
+    }
+  
+    const startPoint = getSpecifcPolygonCoordinates(0);
+    const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords);
+  
+    if (distanceToStart < 10) {
+      const inputName = prompt("Please enter the name of the pasture:");
+      const result = await closePolygon(startPoint, inputName as string);
+  
+      if (result) {
+        const { removeTempPolyline, removeTempMarker, polygon } = result;
         if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
         if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-        hereMap.addObject(addTempPolyline as H.map.Polyline);
-        hereMap.addObject(addTempMarker as H.map.Marker);
+        hereMap.addObject(polygon);
       }
+  
+      const label = createLabel(inputName as string);
+      hereMap.addObject(label);
+  
+      return false;
     }
-
-    return isDrawing;
-  }
-
+  
+    const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords);
+  
+    if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+    if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+    hereMap.addObject(addTempPolyline as H.map.Polyline);
+    hereMap.addObject(addTempMarker as H.map.Marker);
+  
+    return true;
+  };
+  
+  
   const selectPasture = (pasture: H.map.Polygon, hereMap: HMap, behavior: H.mapevents.Behavior) => {
     if (!pasture || !hereMap) return;
 
