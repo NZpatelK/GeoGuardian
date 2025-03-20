@@ -10,6 +10,7 @@ import './DisplayMap.css';
 import AnimalUtils from './AnimalUtils';
 import { labelIcon } from '../../assets/Icon';
 import { Navbar } from '../navbar/Navbar';
+import { EditModeBar } from '../editModeBar/EditModeBar';
 
 interface Animal {
   id: number;
@@ -28,16 +29,17 @@ export const DisplayMap = () => {
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isAddMode, setIsAddMode] = useState(false);
-  const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const isMapLoaded = useRef(false);
 
-  const isSelectedPasture = useRef(false);
-  const isAddModeRef = useRef(isAddMode);
-  const isDeleteModeRef = useRef(isDeleteMode);
-  const isEditModeRef = useRef(isEditMode);
+  const isSelectedPastureRef = useRef(false);
+  const modeRefs = useRef({
+    isAdd: false,
+    isDelete: false,
+    isEdit: false,
+    isAddPoint: false,
+    isDeletePoint: false,
+  })
 
   useEffect(() => {
     /**
@@ -114,8 +116,8 @@ export const DisplayMap = () => {
 
             existingPasture.pasture.addEventListener('tap', () => {
               if (tapDisabled) return; // Prevent further tap events if disabled
-              if (!isEditModeRef.current) return;
-              if (isSelectedPasture.current) return;
+              if (!modeRefs.current.isEdit) return;
+              if (isSelectedPastureRef.current) return;
               if (item.id === currentPositionId) return;
               currentPositionId = item.id;
 
@@ -125,7 +127,7 @@ export const DisplayMap = () => {
                   hereMap.addObject(marker);
                 }
               }
-              isSelectedPasture.current = true;
+              isSelectedPastureRef.current = true;
               // Disable the tap for 1000ms (1 second)
               tapDisabled = true;
               setTimeout(() => {
@@ -140,7 +142,7 @@ export const DisplayMap = () => {
         }
 
         const addNewPasture = async (evt: any) => {
-          if (!isAddModeRef.current) return;
+          if (!modeRefs.current.isAdd) return;
           const coords = hereMap.screenToGeo(
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
@@ -168,11 +170,6 @@ export const DisplayMap = () => {
     initializeMap();
   }, []);
 
-  useEffect(() => {
-    isAddModeRef.current = isAddMode;
-    isDeleteModeRef.current = isDeleteMode;
-    isEditModeRef.current = isEditMode;
-  }, [isAddMode, isDeleteMode, isEditMode]);
 
   useEffect(() => {
     if (mapInstance) {
@@ -371,11 +368,9 @@ export const DisplayMap = () => {
       const marker = createMarker(point);
       marker.draggable = true;
 
-      marker.addEventListener("tap", () =>
-        isDeleteMode && deleteMarker(index));
+      marker.addEventListener("tap", () => modeRefs.current.isDeletePoint && deleteMarker(index));
 
-      marker.addEventListener("dragstart", () =>
-        behavior?.disable());
+      marker.addEventListener("dragstart", () => behavior?.disable());
 
       marker.addEventListener("drag", (ev) => {
         const draggedPoint = hereMap.screenToGeo(ev.currentPointer.viewportX, ev.currentPointer.viewportY);
@@ -405,7 +400,7 @@ export const DisplayMap = () => {
     updateMarkers(); // Initialize markers
 
     pasture.addEventListener("tap", (evt) => {
-      if (!isEditMode) return;
+      if (!modeRefs.current.isAddPoint) return;
       const newPoint = hereMap.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
       if (!newPoint) return;
 
@@ -439,13 +434,15 @@ export const DisplayMap = () => {
     setModalIsSelected(modal);
   };
 
-  const togglePastureControl = (selectButton: number) => {
-    setIsAddMode(() => { return selectButton === 1 });
-    setIsEditMode(selectButton === 2);
-    setIsDeleteMode(selectButton === 3);
+  const togglePastureControl = (selectMode: number) => {
+    Object.assign(modeRefs.current, {
+      isAdd: selectMode === 1,
+      isEdit: selectMode === 2,
+      isDelete: selectMode === 3,
+      isAddPoint: selectMode === 4,
+      isDeletePoint: selectMode === 5,
+    });
   };
-
-
 
   return (
     <div
@@ -481,6 +478,7 @@ export const DisplayMap = () => {
           )}
         </div>
       </Modal>
+      {(modeRefs.current.isEdit && isSelectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} />}
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
