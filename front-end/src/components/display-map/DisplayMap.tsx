@@ -114,26 +114,42 @@ export const DisplayMap = () => {
 
             let tapDisabled = false; // Flag to track if tap is disabled
 
-            existingPasture.pasture.addEventListener('tap', () => {
-              if (tapDisabled) return; // Prevent further tap events if disabled
-              if (!modeRefs.current.isEdit) return;
-              if (isSelectedPastureRef.current) return;
-              if (item.id === currentPositionId) return;
-              currentPositionId = item.id;
+            // existingPasture.pasture.addEventListener('tap', () => {
+            //   if (tapDisabled) return; // Prevent further tap events if disabled
+            //   if (!modeRefs.current.isEdit) return;
+            //   if (isSelectedPastureRef.current) return;
+            //   if (item.id === currentPositionId) return;
+            //   currentPositionId = item.id;
 
+            //   const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+            //   if (markers) {
+            //     for (const marker of markers) {
+            //       hereMap.addObject(marker);
+            //     }
+            //   }
+            //   isSelectedPastureRef.current = true;
+            //   // Disable the tap for 1000ms (1 second)
+            //   tapDisabled = true;
+            //   setTimeout(() => {
+            //     tapDisabled = false; // Re-enable tap after 1000ms
+            //   }, 1000);
+            // });
+
+            existingPasture.pasture.addEventListener('tap', () => {
+              if (tapDisabled || !modeRefs.current.isEdit || isSelectedPastureRef.current || item.id === currentPositionId) return;
+              
+              currentPositionId = item.id;
+            
               const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
-              if (markers) {
-                for (const marker of markers) {
-                  hereMap.addObject(marker);
-                }
-              }
+              markers?.forEach(marker => hereMap.addObject(marker));
+            
               isSelectedPastureRef.current = true;
-              // Disable the tap for 1000ms (1 second)
+            
+              // Disable tap for 1000ms (1 second)
               tapDisabled = true;
-              setTimeout(() => {
-                tapDisabled = false; // Re-enable tap after 1000ms
-              }, 1000);
+              setTimeout(() => tapDisabled = false, 1000);
             });
+            
 
 
             hereMap.addObject(existingPasture.pasture);
