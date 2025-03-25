@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -338,13 +338,6 @@ export const DisplayMap = () => {
       points.push(exterior.extractPoint(i));
     }
 
-    // const updatePasture = () => {
-    //   const updatedLineString = new H.geo.LineString();
-    //   points.forEach((p) => updatedLineString.pushPoint(p));
-    //   updatedLineString.pushPoint(points[0]); // Close the shape
-    //   pasture.setGeometry(new H.geo.Polygon(updatedLineString));
-    // };
-
     const deleteMarker = (index: number) => {
       if (points.length <= 3) {
         alert("You need at least three points to keep the shape.");
@@ -399,27 +392,14 @@ export const DisplayMap = () => {
       const newPoint = hereMap.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
       if (!newPoint) return;
 
-      let insertIndex = -1;
-      let minDistance = Number.MAX_VALUE;
+      const result = addNewPoint(newPoint as H.geo.Point, points, pasture);
 
-      for (let i = 0; i < points.length - 1; i++) {
-        const midPoint = new H.geo.Point(
-          (points[i].lat + points[i + 1].lat) / 2,
-          (points[i].lng + points[i + 1].lng) / 2
-        );
-
-        const distance = Math.hypot(midPoint.lat - newPoint.lat, midPoint.lng - newPoint.lng);
-        if (distance < minDistance) {
-          minDistance = distance;
-          insertIndex = i + 1;
-        }
+      if (result) {
+        points.length = 0;
+        points.push(...result.points);
+        pasture = result.pasture;
+        updateMarkers();
       }
-
-      if (insertIndex === -1) return;
-
-      points.splice(insertIndex, 0, newPoint);
-      updateMarkers();
-      pasture = updatePasture(points, pasture);
     });
 
     return markers;
@@ -429,13 +409,38 @@ export const DisplayMap = () => {
     setModalIsSelected(modal);
   };
 
-  const togglePastureControl = (selectMode: number) => {
+  // const togglePastureControl = (selectMode: number) => {
+  //   Object.assign(modeRefs.current, {
+  //     isAdd: selectMode === 1,
+  //     isEdit: selectMode === 2 || selectMode === 4 || selectMode === 5,
+  //     isDelete: selectMode === 3,
+  //     isAddPoint: selectMode === 4,
+  //     isDeletePoint: selectMode === 5,
+  //   });
+
+  //   toast("Please select a pasture to edit", {
+  //     type: "info",
+  //     position: "top-center",
+  //   });
+  // };
+
+  const togglePastureControl = (selectMode: 1 | 2 | 3 | 4 | 5) => {
+    const modeMap = {
+      1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
+      2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
+      3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
+      4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
+      5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
+    };
+  
     Object.assign(modeRefs.current, {
-      isAdd: selectMode === 1,
-      isEdit: selectMode === 2,
-      isDelete: selectMode === 3,
-      isAddPoint: selectMode === 4,
-      isDeletePoint: selectMode === 5,
+      isAdd: false, isEdit: false, isDelete: false, isAddPoint: false, isDeletePoint: false,
+      ...modeMap[selectMode],
+    });
+  
+    toast(modeMap[selectMode]?.message || "Invalid mode selected", {
+      type: "info",
+      position: "top-center",
     });
   };
 
@@ -465,9 +470,9 @@ export const DisplayMap = () => {
                   <p>Id: {pasture.id}</p>
                 </div>))}
               <div className="button-group">
-                <button onClick={() => togglePastureControl(1)} style={{ marginLeft: "0" }}>Add</button>
-                <button onClick={() => togglePastureControl(2)}>Edit</button>
-                <button onClick={() => togglePastureControl(3)} style={{ marginRight: "0" }}>Delete</button>
+                <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
+                <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
+                <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }}>Delete</button>
               </div>
             </>
           )}

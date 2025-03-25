@@ -1,3 +1,4 @@
+import { Map as HMap } from "@here/maps-api-for-javascript";
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
 
@@ -326,4 +327,34 @@ export const updatePasture = (points: H.geo.Point[], pasture: H.map.Polygon) => 
 
     return pasture;
 };
+
+
+export const addNewPoint = (newPoint: H.geo.Point, points: H.geo.Point[], pasture: H.map.Polygon) => {
+    let insertIndex = -1;
+    let minDistance = Number.MAX_VALUE;
+
+    for (let i = 0; i < points.length - 1; i++) {
+        const midPoint = new H.geo.Point(
+            (points[i].lat + points[i + 1].lat) / 2,
+            (points[i].lng + points[i + 1].lng) / 2
+        );
+
+        const distance = Math.hypot(midPoint.lat - newPoint.lat, midPoint.lng - newPoint.lng);
+        if (distance < minDistance) {
+            minDistance = distance;
+            insertIndex = i + 1;
+        }
+    }
+
+    if (insertIndex === -1) return;
+
+    points.splice(insertIndex, 0, newPoint);
+    const updatePoint = [...points];
+    // updateMarkers();
+    const updatedPasture = updatePasture(points, pasture);
+
+    console.log(updatePoint);
+
+    return { pasture: updatedPasture, points: updatePoint };
+}
 

@@ -8,6 +8,7 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(5px);
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     transform: translateX(-50%);
@@ -38,6 +39,11 @@ button:focus {
     outline: none;
 }
 
+.edit-mode-bar-container button:disabled {
+    background: #ccc;
+    color: #000;
+}
+
 .edit-mode-bar-container .add-btn {
     background: #4CAF50;
     color: #fff;
@@ -46,4 +52,10 @@ button:focus {
 .edit-mode-bar-container .delete-btn {
     background: #f44336;
     color: #fff;
+}
+
+.done-btn{
+    width: 90% !important;
+    margin-top: 20px !important;
+    background: #000000;
 }

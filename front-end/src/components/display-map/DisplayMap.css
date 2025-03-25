@@ -70,3 +70,13 @@
     background: #000000;
     color: #fff;
 }
+
+.button-group button:hover{
+    cursor: pointer;
+    transform: scale(1.05);
+}
+
+.button-group button:disabled{
+    background: #ccc;
+    transform: scale(1);
+}
