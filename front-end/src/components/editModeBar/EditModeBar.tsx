@@ -2,7 +2,7 @@ import React from 'react'
 import './EditModeBar.css'
 
 interface EditModeBarProps {
-    togglePastureControl: (modeinput: number) => void;
+    togglePastureControl: (modeinput: 1 | 2 | 3 | 4 | 5) => void;
 }
 
 export const EditModeBar: React.FC<EditModeBarProps> = ({ togglePastureControl }) => {
