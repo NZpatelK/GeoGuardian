@@ -44,6 +44,30 @@ class PasturesApi {
             }
         }
     }
+
+    static async updatePasture(pastureId: string, newCoordinates: { lat: number; lng: number }[]) {
+        const data = {
+            id: pastureId,
+            coordinates: newCoordinates,
+        };
+        try {
+            // Send data to the backend using axios
+            const response = await axios.put('http://localhost:3000/api/pastures/updatePasture', data, {
+                headers: {
+                    'Content-Type': 'application/json', // Ensure the server expects JSON
+                },
+            });
+
+            console.log(response.data.message); // Success message
+            return data;
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.error('Error:', err.response ? err.response.data : err.message);
+            } else {
+                console.error('Error:', err);
+            }
+        }
+    }
 }
 
 export default PasturesApi

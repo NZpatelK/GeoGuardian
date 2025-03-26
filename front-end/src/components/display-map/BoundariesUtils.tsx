@@ -358,3 +358,13 @@ export const addNewPoint = (newPoint: H.geo.Point, points: H.geo.Point[], pastur
     return { pasture: updatedPasture, points: updatePoint };
 }
 
+export const updatePastureDatabase = async (pastureId: string, coord: { lat: number; lng: number } []) => {
+
+    const pasture = listPastures.find(pasture => pasture.id === pastureId);
+    if (!pasture) return;
+    pasture.coordinates = coord;
+
+    await PasturesApi.updatePasture(pastureId, coord);
+    
+}
+

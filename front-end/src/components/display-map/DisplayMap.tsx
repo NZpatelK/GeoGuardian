@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -25,14 +25,15 @@ interface Animal {
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
-  const animalRef = useRef<Record<number, H.map.Marker>>({});
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const isMapLoaded = useRef(false);
 
-  const isSelectedPastureRef = useRef(false);
+  const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
+  const markersRef = useRef<H.map.Marker[]>([]);
+  const animalRef = useRef<Record<number, H.map.Marker>>({});
   const modeRefs = useRef({
     isAdd: false,
     isDelete: false,
@@ -104,7 +105,7 @@ export const DisplayMap = () => {
         // ---------------------------------------------------------------------------------------------------------------------------//
 
         let isDrawing = false;
-        let currentPositionId: any;
+        // let currentPositionId: any;
         const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
 
         if (existPasturesCoordinates) {
@@ -115,14 +116,12 @@ export const DisplayMap = () => {
             let tapDisabled = false; // Flag to track if tap is disabled
 
             existingPasture.pasture.addEventListener('tap', () => {
-              if (tapDisabled || !modeRefs.current.isEdit || isSelectedPastureRef.current || item.id === currentPositionId) return;
-
-              currentPositionId = item.id;
+              if (tapDisabled || !modeRefs.current.isEdit || selectedPastureRef.current.id) return;
 
               const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
               markers?.forEach(marker => hereMap.addObject(marker));
 
-              isSelectedPastureRef.current = true;
+              selectedPastureRef.current.id = item.id;
 
               // Disable tap for 1000ms (1 second)
               tapDisabled = true;
@@ -331,8 +330,13 @@ export const DisplayMap = () => {
 
     const geometry = pasture.getGeometry() as H.geo.Polygon;
     const exterior = geometry.getExterior();
-    const markers: H.map.Marker[] = [];
+    // const markers: H.map.Marker[] = [];
+    markersRef.current = [];
     const points: H.geo.Point[] = [];
+
+    selectedPastureRef.current.coord = exterior.getLatLngAltArray()
+      .map((_, i, arr) => i % 3 === 0 ? { lat: arr[i], lng: arr[i + 1] } : null)
+      .filter(Boolean) as { lat: number; lng: number }[];;
 
     for (let i = 0; i < exterior.getPointCount(); i++) {
       points.push(exterior.extractPoint(i));
@@ -344,9 +348,9 @@ export const DisplayMap = () => {
         return;
       }
 
-      hereMap.removeObject(markers[index]);
+      hereMap.removeObject(markersRef.current[index]);
       points.splice(index, 1);
-      markers.splice(index, 1);
+      markersRef.current.splice(index, 1);
 
       updateMarkers();
       pasture = updatePasture(points, pasture);
@@ -369,19 +373,27 @@ export const DisplayMap = () => {
         pasture = updatePasture(points, pasture);
       });
 
-      marker.addEventListener("dragend", () =>
-        behavior?.enable());
+      marker.addEventListener("dragend", () => {
+        behavior?.enable()
+        const newGeo = pasture.getGeometry() as H.geo.Polygon;
+        const latLngAltArray = newGeo.getExterior().getLatLngAltArray();
+        // if (!latLngAltArray) return;
+        selectedPastureRef.current.coord = latLngAltArray
+          .map((_, i, arr) => i % 3 === 0 ? { lat: arr[i], lng: arr[i + 1] } : null)
+          .filter(Boolean) as { lat: number; lng: number }[];
+
+      });
 
       hereMap.addObject(marker);
       return marker;
     };
 
     const updateMarkers = () => {
-      markers.forEach((marker) => hereMap.removeObject(marker));
-      markers.length = 0;
+      markersRef.current.forEach((marker) => hereMap.removeObject(marker));
+      markersRef.current.length = 0;
 
       points.forEach((point, i) => {
-        markers.push(createAndAddMarker(point, i));
+        markersRef.current.push(createAndAddMarker(point, i));
       });
     };
 
@@ -402,47 +414,63 @@ export const DisplayMap = () => {
       }
     });
 
-    return markers;
+    return markersRef.current;
   };
 
   const toggleModal = (modal: string) => {
     setModalIsSelected(modal);
   };
 
-  // const togglePastureControl = (selectMode: number) => {
-  //   Object.assign(modeRefs.current, {
-  //     isAdd: selectMode === 1,
-  //     isEdit: selectMode === 2 || selectMode === 4 || selectMode === 5,
-  //     isDelete: selectMode === 3,
-  //     isAddPoint: selectMode === 4,
-  //     isDeletePoint: selectMode === 5,
-  //   });
+  const togglePastureControl = (selectMode: 0 | 1 | 2 | 3 | 4 | 5) => {
+    if (selectMode === 0) {
+        Object.assign(modeRefs.current, {
+            isAdd: false, 
+            isEdit: false, 
+            isDelete: false, 
+            isAddPoint: false, 
+            isDeletePoint: false,
+        });
 
-  //   toast("Please select a pasture to edit", {
-  //     type: "info",
-  //     position: "top-center",
-  //   });
-  // };
+        return;
+    }
 
-  const togglePastureControl = (selectMode: 1 | 2 | 3 | 4 | 5) => {
     const modeMap = {
-      1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
-      2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
-      3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
-      4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
-      5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
+        1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
+        2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
+        3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
+        4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
+        5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
     };
-  
+
     Object.assign(modeRefs.current, {
-      isAdd: false, isEdit: false, isDelete: false, isAddPoint: false, isDeletePoint: false,
-      ...modeMap[selectMode],
+        isAdd: false, 
+        isEdit: false, 
+        isDelete: false, 
+        isAddPoint: false, 
+        isDeletePoint: false,
+        ...modeMap[selectMode],
     });
-  
+
     toast(modeMap[selectMode]?.message || "Invalid mode selected", {
-      type: "info",
-      position: "top-center",
+        type: "info",
+        position: "top-center",
     });
-  };
+};
+
+
+  const handleClickDone = () => {
+    togglePastureControl(0);
+    if (selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
+      updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
+
+      markersRef.current.forEach((marker) => mapInstance?.removeObject(marker));
+      markersRef.current = [];
+
+      selectedPastureRef.current.id = null;
+      selectedPastureRef.current.coord = [];
+    }
+
+  }
 
   return (
     <div
@@ -478,7 +506,7 @@ export const DisplayMap = () => {
           )}
         </div>
       </Modal>
-      {(modeRefs.current.isEdit && isSelectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} />}
+      {(modeRefs.current.isEdit && selectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} />}
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
