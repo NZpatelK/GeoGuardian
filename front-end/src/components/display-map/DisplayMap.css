@@ -50,3 +50,33 @@
     margin: 0;
     padding: 0;
 }
+
+
+.button-group{
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+}
+
+.button-group button{
+    width: 40%;
+    height: 40px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 0;
+    margin: 0 5px;
+    box-sizing: border-box;
+    background: #000000;
+    color: #fff;
+}
+
+.button-group button:hover{
+    cursor: pointer;
+    transform: scale(1.05);
+}
+
+.button-group button:disabled{
+    background: #ccc;
+    transform: scale(1);
+}

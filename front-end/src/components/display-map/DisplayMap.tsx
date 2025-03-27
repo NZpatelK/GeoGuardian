@@ -3,12 +3,14 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPolygon, getPastures, updatePolygonState } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
 import AnimalUtils from './AnimalUtils';
 import { labelIcon } from '../../assets/Icon';
+import { Navbar } from '../navbar/Navbar';
+import { EditModeBar } from '../editModeBar/EditModeBar';
 
 interface Animal {
   id: number;
@@ -23,11 +25,22 @@ interface Animal {
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
-  const animalRef = useRef<Record<number, H.map.Marker>>({});
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
+  const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const isMapLoaded = useRef(false);
+
+  const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
+  const markersRef = useRef<H.map.Marker[]>([]);
+  const animalRef = useRef<Record<number, H.map.Marker>>({});
+  const modeRefs = useRef({
+    isAdd: false,
+    isDelete: false,
+    isEdit: false,
+    isAddPoint: false,
+    isDeletePoint: false,
+  })
 
   useEffect(() => {
     /**
@@ -92,60 +105,58 @@ export const DisplayMap = () => {
         // ---------------------------------------------------------------------------------------------------------------------------//
 
         let isDrawing = false;
+        // let currentPositionId: any;
         const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
 
         if (existPasturesCoordinates) {
           for (const item of existPasturesCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
-            const existingPolygon = addExistingPolygon(coord, item.name, item.id);
+            const existingPasture = addExistingPasture(coord, item.name, item.id);
 
-            hereMap.addObject(existingPolygon.existingPolygon);
-            hereMap.addObject(existingPolygon.labelMarker);
+            let tapDisabled = false; // Flag to track if tap is disabled
+
+            existingPasture.pasture.addEventListener('tap', () => {
+
+              // if(modeRefs.current.isDelete) {
+              //   hereMap.removeObject(existingPasture.pasture);
+              //   hereMap.removeObject(existingPasture.labelMarker);
+              //   deletePasture(item.id);
+              //   return;
+              // };
+
+              // if (tapDisabled || !modeRefs.current.isEdit || selectedPastureRef.current.id) return;
+
+              // const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+              // markers?.forEach(marker => hereMap.addObject(marker));
+
+              // selectedPastureRef.current.id = item.id;
+
+              if (!tapDisabled) {
+                initialisePastureEditor(hereMap, existingPasture, item.id , behavior);
+              }
+
+              // Disable tap for 1000ms (1 second)
+              tapDisabled = true;
+              setTimeout(() => tapDisabled = false, 1000);
+            });
+
+            hereMap.addObject(existingPasture.pasture);
+            hereMap.addObject(existingPasture.labelMarker);
           }
         }
 
-        hereMap.addEventListener("tap", async (evt: any) => {
+        const addNewPasture = async (evt: any) => {
+          if (!modeRefs.current.isAdd) return;
           const coords = hereMap.screenToGeo(
             evt.currentPointer.viewportX,
             evt.currentPointer.viewportY
           );
 
-          if (!isDrawing) {
-            const tempMarker = startPolygon(coords as { lat: number; lng: number });
-            isDrawing = true;
+          if (!coords) return;
+          isDrawing = await createNewPasture(coords, hereMap, behavior, isDrawing);
+        };
 
-            hereMap.addObject(tempMarker as H.map.Marker);
-          } else {
-            const startPoint = getSpecifcPolygonCoordinates(0);
-            const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords as { lat: number; lng: number });
-
-            if (distanceToStart < 10) {
-              const inputName = prompt("Please enter the name of the pasture:");
-
-              const result = await closePolygon(startPoint as { lat: number; lng: number }, inputName as string);
-
-              if (result) {
-                const { removeTempPolyline, removeTempMarker, polygon } = result;
-                if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
-                if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-                hereMap.addObject(polygon);
-              }
-
-              const label = createLabel(inputName as string);
-              hereMap.addObject(label);
-
-              isDrawing = false;
-
-            } else {
-              const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords as { lat: number; lng: number });
-
-              if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
-              if (removeTempMarker) hereMap.removeObject(removeTempMarker);
-              hereMap.addObject(addTempPolyline as H.map.Polyline);
-              hereMap.addObject(addTempMarker as H.map.Marker);
-            }
-          }
-        });
+        hereMap.addEventListener("tap", addNewPasture);
 
         hereMap.addEventListener('mapviewchangeend', () => {
           const zoom = hereMap.getZoom();
@@ -155,6 +166,7 @@ export const DisplayMap = () => {
         setMapInstance(hereMap);
 
         return () => {
+          hereMap.removeEventListener('tap', addNewPasture);
           hereMap.dispose();
         };
       };
@@ -162,25 +174,32 @@ export const DisplayMap = () => {
     initializeMap();
   }, []);
 
+
   useEffect(() => {
     if (mapInstance) {
       const initialiseAndAddExistingAnimalsIntoMap = async () => {
         await AnimalUtils.intialiseAnimals()
         const animalData = AnimalUtils.getAnimals();
+
         if (animalData && animalData.length > 0) {
           const animalPosition: Record<number, H.map.Marker> = {};
+
           animalData.forEach((animal) => {
             const newlabel = labelIcon(animal.id.toString());
+
             const position = new H.map.Marker(
               { lat: animal.coordinates.lat, lng: animal.coordinates.lng },
               { icon: newlabel, data: {} });
             // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
+
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
+
             setPolygonState(updatePolygonState(animal, polygonState));
           });
           animalRef.current = animalPosition;
         }
+
         setDisplayAnimal(animalData);
       };
       initialiseAndAddExistingAnimalsIntoMap();
@@ -250,7 +269,7 @@ export const DisplayMap = () => {
       }
 
       if (attempts >= maxAttempts) {
-        toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {  
+        toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {
           autoClose: 3000,
           hideProgressBar: false,
           closeOnClick: true,
@@ -264,7 +283,6 @@ export const DisplayMap = () => {
             fontWeight: "bold",
           },
         });
-        console.error("Max attempts reached. Animal might be stuck.");
       }
 
       const newDisplayAnimal = AnimalUtils.getAnimals();
@@ -277,6 +295,220 @@ export const DisplayMap = () => {
   }, []);
 
 
+  const createNewPasture = async (
+    coords: { lat: number; lng: number },
+    hereMap: HMap,
+    behavior: H.mapevents.Behavior,
+    isDrawing: boolean
+  ): Promise<boolean> => {
+    if (!isDrawing) {
+      const tempMarker = startPolygon(coords);
+      hereMap.addObject(tempMarker as H.map.Marker);
+      return true;
+    }
+
+    const startPoint = getSpecifcPolygonCoordinates(0);
+    const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords);
+
+    if (distanceToStart < 10) {
+      const inputName = prompt("Please enter the name of the pasture:");
+      const result = await closePolygon(startPoint, inputName as string);
+
+      if (result) {
+        const { removeTempPolyline, removeTempMarker, polygon } = result;
+        if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+        if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+        hereMap.addObject(polygon);
+
+        const label = createLabel(inputName as string);
+        hereMap.addObject(label);
+
+        polygon.addEventListener("tap", () => {
+          if (result.pastureId) {
+            initialisePastureEditor(hereMap, { pasture: polygon, labelMarker: label }, result.pastureId, behavior);
+          } else {
+            console.error("Pasture ID is undefined");
+          }
+        });
+      }
+
+      togglePastureControl(0);
+      return false;
+    }
+
+    const { removeTempPolyline, removeTempMarker, addTempPolyline, addTempMarker } = addPointToPolygon(coords);
+
+    if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
+    if (removeTempMarker) hereMap.removeObject(removeTempMarker);
+    hereMap.addObject(addTempPolyline as H.map.Polyline);
+    hereMap.addObject(addTempMarker as H.map.Marker);
+
+    return true;
+  };
+
+  const initialisePastureEditor = async (hereMap: HMap, existingPasture: {pasture: H.map.Polygon, labelMarker: H.map.Marker}, pastureId: string, behavior: H.mapevents.Behavior) => {
+    if (modeRefs.current.isDelete) {
+      hereMap.removeObject(existingPasture.pasture);
+      hereMap.removeObject(existingPasture.labelMarker);
+      deletePasture(pastureId);
+      return;
+    };
+
+    if (!modeRefs.current.isEdit || selectedPastureRef.current.id) return;
+
+    const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+    markers?.forEach(marker => hereMap.addObject(marker));
+
+    selectedPastureRef.current.id = pastureId;
+  }
+
+
+  const selectPasture = (pasture: H.map.Polygon, hereMap: HMap, behavior: H.mapevents.Behavior) => {
+    if (!pasture || !hereMap) return;
+
+    const geometry = pasture.getGeometry() as H.geo.Polygon;
+    const exterior = geometry.getExterior();
+    // const markers: H.map.Marker[] = [];
+    markersRef.current = [];
+    const points: H.geo.Point[] = [];
+
+    selectedPastureRef.current.coord = exterior.getLatLngAltArray()
+      .map((_, i, arr) => i % 3 === 0 ? { lat: arr[i], lng: arr[i + 1] } : null)
+      .filter(Boolean) as { lat: number; lng: number }[];;
+
+    for (let i = 0; i < exterior.getPointCount(); i++) {
+      points.push(exterior.extractPoint(i));
+    }
+
+    const deleteMarker = (index: number) => {
+      if (points.length <= 3) {
+        alert("You need at least three points to keep the shape.");
+        return;
+      }
+
+      hereMap.removeObject(markersRef.current[index]);
+      points.splice(index, 1);
+      markersRef.current.splice(index, 1);
+
+      updateMarkers();
+      pasture = updatePasture(points, pasture);
+    };
+
+    const createAndAddMarker = (point: H.geo.Point, index: number) => {
+      const marker = createMarker(point);
+      marker.draggable = true;
+
+      marker.addEventListener("tap", () => modeRefs.current.isDeletePoint && deleteMarker(index));
+
+      marker.addEventListener("dragstart", () => behavior?.disable());
+
+      marker.addEventListener("drag", (ev) => {
+        const draggedPoint = hereMap.screenToGeo(ev.currentPointer.viewportX, ev.currentPointer.viewportY);
+        if (!draggedPoint) return;
+
+        points[index] = draggedPoint;
+        marker.setGeometry(draggedPoint);
+        pasture = updatePasture(points, pasture);
+      });
+
+      marker.addEventListener("dragend", () => {
+        behavior?.enable()
+        const newGeo = pasture.getGeometry() as H.geo.Polygon;
+        const latLngAltArray = newGeo.getExterior().getLatLngAltArray();
+        // if (!latLngAltArray) return;
+        selectedPastureRef.current.coord = latLngAltArray
+          .map((_, i, arr) => i % 3 === 0 ? { lat: arr[i], lng: arr[i + 1] } : null)
+          .filter(Boolean) as { lat: number; lng: number }[];
+
+      });
+
+      hereMap.addObject(marker);
+      return marker;
+    };
+
+    const updateMarkers = () => {
+      markersRef.current.forEach((marker) => hereMap.removeObject(marker));
+      markersRef.current.length = 0;
+
+      points.forEach((point, i) => {
+        markersRef.current.push(createAndAddMarker(point, i));
+      });
+    };
+
+    updateMarkers(); // Initialize markers
+
+    pasture.addEventListener("tap", (evt) => {
+      if (!modeRefs.current.isAddPoint) return;
+      const newPoint = hereMap.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+      if (!newPoint) return;
+
+      const result = addNewPoint(newPoint as H.geo.Point, points, pasture);
+
+      if (result) {
+        points.length = 0;
+        points.push(...result.points);
+        pasture = result.pasture;
+        updateMarkers();
+      }
+    });
+
+    return markersRef.current;
+  };
+
+  const toggleModal = (modal: string) => {
+    setModalIsSelected(modal);
+  };
+
+  const togglePastureControl = (selectMode: 0 | 1 | 2 | 3 | 4 | 5) => {
+    if (selectMode === 0) {
+      Object.assign(modeRefs.current, {
+        isAdd: false,
+        isEdit: false,
+        isDelete: false,
+        isAddPoint: false,
+        isDeletePoint: false,
+      });
+
+      return;
+    }
+
+    const modeMap = {
+      1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
+      2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
+      3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
+      4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
+      5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
+    };
+
+    Object.assign(modeRefs.current, {
+      isAdd: false,
+      isEdit: false,
+      isDelete: false,
+      isAddPoint: false,
+      isDeletePoint: false,
+      ...modeMap[selectMode],
+    });
+
+    toast(modeMap[selectMode]?.message || "Invalid mode selected", {
+      type: "info",
+      position: "top-center",
+    });
+  };
+
+
+  const handleClickDone = () => {
+    togglePastureControl(0);
+    if (selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
+      updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
+
+      markersRef.current.forEach((marker) => mapInstance?.removeObject(marker));
+      markersRef.current = [];
+
+      selectedPastureRef.current.id = null;
+      selectedPastureRef.current.coord = [];
+    }
+
+  }
 
   return (
     <div
@@ -288,26 +520,32 @@ export const DisplayMap = () => {
     >
       <Modal>
         <div className="modal-content">
-          {/* <div className="lat-input input-container">
-            <h3> Latitude</h3>
-            <input type="number" step="0.0001" value={currentPosition.lat} onChange={(e) => setCurrentPosition({ ...currentPosition, lat: parseFloat(e.target.value) })} />
-          </div>
-          <div className="lng-input input-container">
-            <h3> Longitude</h3>
-            <input type="number" step="0.0001" value={currentPosition.lng} onChange={(e) => setCurrentPosition({ ...currentPosition, lng: parseFloat(e.target.value) })} />
-          </div>
-          <button onClick={updateUserLocation}>
-            Update User Location
-          </button> */}
-          {displayAnimal.map((animal) => (
+          {modalIsSelected === "animals" && displayAnimal.map((animal) => (
             <div key={animal.id} className="animal-item">
               <h3>{animal.name} - {animal.id} </h3>
               <p>Type: {animal.type}</p>
               <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
             </div>
           ))}
+
+          {modalIsSelected === "pastures" && (
+            <>
+              {getPastures().map((pasture) => (
+                <div key={pasture.id} className="pasture-item">
+                  <h3>{pasture.name}</h3>
+                  <p>Id: {pasture.id}</p>
+                </div>))}
+              <div className="button-group">
+                <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
+                <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
+                <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }}>Delete</button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
+      {(modeRefs.current.isEdit && selectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} />}
+      <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
     </div>

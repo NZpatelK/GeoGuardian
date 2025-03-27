@@ -1,8 +1,8 @@
+import { Map as HMap } from "@here/maps-api-for-javascript";
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
-// import { nanoid } from "nanoid";
 
-const listPastures: { name: string, coordinates: { lat: number; lng: number }[], id: string}[] = [];
+const listPastures: { id: string, name: string, coordinates: { lat: number; lng: number }[] }[] = [];
 let pastureCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
@@ -14,9 +14,6 @@ export const getPastures = () => {
     return listPastures;
 }
 
-// export const getSpecficPasture = (label: string) => {
-//     return listPastures.find(pasture => pasture.label === label);
-// }
 /**
  * Calculates the distance between two geographical points using the Haversine formula.
  * 
@@ -163,13 +160,15 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
     CompletedPolygon = [];
     CompletedPolygon = pastureCoordinates;
     const pastureDetail = await PasturesApi.addPasture(pastureCoordinates, label);
+    let pastureId;
     if (pastureDetail) {
         listPastures.push(pastureDetail);
+        pastureId = pastureDetail.id;
     }
     pastureCoordinates = [];
 
 
-    return { removeTempPolyline, removeTempMarker, polygon };
+    return { removeTempPolyline, removeTempMarker, polygon, pastureId };
 }
 
 /**
@@ -180,9 +179,9 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
  * @param label - The label for the polygon.
  * @returns An object containing the newly created H.map.Polygon and H.map.Marker.
  */
-export const addExistingPolygon = (coords: { lat: number; lng: number }[], label: string , id: string) => {
+export const addExistingPasture = (coords: { lat: number; lng: number }[], label: string, id: string) => {
     const lineString = createLineString(coords);
-    const existingPolygon = new H.map.Polygon(lineString, {
+    const pasture = new H.map.Polygon(lineString, {
         style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
         data: {}
     });
@@ -192,7 +191,7 @@ export const addExistingPolygon = (coords: { lat: number; lng: number }[], label
     CompletedPolygon = [];
 
     listPastures.push({ name: label, coordinates: coords, id: id });
-    return { existingPolygon, labelMarker };
+    return { pasture, labelMarker };
 }
 
 /**
@@ -312,7 +311,6 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, pastureCoo
 export const updatePolygonState = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
     listPastures.forEach((pasutre) => {
         const isInside = isPointInPolygon(animalData.coordinates, pasutre.coordinates);
-        console.log(animalData.id, pasutre.name, isInside);
         // Update the polygonState
         polygonState[pasutre.name] = {
             ...(polygonState[pasutre.name] || {}),
@@ -322,4 +320,59 @@ export const updatePolygonState = (animalData: { id: number, name: string, coord
 
     return polygonState;
 };
+
+export const updatePasture = (points: H.geo.Point[], pasture: H.map.Polygon) => {
+    const updatedLineString = new H.geo.LineString();
+    points.forEach((p) => updatedLineString.pushPoint(p));
+    updatedLineString.pushPoint(points[0]); // Close the shape
+    pasture.setGeometry(new H.geo.Polygon(updatedLineString));
+
+    return pasture;
+};
+
+
+export const addNewPoint = (newPoint: H.geo.Point, points: H.geo.Point[], pasture: H.map.Polygon) => {
+    let insertIndex = -1;
+    let minDistance = Number.MAX_VALUE;
+
+    for (let i = 0; i < points.length - 1; i++) {
+        const midPoint = new H.geo.Point(
+            (points[i].lat + points[i + 1].lat) / 2,
+            (points[i].lng + points[i + 1].lng) / 2
+        );
+
+        const distance = Math.hypot(midPoint.lat - newPoint.lat, midPoint.lng - newPoint.lng);
+        if (distance < minDistance) {
+            minDistance = distance;
+            insertIndex = i + 1;
+        }
+    }
+
+    if (insertIndex === -1) return;
+
+    points.splice(insertIndex, 0, newPoint);
+    const updatePoint = [...points];
+    // updateMarkers();
+    const updatedPasture = updatePasture(points, pasture);
+
+    return { pasture: updatedPasture, points: updatePoint };
+}
+
+export const updatePastureDatabase = async (pastureId: string, coord: { lat: number; lng: number } []) => {
+
+    const pasture = listPastures.find(pasture => pasture.id === pastureId);
+    if (!pasture) return;
+    pasture.coordinates = coord;
+
+    await PasturesApi.updatePasture(pastureId, coord);
+    
+}
+
+export const deletePasture = async (pastureId: string) => {
+    const pasture = listPastures.find(pasture => pasture.id === pastureId);
+    if (!pasture) return;
+    const index = listPastures.indexOf(pasture);
+    listPastures.splice(index, 1);
+    await PasturesApi.deletePasture(pastureId);
+}
 
