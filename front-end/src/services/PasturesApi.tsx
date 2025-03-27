@@ -68,6 +68,22 @@ class PasturesApi {
             }
         }
     }
+
+    static async deletePasture(pastureId: string) {
+        try {
+            // Send data to the backend using axios
+            const response = await axios.delete(`http://localhost:3000/api/pastures/deletePasture/${pastureId}`);
+
+            console.log(response.data.message); // Success message
+            return pastureId;
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.error('Error:', err.response ? err.response.data : err.message);
+            } else {
+                console.error('Error:', err);
+            }
+        }
+    }
 }
 
 export default PasturesApi

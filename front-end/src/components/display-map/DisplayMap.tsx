@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -116,6 +116,14 @@ export const DisplayMap = () => {
             let tapDisabled = false; // Flag to track if tap is disabled
 
             existingPasture.pasture.addEventListener('tap', () => {
+
+              if(modeRefs.current.isDelete) {
+                hereMap.removeObject(existingPasture.pasture);
+                hereMap.removeObject(existingPasture.labelMarker);
+                deletePasture(item.id);
+                return;
+              };
+              
               if (tapDisabled || !modeRefs.current.isEdit || selectedPastureRef.current.id) return;
 
               const markers = selectPasture(existingPasture.pasture, hereMap, behavior);

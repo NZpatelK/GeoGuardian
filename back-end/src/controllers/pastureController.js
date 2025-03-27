@@ -44,8 +44,6 @@ const updatePasture = async (req, res) => {
     try {
         let existData = await getData(pastureFilePath);
 
-        console.log("Before update:", JSON.stringify(existData, null, 2)); // Debugging
-
         // Ensure it's a flat array
         if (Array.isArray(existData) && existData.length === 1 && Array.isArray(existData[0])) {
             existData = existData[0]; // Flatten if accidentally nested
@@ -65,9 +63,6 @@ const updatePasture = async (req, res) => {
         // Update the specific pasture's coordinates
         existData[pastureIndex] = { ...existData[pastureIndex], coordinates };
 
-        // Log to check the data structure after update
-        console.log("After update:", JSON.stringify(existData, null, 2)); // Debugging
-
         // Clear the file and write the updated data
         await fs.promises.writeFile(pastureFilePath, JSON.stringify(existData, null, 2)); // Overwrite the file
 
@@ -78,6 +73,42 @@ const updatePasture = async (req, res) => {
     }
 };
 
+const deletePasture = async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        let existData = await getData(pastureFilePath);
+
+        // Ensure it's a flat array
+        if (Array.isArray(existData) && existData.length === 1 && Array.isArray(existData[0])) {
+            existData = existData[0]; // Flatten if accidentally nested
+        }
+
+        // Check if data is valid
+        if (!Array.isArray(existData)) {
+            console.error("Data format error: Expected an array but got:", existData);
+            return res.status(500).json({ message: "Data format error" });
+        }
+
+        const pastureIndex = existData.findIndex((pasture) => pasture.id === id);
+        if (pastureIndex === -1) {
+            return res.status(404).json({ message: `Pasture with id ${id} not found` });
+        }
+
+        // Remove the specific pasture
+        existData.splice(pastureIndex, 1);
+
+        // Clear the file and write the updated data
+        await fs.promises.writeFile(pastureFilePath, JSON.stringify(existData, null, 2)); // Overwrite the file
+
+        return res.status(200).json({ message: "Data deleted successfully" });
+    }
+    catch (error) {
+        console.error("Error deleting pasture:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+
 
 
 
@@ -86,5 +117,6 @@ module.exports = {
     getPastures,
     getPastureById,
     addPasture,
-    updatePasture
+    updatePasture,
+    deletePasture
 };
