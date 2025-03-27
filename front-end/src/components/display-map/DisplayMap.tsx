@@ -132,7 +132,7 @@ export const DisplayMap = () => {
               // selectedPastureRef.current.id = item.id;
 
               if (!tapDisabled) {
-                implmeentPastureControl(hereMap, existingPasture, item, behavior);
+                initialisePastureEditor(hereMap, existingPasture, item.id , behavior);
               }
 
               // Disable tap for 1000ms (1 second)
@@ -324,10 +324,15 @@ export const DisplayMap = () => {
         hereMap.addObject(label);
 
         polygon.addEventListener("tap", () => {
-          implmeentPastureControl(hereMap, { pasture: polygon, labelMarker: label }, { name: inputName, id: result.pastureId }, behavior);
+          if (result.pastureId) {
+            initialisePastureEditor(hereMap, { pasture: polygon, labelMarker: label }, result.pastureId, behavior);
+          } else {
+            console.error("Pasture ID is undefined");
+          }
         });
       }
 
+      togglePastureControl(0);
       return false;
     }
 
@@ -341,11 +346,11 @@ export const DisplayMap = () => {
     return true;
   };
 
-  const implmeentPastureControl = async (hereMap: HMap, existingPasture: any, item: any, behavior: H.mapevents.Behavior) => {
+  const initialisePastureEditor = async (hereMap: HMap, existingPasture: {pasture: H.map.Polygon, labelMarker: H.map.Marker}, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
       hereMap.removeObject(existingPasture.pasture);
       hereMap.removeObject(existingPasture.labelMarker);
-      deletePasture(item.id);
+      deletePasture(pastureId);
       return;
     };
 
@@ -354,7 +359,7 @@ export const DisplayMap = () => {
     const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
     markers?.forEach(marker => hereMap.addObject(marker));
 
-    selectedPastureRef.current.id = item.id;
+    selectedPastureRef.current.id = pastureId;
   }
 
 
