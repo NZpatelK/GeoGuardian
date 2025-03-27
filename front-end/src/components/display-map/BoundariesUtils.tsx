@@ -160,13 +160,15 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
     CompletedPolygon = [];
     CompletedPolygon = pastureCoordinates;
     const pastureDetail = await PasturesApi.addPasture(pastureCoordinates, label);
+    let pastureId;
     if (pastureDetail) {
         listPastures.push(pastureDetail);
+        pastureId = pastureDetail.id;
     }
     pastureCoordinates = [];
 
 
-    return { removeTempPolyline, removeTempMarker, polygon };
+    return { removeTempPolyline, removeTempMarker, polygon, pastureId };
 }
 
 /**

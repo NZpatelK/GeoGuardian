@@ -117,19 +117,23 @@ export const DisplayMap = () => {
 
             existingPasture.pasture.addEventListener('tap', () => {
 
-              if(modeRefs.current.isDelete) {
-                hereMap.removeObject(existingPasture.pasture);
-                hereMap.removeObject(existingPasture.labelMarker);
-                deletePasture(item.id);
-                return;
-              };
-              
-              if (tapDisabled || !modeRefs.current.isEdit || selectedPastureRef.current.id) return;
+              // if(modeRefs.current.isDelete) {
+              //   hereMap.removeObject(existingPasture.pasture);
+              //   hereMap.removeObject(existingPasture.labelMarker);
+              //   deletePasture(item.id);
+              //   return;
+              // };
 
-              const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
-              markers?.forEach(marker => hereMap.addObject(marker));
+              // if (tapDisabled || !modeRefs.current.isEdit || selectedPastureRef.current.id) return;
 
-              selectedPastureRef.current.id = item.id;
+              // const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+              // markers?.forEach(marker => hereMap.addObject(marker));
+
+              // selectedPastureRef.current.id = item.id;
+
+              if (!tapDisabled) {
+                implmeentPastureControl(hereMap, existingPasture, item, behavior);
+              }
 
               // Disable tap for 1000ms (1 second)
               tapDisabled = true;
@@ -149,7 +153,7 @@ export const DisplayMap = () => {
           );
 
           if (!coords) return;
-          isDrawing = await createNewPasture(coords, hereMap, isDrawing);
+          isDrawing = await createNewPasture(coords, hereMap, behavior, isDrawing);
         };
 
         hereMap.addEventListener("tap", addNewPasture);
@@ -294,6 +298,7 @@ export const DisplayMap = () => {
   const createNewPasture = async (
     coords: { lat: number; lng: number },
     hereMap: HMap,
+    behavior: H.mapevents.Behavior,
     isDrawing: boolean
   ): Promise<boolean> => {
     if (!isDrawing) {
@@ -314,10 +319,14 @@ export const DisplayMap = () => {
         if (removeTempPolyline) hereMap.removeObject(removeTempPolyline);
         if (removeTempMarker) hereMap.removeObject(removeTempMarker);
         hereMap.addObject(polygon);
-      }
 
-      const label = createLabel(inputName as string);
-      hereMap.addObject(label);
+        const label = createLabel(inputName as string);
+        hereMap.addObject(label);
+
+        polygon.addEventListener("tap", () => {
+          implmeentPastureControl(hereMap, { pasture: polygon, labelMarker: label }, { name: inputName, id: result.pastureId }, behavior);
+        });
+      }
 
       return false;
     }
@@ -331,6 +340,22 @@ export const DisplayMap = () => {
 
     return true;
   };
+
+  const implmeentPastureControl = async (hereMap: HMap, existingPasture: any, item: any, behavior: H.mapevents.Behavior) => {
+    if (modeRefs.current.isDelete) {
+      hereMap.removeObject(existingPasture.pasture);
+      hereMap.removeObject(existingPasture.labelMarker);
+      deletePasture(item.id);
+      return;
+    };
+
+    if (!modeRefs.current.isEdit || selectedPastureRef.current.id) return;
+
+    const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+    markers?.forEach(marker => hereMap.addObject(marker));
+
+    selectedPastureRef.current.id = item.id;
+  }
 
 
   const selectPasture = (pasture: H.map.Polygon, hereMap: HMap, behavior: H.mapevents.Behavior) => {
@@ -431,39 +456,39 @@ export const DisplayMap = () => {
 
   const togglePastureControl = (selectMode: 0 | 1 | 2 | 3 | 4 | 5) => {
     if (selectMode === 0) {
-        Object.assign(modeRefs.current, {
-            isAdd: false, 
-            isEdit: false, 
-            isDelete: false, 
-            isAddPoint: false, 
-            isDeletePoint: false,
-        });
+      Object.assign(modeRefs.current, {
+        isAdd: false,
+        isEdit: false,
+        isDelete: false,
+        isAddPoint: false,
+        isDeletePoint: false,
+      });
 
-        return;
+      return;
     }
 
     const modeMap = {
-        1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
-        2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
-        3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
-        4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
-        5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
+      1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
+      2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
+      3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
+      4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
+      5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
     };
 
     Object.assign(modeRefs.current, {
-        isAdd: false, 
-        isEdit: false, 
-        isDelete: false, 
-        isAddPoint: false, 
-        isDeletePoint: false,
-        ...modeMap[selectMode],
+      isAdd: false,
+      isEdit: false,
+      isDelete: false,
+      isAddPoint: false,
+      isDeletePoint: false,
+      ...modeMap[selectMode],
     });
 
     toast(modeMap[selectMode]?.message || "Invalid mode selected", {
-        type: "info",
-        position: "top-center",
+      type: "info",
+      position: "top-center",
     });
-};
+  };
 
 
   const handleClickDone = () => {
