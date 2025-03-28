@@ -43,26 +43,6 @@ export const DisplayMap = () => {
   })
 
   useEffect(() => {
-    /**
-     * Initializes the HERE map with default settings and pastures.
-     * 
-     * This function sets up the map using the HERE Maps API, and enables map events and UI controls.
-     * It loads existing pastures from the API and adds them to the map. The map also listens for
-     * user interactions to allow drawing new polygons (pastures) by tapping on the map.
-     * 
-     * Pre-requisites:
-     * - The HERE Maps API key should be set in the environment variables.
-     * 
-     * Behavior:
-     * - If the map has not been initialized, it sets the map center and zoom level.
-     * - Loads and displays existing pastures as polygons with labels.
-     * - Allows users to draw new polygons by tapping on the map, prompting for a name when completing a polygon.
-     * - Handles the addition and removal of temporary map objects while drawing.
-     * - Logs the current zoom level when the map view changes.
-     * 
-     * Returns:
-     * - A cleanup function to dispose of the map when it's no longer needed.
-     */
 
     const initializeMap = async () => {
 
@@ -105,7 +85,6 @@ export const DisplayMap = () => {
         // ---------------------------------------------------------------------------------------------------------------------------//
 
         let isDrawing = false;
-        // let currentPositionId: any;
         const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
 
         if (existPasturesCoordinates) {
@@ -116,21 +95,6 @@ export const DisplayMap = () => {
             let tapDisabled = false; // Flag to track if tap is disabled
 
             existingPasture.pasture.addEventListener('tap', () => {
-
-              // if(modeRefs.current.isDelete) {
-              //   hereMap.removeObject(existingPasture.pasture);
-              //   hereMap.removeObject(existingPasture.labelMarker);
-              //   deletePasture(item.id);
-              //   return;
-              // };
-
-              // if (tapDisabled || !modeRefs.current.isEdit || selectedPastureRef.current.id) return;
-
-              // const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
-              // markers?.forEach(marker => hereMap.addObject(marker));
-
-              // selectedPastureRef.current.id = item.id;
-
               if (!tapDisabled) {
                 initialisePastureEditor(hereMap, existingPasture, item.id , behavior);
               }
@@ -208,28 +172,6 @@ export const DisplayMap = () => {
 
 
   useEffect(() => {
-    /**
-     * Updates the location of animals on the map at regular intervals.
-     *
-     * This function continuously updates the positions of animals on the map by checking
-     * their movement and ensuring they remain within designated pastures. If an animal
-     * moves outside its pasture, it attempts to move it back, updating the map and
-     * notifying the user if the animal enters or exits a pasture.
-     *
-     * Behavior:
-     * - Retrieves the current animal position and updates its marker on the map.
-     * - Checks if the animal is inside its pasture and attempts to move it back if not.
-     * - Generates notifications for entry and exit events.
-     * - Logs a warning if an animal is unable to return to its pasture after multiple attempts.
-     *
-     * Pre-requisites:
-     * - An initialized map instance with animal markers.
-     * - AnimalUtils must provide methods for controlling animal movement, checking pasture status,
-     *   and updating polygon states.
-     *
-     * Returns:
-     * - Continuously updates the animal markers on the map until the component is unmounted.
-     */
     const updateAnimalLocation = async () => {
       if (!animalRef.current) return;
 
@@ -498,7 +440,7 @@ export const DisplayMap = () => {
 
   const handleClickDone = () => {
     togglePastureControl(0);
-    if (selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
+    if (modeRefs.current.isEdit && selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
 
       markersRef.current.forEach((marker) => mapInstance?.removeObject(marker));
@@ -507,7 +449,6 @@ export const DisplayMap = () => {
       selectedPastureRef.current.id = null;
       selectedPastureRef.current.coord = [];
     }
-
   }
 
   return (
@@ -545,6 +486,7 @@ export const DisplayMap = () => {
         </div>
       </Modal>
       {(modeRefs.current.isEdit && selectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} />}
+      {(modeRefs.current.isDelete) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} isDelete={true} />}
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />

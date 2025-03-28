@@ -59,3 +59,13 @@ button:focus {
     margin-top: 20px !important;
     background: #000000;
 }
+
+.delete-message{
+    color:#222 !important;
+    text-transform: capitalize;
+}
+
+.delete-mode {
+    margin: 0 !important;
+    width: 250px !important;
+}
