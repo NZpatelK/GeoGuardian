@@ -64,8 +64,3 @@ button:focus {
     color:#222 !important;
     text-transform: capitalize;
 }
-
-.delete-mode {
-    margin: 0 !important;
-    width: 250px !important;
-}

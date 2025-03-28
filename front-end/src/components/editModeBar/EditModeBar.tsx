@@ -17,7 +17,7 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ togglePastureControl, 
 
             </div>}
             {isDelete && <h5 className='delete-message'>Select a pasture to delete it. Click Done when done</h5>}
-            <button className={isDelete ? 'delete-mode done-btn' : 'done-btn'} onClick={handleClickDone}>Done</button>
+            <button className={'done-btn'} onClick={handleClickDone}>Done</button>
         </div>
     )
 }
