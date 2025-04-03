@@ -397,6 +397,67 @@ export const DisplayMap = () => {
     return markersRef.current;
   };
 
+  const updateAnimal = async (pastureId: string) => {
+    const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
+    if (!animals) return;
+
+    console.log(animals[0].id, animals[0].coordinates);
+
+    for (const animal of animals) {
+      updateAnimalLocation(animal);
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+
+    console.log(animals[0].id, animals[0].coordinates);
+    setDisplayAnimal(AnimalUtils.getAnimals());
+  }
+
+  const updateAnimalLocation = async (updateAnimalPosition: Animal) => {
+    const position = animalRef.current[updateAnimalPosition.id];
+    if (!position) return;
+    let isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+
+    let attempts = 0;
+    const maxAttempts = 100;  // Prevent infinite loop
+
+    while (!isInside && attempts < maxAttempts) {
+      const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
+
+      setPolygonState(updatePolygonState.polygonState);
+
+      if (updatePolygonState.notificationMsg) {
+        toast(updatePolygonState.notificationMsg, {
+          type: updatePolygonState.notificationMsg.includes("Entered") ? "success" : "error",
+        });
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
+      updateAnimalPosition.coordinates = updateAnimalCoord;
+      position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
+      isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        icon: <FontAwesomeIcon icon={faExclamationTriangle} size="lg" color="white" />,
+        progress: undefined,
+        style: {
+          backgroundColor: "red",
+          color: "white",
+          fontWeight: "bold",
+        },
+      });
+    }
+  }
+
   const toggleModal = (modal: string) => {
     setModalIsSelected(modal);
   };
@@ -439,16 +500,19 @@ export const DisplayMap = () => {
 
 
   const handleClickDone = () => {
-    togglePastureControl(0);
     if (modeRefs.current.isEdit && selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
-
+      
       markersRef.current.forEach((marker) => mapInstance?.removeObject(marker));
       markersRef.current = [];
 
+      updateAnimal(selectedPastureRef.current.id);
+      
       selectedPastureRef.current.id = null;
       selectedPastureRef.current.coord = [];
     }
+
+    togglePastureControl(0);
   }
 
   return (

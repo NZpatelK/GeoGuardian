@@ -50,6 +50,10 @@ export class AnimalUtils {
         return animals;
     }
 
+    static getAnimalsByPastureId = (pastureId: string) => {
+        return animals.filter(animal => animal.pastureId === pastureId);
+    }
+
     static updateAnimal = (id: number, newCoordinates: { lat: number, lng: number }) => {
         const index = animals.findIndex(animal => animal.id === id);
         animals[index].coordinates = newCoordinates;
