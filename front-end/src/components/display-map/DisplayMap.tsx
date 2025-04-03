@@ -185,47 +185,9 @@ export const DisplayMap = () => {
         position.setGeometry(new H.geo.Point(updateAnimalPosition.coordinates.lat, updateAnimalPosition.coordinates.lng));
       }
 
-      let isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+      // Check if the animal is inside the pasture
+      bringAnimalBackToPasture(updateAnimalPosition as Animal);
 
-      let attempts = 0;
-      const maxAttempts = 100;  // Prevent infinite loop
-
-      while (!isInside && attempts < maxAttempts) {
-        const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
-
-        setPolygonState(updatePolygonState.polygonState);
-
-        if (updatePolygonState.notificationMsg) {
-          toast(updatePolygonState.notificationMsg, {
-            type: updatePolygonState.notificationMsg.includes("Entered") ? "success" : "error",
-          });
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
-        updateAnimalPosition.coordinates = updateAnimalCoord;
-        position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
-        isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
-        attempts++;
-      }
-
-      if (attempts >= maxAttempts) {
-        toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          icon: <FontAwesomeIcon icon={faExclamationTriangle} size="lg" color="white" />,
-          progress: undefined,
-          style: {
-            backgroundColor: "red",
-            color: "white",
-            fontWeight: "bold",
-          },
-        });
-      }
 
       const newDisplayAnimal = AnimalUtils.getAnimals();
       setDisplayAnimal([...newDisplayAnimal]);
@@ -404,15 +366,15 @@ export const DisplayMap = () => {
     console.log(animals[0].id, animals[0].coordinates);
 
     for (const animal of animals) {
-      updateAnimalLocation(animal);
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      bringAnimalBackToPasture(animal);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     console.log(animals[0].id, animals[0].coordinates);
     setDisplayAnimal(AnimalUtils.getAnimals());
   }
 
-  const updateAnimalLocation = async (updateAnimalPosition: Animal) => {
+  const bringAnimalBackToPasture = async (updateAnimalPosition: Animal) => {
     const position = animalRef.current[updateAnimalPosition.id];
     if (!position) return;
     let isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
