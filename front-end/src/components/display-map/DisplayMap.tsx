@@ -33,7 +33,11 @@ export const DisplayMap = () => {
 
   const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
   const markersRef = useRef<H.map.Marker[]>([]);
+
+  const selectedAnimalRef = useRef<{ id: number | null }>({ id: null });
   const animalRef = useRef<Record<number, H.map.Marker>>({});
+
+
   const modeRefs = useRef({
     isAdd: false,
     isDelete: false,
@@ -96,7 +100,7 @@ export const DisplayMap = () => {
 
             existingPasture.pasture.addEventListener('tap', () => {
               if (!tapDisabled) {
-                initialisePastureEditor(hereMap, existingPasture, item.id , behavior);
+                initialisePastureEditor(hereMap, existingPasture, item.id, behavior);
               }
 
               // Disable tap for 1000ms (1 second)
@@ -156,6 +160,10 @@ export const DisplayMap = () => {
               { icon: newlabel, data: {} });
             // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
 
+            position.addEventListener('tap', () => {
+              selectedAnimalRef.current.id = animal.id;
+              setModalIsSelected("selectedAnimal");
+            })
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
 
@@ -250,7 +258,7 @@ export const DisplayMap = () => {
     return true;
   };
 
-  const initialisePastureEditor = async (hereMap: HMap, existingPasture: {pasture: H.map.Polygon, labelMarker: H.map.Marker}, pastureId: string, behavior: H.mapevents.Behavior) => {
+  const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
       hereMap.removeObject(existingPasture.pasture);
       hereMap.removeObject(existingPasture.labelMarker);
@@ -464,12 +472,12 @@ export const DisplayMap = () => {
   const handleClickDone = () => {
     if (modeRefs.current.isEdit && selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
-      
+
       markersRef.current.forEach((marker) => mapInstance?.removeObject(marker));
       markersRef.current = [];
 
       updateAnimal(selectedPastureRef.current.id);
-      
+
       selectedPastureRef.current.id = null;
       selectedPastureRef.current.coord = [];
     }
@@ -494,6 +502,12 @@ export const DisplayMap = () => {
               <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
             </div>
           ))}
+
+          {modalIsSelected === "selectedAnimal" && (
+            <div>
+              <h3>Animal ID: {selectedAnimalRef.current.id}</h3>
+            </div>
+          )}
 
           {modalIsSelected === "pastures" && (
             <>
