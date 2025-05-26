@@ -34,7 +34,7 @@ export const DisplayMap = () => {
   const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
   const markersRef = useRef<H.map.Marker[]>([]);
 
-  const selectedAnimalRef = useRef<{ id: number | null }>({ id: null });
+  const selectedAnimalRef = useRef<{ animal: Animal | null }>({ animal: null });
   const animalRef = useRef<Record<number, H.map.Marker>>({});
 
 
@@ -161,7 +161,7 @@ export const DisplayMap = () => {
             // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
 
             position.addEventListener('tap', () => {
-              selectedAnimalRef.current.id = animal.id;
+              selectedAnimalRef.current.animal = animal;
               setModalIsSelected("selectedAnimal");
             })
             animalPosition[animal.id] = position;
@@ -505,7 +505,19 @@ export const DisplayMap = () => {
 
           {modalIsSelected === "selectedAnimal" && (
             <div>
-              <h3>Animal ID: {selectedAnimalRef.current.id}</h3>
+              <h3>Animal ID: {selectedAnimalRef.current.animal?.id}</h3>
+              <h4>Current Pasture: {getPastures().find((pasture) => pasture.id === selectedAnimalRef.current.animal?.pastureId)?.name}</h4>
+              <p>Move pasture:</p>
+              <div className="button-group">
+                {getPastures().map((pasture) => (
+                  <button
+                    key={pasture.id}
+                    // onClick={() => moveAnimalToPasture(selectedAnimalRef.current.animal?.id, pasture.id)}
+                  >
+                    {pasture.name}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
