@@ -385,10 +385,7 @@ export const DisplayMap = () => {
   const relocateAnimal = async (animal: Animal, relocatePastureId: string) => {
     if( animal && relocatePastureId) {
       AnimalUtils.updateAnimalPasture(animal.id, relocatePastureId);
-      alert(`Animal ${animal.name} has been moved to pasture ${(AnimalUtils.getAnimals().find(p => p.id === animal.id)?.pastureId)}`);
-      // const newCoordinates = await AnimalUtils.moveAnimalBackToTheirPasture(animal.id);
-
-      return
+      bringAnimalBackToPasture(animal);
     };
     
   }
@@ -401,23 +398,25 @@ export const DisplayMap = () => {
     let attempts = 0;
     const maxAttempts = 100;  // Prevent infinite loop
 
-    while (!isInside && attempts < maxAttempts) {
-      const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
-
-      setPolygonState(updatePolygonState.polygonState);
-
-      if (updatePolygonState.notificationMsg) {
-        toast(updatePolygonState.notificationMsg, {
-          type: updatePolygonState.notificationMsg.includes("Entered") ? "success" : "error",
-        });
-      }
-
+    while (!isInside && attempts < maxAttempts) {   
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
       updateAnimalPosition.coordinates = updateAnimalCoord;
       position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
       isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+      
+      const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
+
+      setPolygonState(updatePolygonState.polygonState);
+      
+      console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
+
+      if (updatePolygonState.notificationMsg) {
+        toast(updatePolygonState.notificationMsg, {
+          type: updatePolygonState.notificationMsg.includes("Entered") ? "success" : "error",
+        });
+      }
       attempts++;
     }
 
@@ -524,6 +523,7 @@ export const DisplayMap = () => {
                   <button
                     key={pasture.id}
                     onClick={() => relocateAnimal(selectedAnimalRef.current.animal as Animal, pasture.id)}
+                    disabled={selectedAnimalRef.current.animal?.pastureId === pasture.id}
                   >
                     {pasture.name}
                   </button>
