@@ -59,6 +59,11 @@ export class AnimalUtils {
         animals[index].coordinates = newCoordinates;
     }
 
+    static updateAnimalPasture = (id: number, newPastureId: string) => {
+        const index = animals.findIndex(animal => animal.id === id);
+        animals[index].pastureId = newPastureId;
+    }
+
     static randomiseAnimalCoordinates = (animal: Animal) => {
 
         // Generate new random lat/lng within a small range

@@ -382,6 +382,17 @@ export const DisplayMap = () => {
     setDisplayAnimal(AnimalUtils.getAnimals());
   }
 
+  const relocateAnimal = async (animal: Animal, relocatePastureId: string) => {
+    if( animal && relocatePastureId) {
+      AnimalUtils.updateAnimalPasture(animal.id, relocatePastureId);
+      alert(`Animal ${animal.name} has been moved to pasture ${(AnimalUtils.getAnimals().find(p => p.id === animal.id)?.pastureId)}`);
+      // const newCoordinates = await AnimalUtils.moveAnimalBackToTheirPasture(animal.id);
+
+      return
+    };
+    
+  }
+
   const bringAnimalBackToPasture = async (updateAnimalPosition: Animal) => {
     const position = animalRef.current[updateAnimalPosition.id];
     if (!position) return;
@@ -512,7 +523,7 @@ export const DisplayMap = () => {
                 {getPastures().map((pasture) => (
                   <button
                     key={pasture.id}
-                    // onClick={() => moveAnimalToPasture(selectedAnimalRef.current.animal?.id, pasture.id)}
+                    onClick={() => relocateAnimal(selectedAnimalRef.current.animal as Animal, pasture.id)}
                   >
                     {pasture.name}
                   </button>
