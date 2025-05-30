@@ -551,15 +551,17 @@ export const DisplayMap = () => {
                   <h3>{pasture.name}</h3>
                   <p>Id: {pasture.id}</p>
                 </div>))}
-              <div className="button-group">
+                {/* <button className='pasture-btn' disabled={selectedOption == "pasture-edit"}>Edit Pasture</button> */}
+             <div className=" pasture-btn-group modal-btn-group">
                 <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
                 <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
                 <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }}>Delete</button>
-              </div>
+              </div> 
             </>
           )}
         </div>
       </Modal>
+
       {(modeRefs.current.isEdit && selectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} />}
       {(modeRefs.current.isDelete) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} isDelete={true} />}
       <Navbar toggleModal={toggleModal} />

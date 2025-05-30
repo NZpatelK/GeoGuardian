@@ -51,6 +51,14 @@
     padding: 0;
 }
 
+.pasture-btn{
+    position: sticky;
+    width: 100%;
+    bottom: 5px;
+    margin: 0 auto;
+    background: #0e5501 !important;
+}
+
 
 .modal-btn-group button{
     width: 100%;
