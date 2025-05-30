@@ -29,6 +29,7 @@ export const DisplayMap = () => {
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const isMapLoaded = useRef(false);
 
   const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
@@ -383,11 +384,11 @@ export const DisplayMap = () => {
   }
 
   const relocateAnimal = async (animal: Animal, relocatePastureId: string) => {
-    if( animal && relocatePastureId) {
+    if (animal && relocatePastureId) {
       AnimalUtils.updateAnimalPasture(animal.id, relocatePastureId);
       bringAnimalBackToPasture(animal);
     };
-    
+
   }
 
   const bringAnimalBackToPasture = async (updateAnimalPosition: Animal) => {
@@ -398,18 +399,18 @@ export const DisplayMap = () => {
     let attempts = 0;
     const maxAttempts = 100;  // Prevent infinite loop
 
-    while (!isInside && attempts < maxAttempts) {   
+    while (!isInside && attempts < maxAttempts) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
       updateAnimalPosition.coordinates = updateAnimalCoord;
       position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
       isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
-      
+
       const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
 
       setPolygonState(updatePolygonState.polygonState);
-      
+
       console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
 
       if (updatePolygonState.notificationMsg) {
@@ -517,18 +518,29 @@ export const DisplayMap = () => {
             <div>
               <h3>Animal ID: {selectedAnimalRef.current.animal?.id}</h3>
               <h4>Current Pasture: {getPastures().find((pasture) => pasture.id === selectedAnimalRef.current.animal?.pastureId)?.name}</h4>
-              <p>Move pasture:</p>
-              <div className="button-group">
-                {getPastures().map((pasture) => (
-                  <button
-                    key={pasture.id}
-                    onClick={() => relocateAnimal(selectedAnimalRef.current.animal as Animal, pasture.id)}
-                    disabled={selectedAnimalRef.current.animal?.pastureId === pasture.id}
-                  >
-                    {pasture.name}
-                  </button>
-                ))}
-              </div>
+
+              {!selectedOption && <div className="animal-btn-group modal-btn-group">
+                <button style={{ backgroundColor: "#ff9800" }} onClick={() => setSelectedOption("relocate")}>Relocate</button>
+                <button style={{ backgroundColor: "#f44336" }}>Remove</button>
+              </div>}
+
+              {selectedOption === "relocate" && (
+                <div className="relocate-modal">
+                  <h3>Relocate Pasture:</h3>
+                  <div className="relocate-button-group modal-btn-group">
+                    {getPastures().map((pasture) => (
+                      <button
+                        key={pasture.id}
+                        onClick={() => relocateAnimal(selectedAnimalRef.current.animal as Animal, pasture.id)}
+                        disabled={selectedAnimalRef.current.animal?.pastureId === pasture.id}
+                      >
+                        {pasture.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
           )}
 

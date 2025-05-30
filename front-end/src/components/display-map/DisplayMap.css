@@ -52,31 +52,48 @@
 }
 
 
-.button-group{
-    display: flex;
-    justify-content: space-between;
-    margin: 0;
-}
-
-.button-group button{
-    width: 40%;
-    height: 40px;
+.modal-btn-group button{
+    width: 100%;
+    height: 50px;
     border-radius: 10px;
     font-size: 18px;
     font-weight: 600;
     padding: 0;
-    margin: 0 5px;
+    margin: 5px 0px;
     box-sizing: border-box;
-    background: #000000;
+    background: #0e5501;
     color: #fff;
+    transition: all 0.3s ease;
 }
 
-.button-group button:hover{
+.modal-btn-group button:hover{
     cursor: pointer;
     transform: scale(1.05);
 }
 
-.button-group button:disabled{
+.modal-btn-group button:disabled{
     background: #ccc;
     transform: scale(1);
 }
+
+.animal-btn-group{
+ position: absolute;
+ width: 90%;
+ bottom: 10px;
+}
+
+.animal-btn-group button{
+    width: 100%;
+    height: 50px;
+    border: none;
+    font-size: 18px;
+    margin: 5px 0
+}
+
+.relocate-modal h3 {
+    margin: 0;
+    padding: 0;
+    color: #000;
+    text-align: center;
+}
+
