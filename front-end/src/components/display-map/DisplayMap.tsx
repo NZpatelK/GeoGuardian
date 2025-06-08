@@ -245,7 +245,7 @@ export const DisplayMap = () => {
         });
       }
 
-      togglePastureControl(0);
+      handleClickDone();
       return false;
     }
 
@@ -443,43 +443,7 @@ export const DisplayMap = () => {
     setModalIsSelected(modal);
   };
 
-  const togglePastureControl = (selectMode: 0 | 1 | 2 | 3 | 4 | 5) => {
-    if (selectMode === 0) {
-      Object.assign(modeRefs.current, {
-        isAdd: false,
-        isEdit: false,
-        isDelete: false,
-        isAddPoint: false,
-        isDeletePoint: false,
-      });
-
-      return;
-    }
-
-    const modeMap = {
-      1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
-      2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
-      3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
-      4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
-      5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
-    };
-
-    Object.assign(modeRefs.current, {
-      isAdd: false,
-      isEdit: false,
-      isDelete: false,
-      isAddPoint: false,
-      isDeletePoint: false,
-      ...modeMap[selectMode],
-    });
-
-    toast(modeMap[selectMode]?.message || "Invalid mode selected", {
-      type: "info",
-      position: "top-center",
-    });
-  };
-
-
+  //TODO: rename this function to something more descriptive
   const handleClickDone = () => {
     if (modeRefs.current.isEdit && selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
@@ -491,10 +455,11 @@ export const DisplayMap = () => {
 
       selectedPastureRef.current.id = null;
       selectedPastureRef.current.coord = [];
-    }
 
-    togglePastureControl(0);
+    }
+    setSelectedOption(null);
   }
+
 
   return (
     <div
@@ -551,19 +516,21 @@ export const DisplayMap = () => {
                   <h3>{pasture.name}</h3>
                   <p>Id: {pasture.id}</p>
                 </div>))}
-                {/* <button className='pasture-btn' disabled={selectedOption == "pasture-edit"}>Edit Pasture</button> */}
-             <div className=" pasture-btn-group modal-btn-group">
+              <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
+              {/* <div className=" pasture-btn-group modal-btn-group">
                 <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
                 <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
                 <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }}>Delete</button>
-              </div> 
+              </div>  */}
             </>
           )}
         </div>
       </Modal>
 
-      {(modeRefs.current.isEdit && selectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} />}
-      {(modeRefs.current.isDelete) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} isDelete={true} />}
+      {selectedOption === "pasture-edit" && (
+        <EditModeBar modeRefs={modeRefs} handleClickDone={handleClickDone} />
+      )}
+
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
