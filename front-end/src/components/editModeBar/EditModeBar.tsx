@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './EditModeBar.css'
 import { toast } from 'react-toastify';
 
 interface EditModeBarProps {
     modeRefs: React.MutableRefObject<{
+        message?: string;
         isAdd: boolean;
         isEdit: boolean;
         isDelete: boolean;
@@ -15,7 +16,8 @@ interface EditModeBarProps {
 }
 
 export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickDone }) => {
-    const [isSelectedMode, setIsSelectedMode] = React.useState(false);
+    const [isSelectedMode, setIsSelectedMode] = useState(false);
+
     const togglePastureControl = (selectMode: 0 | 1 | 2 | 3 | 4 | 5, goBack?: boolean) => {
         if (selectMode === 0) {
             Object.assign(modeRefs.current, {
@@ -33,11 +35,11 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
         }
 
         const modeMap = {
-            1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
-            2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
-            3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
-            4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
-            5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
+            1: { isAdd: true, message: "Click on the map to add a new pasture." },
+            2: { isEdit: true, message: "Select a pasture to modify the shape." },
+            3: { isDelete: true, message: "Select a pasture to remove it." },
+            4: { isEdit: true, isAddPoint: true },
+            5: { isEdit: true, isDeletePoint: true },
         };
 
         Object.assign(modeRefs.current, {
@@ -47,11 +49,6 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
             isAddPoint: false,
             isDeletePoint: false,
             ...modeMap[selectMode],
-        });
-
-        toast(modeMap[selectMode]?.message || "Invalid mode selected", {
-            type: "info",
-            position: "top-center",
         });
 
         setIsSelectedMode(true);
@@ -69,14 +66,15 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
             <button className={'done-btn'} onClick={handleClickDone}>Done</button> */}
             <div>
                 {!isSelectedMode && <div className="pasture-btn-group modal-btn-group">
-                    <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
+                    <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0", background: "#21bd02", color: "#fff" }}>Add</button>
                     <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
-                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }} >Delete</button>
+                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0", background:"#d40202", color: "#fff" }} >Delete</button>
                 </div>}
 
+                {isSelectedMode && <h3 className="pasture-message">{modeRefs.current?.message}</h3>}
                 <div className="pasture-btn-group modal-btn-group">
-                    {isSelectedMode && <button onClick={() => togglePastureControl(0, true)}> Go Back </button>}
-                    <button className={!isSelectedMode ? 'done-btn' : undefined} onClick={() => togglePastureControl(0)}>Done</button>
+                    {isSelectedMode && <button className={'back-btn'} onClick={() => togglePastureControl(0, true)}> Go Back </button>}
+                    <button className={'done-btn'} onClick={() => togglePastureControl(0)}>Done</button>
                 </div>
 
             </div>

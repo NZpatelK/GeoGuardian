@@ -23,10 +23,12 @@
     border-radius: 10px;
     padding: 0 10px;
     box-sizing: border-box;
-    background: #fff;
+    background: #d39802;
     font-size: 16px;
+    font-weight: 800 !important;
     font-weight: 500;
-    color: #000;
+    letter-spacing: 1.2px;
+    color: #ffffff;
     transition: all 0.3s;
 }
 
@@ -54,14 +56,38 @@ button:focus {
     color: #fff;
 }
 
-.done-btn{
-    width: 90% !important;
-    margin-top: 20px !important;
-    background: #000000;
-    transition: none !important;
+.pasture-message{
+    color: #222 !important;
+    text-transform: capitalize;
+    font-weight: 800 !important;
+    font-size: 18px !important;
+    margin-bottom: 10px !important;
 }
 
-.delete-message{
-    color:#222 !important;
+.done-btn, .back-btn {
+    /* background: #0e5501 !important; */
+    /* color: #fff !important; */
+    font-weight: 600 !important;
+    width: 100% !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    margin: 10px 0 !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+
+}
+
+.done-btn {
+    background: #0e5501 !important;
+    color: #fff !important;
+}
+
+.back-btn {
+    background: #ffffff !important;
+    color: #000 !important;
+}
+
+.delete-message {
+    color: #222 !important;
     text-transform: capitalize;
 }
