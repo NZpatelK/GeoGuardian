@@ -27,10 +27,11 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
                 isAddPoint: false,
                 isDeletePoint: false,
             });
-            setIsSelectedMode(false);
-            if (!goBack) {
-                handleClickDone();
+            handleClickDone(); 
+            if (goBack) {
+                setIsSelectedMode(false);
             }
+            
             return;
         }
 
@@ -68,10 +69,14 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
                 {!isSelectedMode && <div className="pasture-btn-group modal-btn-group">
                     <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0", background: "#21bd02", color: "#fff" }}>Add</button>
                     <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
-                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0", background:"#d40202", color: "#fff" }} >Delete</button>
+                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0", background: "#d40202", color: "#fff" }} >Delete</button>
                 </div>}
 
                 {isSelectedMode && <h3 className="pasture-message">{modeRefs.current?.message}</h3>}
+                {modeRefs.current.isEdit && <div className="point-btn-group modal-btn-group">
+                    <button onClick={() => togglePastureControl(4)} disabled={modeRefs.current.isAddPoint} style={{ background: "#21bd02", color: "#fff" }}>Add Point</button>
+                    <button onClick={() => togglePastureControl(5)} disabled={modeRefs.current.isDeletePoint} style={{ background: "#d40202", color: "#fff" }}>Delete Point</button>
+                </div>}
                 <div className="pasture-btn-group modal-btn-group">
                     {isSelectedMode && <button className={'back-btn'} onClick={() => togglePastureControl(0, true)}> Go Back </button>}
                     <button className={'done-btn'} onClick={() => togglePastureControl(0)}>Done</button>

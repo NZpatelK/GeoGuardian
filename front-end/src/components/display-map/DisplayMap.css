@@ -80,7 +80,8 @@
 }
 
 .modal-btn-group button:disabled{
-    background: #ccc;
+    background: #ccc !important;
+    color: #000 !important;
     transform: scale(1);
 }
 

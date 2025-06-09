@@ -445,7 +445,8 @@ export const DisplayMap = () => {
 
   //TODO: rename this function to something more descriptive
   const handleClickDone = () => {
-    if (modeRefs.current.isEdit && selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
+
+    if (selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
 
       markersRef.current.forEach((marker) => mapInstance?.removeObject(marker));
