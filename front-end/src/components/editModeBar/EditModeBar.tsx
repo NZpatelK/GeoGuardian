@@ -11,7 +11,7 @@ interface EditModeBarProps {
         isAddPoint: boolean;
         isDeletePoint: boolean;
     }>;
-    handleClickDone: () => void;
+    handleClickDone: (isModelClosed: boolean) => void;
     isDelete?: boolean;
 }
 
@@ -27,7 +27,7 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
                 isAddPoint: false,
                 isDeletePoint: false,
             });
-            handleClickDone(); 
+            handleClickDone(!goBack || false); 
             if (goBack) {
                 setIsSelectedMode(false);
             }

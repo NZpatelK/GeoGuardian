@@ -444,7 +444,7 @@ export const DisplayMap = () => {
   };
 
   //TODO: rename this function to something more descriptive
-  const handleClickDone = () => {
+  const cleanUpPastureMarkers = (isModelClosed: boolean) => {
 
     if (selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
@@ -458,7 +458,10 @@ export const DisplayMap = () => {
       selectedPastureRef.current.coord = [];
 
     }
-    setSelectedOption(null);
+
+    if (isModelClosed){
+      setSelectedOption(null);
+    }
   }
 
 
@@ -529,7 +532,7 @@ export const DisplayMap = () => {
       </Modal>
 
       {selectedOption === "pasture-edit" && (
-        <EditModeBar modeRefs={modeRefs} handleClickDone={handleClickDone} />
+        <EditModeBar modeRefs={modeRefs} handleClickDone={(e) => cleanUpPastureMarkers(e)} />
       )}
 
       <Navbar toggleModal={toggleModal} />
