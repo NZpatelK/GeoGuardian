@@ -14,6 +14,10 @@ export const getPastures = () => {
     return listPastures;
 }
 
+export const checkIfCurrentPolygon = (): boolean => {
+    return pastureCoordinates.length > 0;
+}
+
 /**
  * Calculates the distance between two geographical points using the Haversine formula.
  * 
@@ -241,7 +245,7 @@ export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
  *  - removeTempPolyline: The temporary polyline that was previously added to the map, if any.
  *  - removeTempMarker: The temporary marker that was previously added to the map, if any.
  */
-function cleanupTemporaryObjects() {
+export function cleanupTemporaryObjects(isCleanData?: boolean) {
     let removeTempPolyline;
     let removeTempMarker;
 
@@ -253,6 +257,10 @@ function cleanupTemporaryObjects() {
     if (temporaryMarker) {
         removeTempMarker = temporaryMarker;
         temporaryMarker = null;
+    }
+
+    if (isCleanData) {
+        pastureCoordinates = [];
     }
 
     return { removeTempPolyline, removeTempMarker };

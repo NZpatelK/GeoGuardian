@@ -85,7 +85,7 @@ button:focus {
 }
 
 
-.done-btn, .back-btn {
+.done-btn, .back-btn, .cancel-btn {
     /* background: #0e5501 !important; */
     /* color: #fff !important; */
     font-weight: 600 !important;
@@ -106,6 +106,15 @@ button:focus {
 .back-btn {
     background: #ffffff !important;
     color: #000 !important;
+}
+
+.cancel-btn {
+  background-color: #E5E7EB !important; /* neutral light grey */
+  color: #374151 !important; /* dark grey text */
+}
+
+.cancel-btn:hover {
+  background-color: #D1D5DB !important;
 }
 
 .delete-message {

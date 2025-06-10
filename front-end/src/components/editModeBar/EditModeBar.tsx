@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import './EditModeBar.css'
-import { toast } from 'react-toastify';
 
 interface EditModeBarProps {
     modeRefs: React.MutableRefObject<{
@@ -74,7 +73,7 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
                 </div>}
                 <div className="pasture-btn-group modal-btn-group">
                     {isSelectedMode && <button className={'back-btn'} onClick={() => togglePastureControl(0, true)}> Go Back </button>}
-                    <button className={'done-btn'} onClick={() => togglePastureControl(0)}>Done</button>
+                    <button className={modeRefs.current.isEdit ? 'done-btn' : 'cancel-btn'} onClick={() => togglePastureControl(0)}>{modeRefs.current.isEdit ? "Done" : "Cancel"}</button>
                 </div>
             </div>
         </div>

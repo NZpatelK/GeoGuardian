@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture, cleanupTemporaryObjects, checkIfCurrentPolygon } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -122,6 +122,7 @@ export const DisplayMap = () => {
           );
 
           if (!coords) return;
+          isDrawing = checkIfCurrentPolygon();
           isDrawing = await createNewPasture(coords, hereMap, behavior, isDrawing);
         };
 
@@ -245,7 +246,7 @@ export const DisplayMap = () => {
         });
       }
 
-      handleClickDone();
+      cleanUpPastureMarkers(true);
       return false;
     }
 
@@ -459,6 +460,10 @@ export const DisplayMap = () => {
 
     }
 
+    const { removeTempPolyline, removeTempMarker } = cleanupTemporaryObjects(true);
+    if (removeTempPolyline) mapInstance?.removeObject(removeTempPolyline);
+    if (removeTempMarker) mapInstance?.removeObject(removeTempMarker);
+
     if (isModelClosed){
       setSelectedOption(null);
     }
@@ -541,4 +546,5 @@ export const DisplayMap = () => {
     </div>
   );
 }
+
 
