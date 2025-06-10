@@ -260,11 +260,18 @@ export const DisplayMap = () => {
     return true;
   };
 
+
   const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
-      hereMap.removeObject(existingPasture.pasture);
-      hereMap.removeObject(existingPasture.labelMarker);
-      deletePasture(pastureId);
+      if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
+        hereMap.removeObject(existingPasture.pasture);
+        hereMap.removeObject(existingPasture.labelMarker);
+        deletePasture(pastureId);
+      }
+      else{
+        alert("Cannot delete pasture with animals in it");
+      }
+      
       return;
     };
 
@@ -464,7 +471,7 @@ export const DisplayMap = () => {
     if (removeTempPolyline) mapInstance?.removeObject(removeTempPolyline);
     if (removeTempMarker) mapInstance?.removeObject(removeTempMarker);
 
-    if (isModelClosed){
+    if (isModelClosed) {
       setSelectedOption(null);
     }
   }
