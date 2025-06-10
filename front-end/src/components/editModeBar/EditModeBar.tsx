@@ -27,7 +27,9 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
                 isAddPoint: false,
                 isDeletePoint: false,
             });
+
             handleClickDone(!goBack || false); 
+
             if (goBack) {
                 setIsSelectedMode(false);
             }
@@ -58,13 +60,6 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
 
     return (
         <div className='edit-mode-bar-container'>
-            {/* {!isDelete && <div className='edit-mode-bar'>
-                <button className='add-btn' onClick={() => { togglePastureControl(4); setToggle(1) }} disabled={toggle === 1}>Add Point</button>
-                <button className='delete-btn' onClick={() => { togglePastureControl(5); setToggle(2) }} disabled={toggle === 2}>Delete Point</button>
-
-            </div>}
-            {isDelete && <h5 className='delete-message'>Select a pasture to delete it. Click Done when done</h5>}
-            <button className={'done-btn'} onClick={handleClickDone}>Done</button> */}
             <div>
                 {!isSelectedMode && <div className="pasture-btn-group modal-btn-group">
                     <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0", background: "#21bd02", color: "#fff" }}>Add</button>
@@ -81,7 +76,6 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
                     {isSelectedMode && <button className={'back-btn'} onClick={() => togglePastureControl(0, true)}> Go Back </button>}
                     <button className={'done-btn'} onClick={() => togglePastureControl(0)}>Done</button>
                 </div>
-
             </div>
         </div>
     )
