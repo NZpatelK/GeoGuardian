@@ -12,6 +12,8 @@ import { labelIcon } from '../../assets/Icon';
 import { Navbar } from '../navbar/Navbar';
 import { EditModeBar } from '../editModeBar/EditModeBar';
 
+import goBack from '../../assets/back-arrow.png';
+
 interface Animal {
   id: number;
   name: string;
@@ -497,6 +499,10 @@ export const DisplayMap = () => {
 
           {modalIsSelected === "selectedAnimal" && (
             <div>
+              {selectedOption === "relocate" && <button className='go-back-btn' onClick={() => setSelectedOption(null)}>
+                <img src={goBack} alt="Go Back" className='go-back-icon' />
+                Back</button>}
+
               <h3>Animal ID: {selectedAnimalRef.current.animal?.id}</h3>
               <h4>Current Pasture: {getPastures().find((pasture) => pasture.id === selectedAnimalRef.current.animal?.pastureId)?.name}</h4>
 
