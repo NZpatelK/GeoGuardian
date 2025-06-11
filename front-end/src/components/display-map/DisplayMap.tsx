@@ -509,6 +509,7 @@ export const DisplayMap = () => {
               {!selectedOption && <div className="animal-btn-group modal-btn-group">
                 <button style={{ backgroundColor: "#ff9800" }} onClick={() => setSelectedOption("relocate")}>Relocate</button>
                 <button style={{ backgroundColor: "#f44336" }}>Remove</button>
+                <button style={{ backgroundColor: "#555555" }} onClick={() => setModalIsSelected("animals")}>Close</button>
               </div>}
 
               {selectedOption === "relocate" && (
@@ -539,11 +540,6 @@ export const DisplayMap = () => {
                   <p>Id: {pasture.id}</p>
                 </div>))}
               <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
-              {/* <div className=" pasture-btn-group modal-btn-group">
-                <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
-                <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
-                <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }}>Delete</button>
-              </div>  */}
             </>
           )}
         </div>
