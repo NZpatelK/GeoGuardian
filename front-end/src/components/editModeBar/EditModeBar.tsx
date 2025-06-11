@@ -61,9 +61,9 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
         <div className='edit-mode-bar-container'>
             <div>
                 {!isSelectedMode && <div className="pasture-btn-group modal-btn-group">
-                    <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0", background: "#21bd02", color: "#fff" }}>Add</button>
+                    <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0", background: "#28a745", color: "#fff" }}>Add</button>
                     <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
-                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0", background: "#d40202", color: "#fff" }} >Delete</button>
+                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0", background: "#F44336", color: "#fff" }} >Delete</button>
                 </div>}
 
                 {isSelectedMode && <h3 className="pasture-message">{modeRefs.current?.message}</h3>}
