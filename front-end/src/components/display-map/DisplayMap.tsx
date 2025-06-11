@@ -3,7 +3,7 @@ import { Map as HMap } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture, cleanupTemporaryObjects, checkIfCurrentPolygon } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -29,11 +29,16 @@ export const DisplayMap = () => {
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const isMapLoaded = useRef(false);
 
   const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
   const markersRef = useRef<H.map.Marker[]>([]);
+
+  const selectedAnimalRef = useRef<{ animal: Animal | null }>({ animal: null });
   const animalRef = useRef<Record<number, H.map.Marker>>({});
+
+
   const modeRefs = useRef({
     isAdd: false,
     isDelete: false,
@@ -96,7 +101,7 @@ export const DisplayMap = () => {
 
             existingPasture.pasture.addEventListener('tap', () => {
               if (!tapDisabled) {
-                initialisePastureEditor(hereMap, existingPasture, item.id , behavior);
+                initialisePastureEditor(hereMap, existingPasture, item.id, behavior);
               }
 
               // Disable tap for 1000ms (1 second)
@@ -117,6 +122,7 @@ export const DisplayMap = () => {
           );
 
           if (!coords) return;
+          isDrawing = checkIfCurrentPolygon();
           isDrawing = await createNewPasture(coords, hereMap, behavior, isDrawing);
         };
 
@@ -156,6 +162,10 @@ export const DisplayMap = () => {
               { icon: newlabel, data: {} });
             // const position = new H.map.Marker({ lat: animal.coordinates.lat, lng: animal.coordinates.lng });
 
+            position.addEventListener('tap', () => {
+              selectedAnimalRef.current.animal = animal;
+              setModalIsSelected("selectedAnimal");
+            })
             animalPosition[animal.id] = position;
             mapInstance.addObject(position);
 
@@ -185,47 +195,9 @@ export const DisplayMap = () => {
         position.setGeometry(new H.geo.Point(updateAnimalPosition.coordinates.lat, updateAnimalPosition.coordinates.lng));
       }
 
-      let isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+      // Check if the animal is inside the pasture
+      bringAnimalBackToPasture(updateAnimalPosition as Animal);
 
-      let attempts = 0;
-      const maxAttempts = 100;  // Prevent infinite loop
-
-      while (!isInside && attempts < maxAttempts) {
-        const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
-
-        setPolygonState(updatePolygonState.polygonState);
-
-        if (updatePolygonState.notificationMsg) {
-          toast(updatePolygonState.notificationMsg, {
-            type: updatePolygonState.notificationMsg.includes("Entered") ? "success" : "error",
-          });
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
-        updateAnimalPosition.coordinates = updateAnimalCoord;
-        position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
-        isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
-        attempts++;
-      }
-
-      if (attempts >= maxAttempts) {
-        toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          icon: <FontAwesomeIcon icon={faExclamationTriangle} size="lg" color="white" />,
-          progress: undefined,
-          style: {
-            backgroundColor: "red",
-            color: "white",
-            fontWeight: "bold",
-          },
-        });
-      }
 
       const newDisplayAnimal = AnimalUtils.getAnimals();
       setDisplayAnimal([...newDisplayAnimal]);
@@ -274,7 +246,7 @@ export const DisplayMap = () => {
         });
       }
 
-      togglePastureControl(0);
+      cleanUpPastureMarkers(true);
       return false;
     }
 
@@ -288,11 +260,18 @@ export const DisplayMap = () => {
     return true;
   };
 
-  const initialisePastureEditor = async (hereMap: HMap, existingPasture: {pasture: H.map.Polygon, labelMarker: H.map.Marker}, pastureId: string, behavior: H.mapevents.Behavior) => {
+
+  const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
-      hereMap.removeObject(existingPasture.pasture);
-      hereMap.removeObject(existingPasture.labelMarker);
-      deletePasture(pastureId);
+      if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
+        hereMap.removeObject(existingPasture.pasture);
+        hereMap.removeObject(existingPasture.labelMarker);
+        deletePasture(pastureId);
+      }
+      else{
+        alert("Cannot delete pasture with animals in it");
+      }
+      
       return;
     };
 
@@ -397,59 +376,106 @@ export const DisplayMap = () => {
     return markersRef.current;
   };
 
+  const updateAnimal = async (pastureId: string) => {
+    const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
+    if (!animals) return;
+
+    console.log(animals[0].id, animals[0].coordinates);
+
+    for (const animal of animals) {
+      bringAnimalBackToPasture(animal);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    console.log(animals[0].id, animals[0].coordinates);
+    setDisplayAnimal(AnimalUtils.getAnimals());
+  }
+
+  const relocateAnimal = async (animal: Animal, relocatePastureId: string) => {
+    if (animal && relocatePastureId) {
+      AnimalUtils.updateAnimalPasture(animal.id, relocatePastureId);
+      bringAnimalBackToPasture(animal);
+    };
+
+  }
+
+  const bringAnimalBackToPasture = async (updateAnimalPosition: Animal) => {
+    const position = animalRef.current[updateAnimalPosition.id];
+    if (!position) return;
+    let isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+
+    let attempts = 0;
+    const maxAttempts = 100;  // Prevent infinite loop
+
+    while (!isInside && attempts < maxAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const updateAnimalCoord = await AnimalUtils.moveAnimalBackToTheirPasture(updateAnimalPosition.id);
+      updateAnimalPosition.coordinates = updateAnimalCoord;
+      position.setGeometry(new H.geo.Point(updateAnimalCoord.lat, updateAnimalCoord.lng));
+      isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
+
+      const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
+
+      setPolygonState(updatePolygonState.polygonState);
+
+      console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
+
+      if (updatePolygonState.notificationMsg) {
+        toast(updatePolygonState.notificationMsg, {
+          type: updatePolygonState.notificationMsg.includes("Entered") ? "success" : "error",
+        });
+      }
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      toast.error(`${updateAnimalPosition.id} - ${updateAnimalPosition.name} might be stuck`, {
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        icon: <FontAwesomeIcon icon={faExclamationTriangle} size="lg" color="white" />,
+        progress: undefined,
+        style: {
+          backgroundColor: "red",
+          color: "white",
+          fontWeight: "bold",
+        },
+      });
+    }
+  }
+
   const toggleModal = (modal: string) => {
     setModalIsSelected(modal);
   };
 
-  const togglePastureControl = (selectMode: 0 | 1 | 2 | 3 | 4 | 5) => {
-    if (selectMode === 0) {
-      Object.assign(modeRefs.current, {
-        isAdd: false,
-        isEdit: false,
-        isDelete: false,
-        isAddPoint: false,
-        isDeletePoint: false,
-      });
+  //TODO: rename this function to something more descriptive
+  const cleanUpPastureMarkers = (isModelClosed: boolean) => {
 
-      return;
-    }
-
-    const modeMap = {
-      1: { isAdd: true, message: "Add Mode: Click on the map to create a new pasture." },
-      2: { isEdit: true, message: "Edit Mode: Select a pasture to modify its shape." },
-      3: { isDelete: true, message: "Delete Mode: Select a pasture to remove it." },
-      4: { isEdit: true, isAddPoint: true, message: "Add Point Mode: Click on a boundary to add a new point." },
-      5: { isEdit: true, isDeletePoint: true, message: "Delete Point Mode: Select an existing point to remove it." },
-    };
-
-    Object.assign(modeRefs.current, {
-      isAdd: false,
-      isEdit: false,
-      isDelete: false,
-      isAddPoint: false,
-      isDeletePoint: false,
-      ...modeMap[selectMode],
-    });
-
-    toast(modeMap[selectMode]?.message || "Invalid mode selected", {
-      type: "info",
-      position: "top-center",
-    });
-  };
-
-
-  const handleClickDone = () => {
-    togglePastureControl(0);
-    if (modeRefs.current.isEdit && selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
+    if (selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
 
       markersRef.current.forEach((marker) => mapInstance?.removeObject(marker));
       markersRef.current = [];
 
+      updateAnimal(selectedPastureRef.current.id);
+
       selectedPastureRef.current.id = null;
       selectedPastureRef.current.coord = [];
+
+    }
+
+    const { removeTempPolyline, removeTempMarker } = cleanupTemporaryObjects(true);
+    if (removeTempPolyline) mapInstance?.removeObject(removeTempPolyline);
+    if (removeTempMarker) mapInstance?.removeObject(removeTempMarker);
+
+    if (isModelClosed) {
+      setSelectedOption(null);
     }
   }
+
 
   return (
     <div
@@ -469,6 +495,36 @@ export const DisplayMap = () => {
             </div>
           ))}
 
+          {modalIsSelected === "selectedAnimal" && (
+            <div>
+              <h3>Animal ID: {selectedAnimalRef.current.animal?.id}</h3>
+              <h4>Current Pasture: {getPastures().find((pasture) => pasture.id === selectedAnimalRef.current.animal?.pastureId)?.name}</h4>
+
+              {!selectedOption && <div className="animal-btn-group modal-btn-group">
+                <button style={{ backgroundColor: "#ff9800" }} onClick={() => setSelectedOption("relocate")}>Relocate</button>
+                <button style={{ backgroundColor: "#f44336" }}>Remove</button>
+              </div>}
+
+              {selectedOption === "relocate" && (
+                <div className="relocate-modal">
+                  <h3>Relocate Pasture:</h3>
+                  <div className="relocate-button-group modal-btn-group">
+                    {getPastures().map((pasture) => (
+                      <button
+                        key={pasture.id}
+                        onClick={() => relocateAnimal(selectedAnimalRef.current.animal as Animal, pasture.id)}
+                        disabled={selectedAnimalRef.current.animal?.pastureId === pasture.id}
+                      >
+                        {pasture.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
           {modalIsSelected === "pastures" && (
             <>
               {getPastures().map((pasture) => (
@@ -476,21 +532,26 @@ export const DisplayMap = () => {
                   <h3>{pasture.name}</h3>
                   <p>Id: {pasture.id}</p>
                 </div>))}
-              <div className="button-group">
+              <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
+              {/* <div className=" pasture-btn-group modal-btn-group">
                 <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
                 <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
                 <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }}>Delete</button>
-              </div>
+              </div>  */}
             </>
           )}
         </div>
       </Modal>
-      {(modeRefs.current.isEdit && selectedPastureRef.current) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} />}
-      {(modeRefs.current.isDelete) && <EditModeBar togglePastureControl={togglePastureControl} handleClickDone={handleClickDone} isDelete={true} />}
+
+      {selectedOption === "pasture-edit" && (
+        <EditModeBar modeRefs={modeRefs} handleClickDone={(e) => cleanUpPastureMarkers(e)} />
+      )}
+
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
     </div>
   );
 }
+
 

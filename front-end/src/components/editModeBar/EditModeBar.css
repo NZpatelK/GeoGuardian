@@ -23,10 +23,12 @@
     border-radius: 10px;
     padding: 0 10px;
     box-sizing: border-box;
-    background: #fff;
+    background: #d39802;
     font-size: 16px;
+    font-weight: 800 !important;
     font-weight: 500;
-    color: #000;
+    letter-spacing: 1.2px;
+    color: #ffffff;
     transition: all 0.3s;
 }
 
@@ -54,13 +56,68 @@ button:focus {
     color: #fff;
 }
 
-.done-btn{
-    width: 90% !important;
-    margin-top: 20px !important;
-    background: #000000;
+.pasture-message{
+    color: #222 !important;
+    text-transform: capitalize;
+    font-weight: 800 !important;
+    font-size: 18px !important;
+    margin-bottom: 10px !important;
 }
 
-.delete-message{
-    color:#222 !important;
+.point-btn-group{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.point-btn-group button{
+    min-width: 45%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    color: #ffffff;
+    transition: all 0.3s;
+}
+
+
+.done-btn, .back-btn, .cancel-btn {
+    /* background: #0e5501 !important; */
+    /* color: #fff !important; */
+    font-weight: 600 !important;
+    width: 100% !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    margin: 10px 0 !important;
+    box-sizing: border-box !important;
+    transition: all 0.3s ease !important;
+
+}
+
+.done-btn {
+    background: #0e5501 !important;
+    color: #fff !important;
+}
+
+.back-btn {
+    background: #ffffff !important;
+    color: #000 !important;
+}
+
+.cancel-btn {
+  background-color: #E5E7EB !important; /* neutral light grey */
+  color: #374151 !important; /* dark grey text */
+}
+
+.cancel-btn:hover {
+  background-color: #D1D5DB !important;
+}
+
+.delete-message {
+    color: #222 !important;
     text-transform: capitalize;
 }
