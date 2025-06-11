@@ -57,8 +57,9 @@ button:focus {
 }
 
 .pasture-message{
-    color: #222 !important;
+    color: #000 !important;
     text-transform: capitalize;
+    text-align: center;
     font-weight: 800 !important;
     font-size: 18px !important;
     margin-bottom: 10px !important;

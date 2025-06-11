@@ -490,7 +490,10 @@ export const DisplayMap = () => {
       <Modal>
         <div className="modal-content">
           {modalIsSelected === "animals" && displayAnimal.map((animal) => (
-            <div key={animal.id} className="animal-item">
+            <div key={animal.id} className="animal-item" onClick ={() => {
+              selectedAnimalRef.current.animal = animal;
+              setModalIsSelected("selectedAnimal");
+            }}>
               <h3>{animal.name} - {animal.id} </h3>
               <p>Type: {animal.type}</p>
               <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
