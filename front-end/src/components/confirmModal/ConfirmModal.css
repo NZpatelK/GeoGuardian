@@ -1,0 +1,52 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(2px); /* <- This is the blur effect */
+  background-color: rgba(0, 0, 0, 0.127);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-box {
+  background-color: white;
+  color: #333;
+  padding: 20px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  text-align: center;
+}
+
+.modal-message {
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-yes {
+  background-color: #d9534f !important; /* Bootstrap danger color */
+  color: white;
+}
+
+.btn-no {
+  background-color: #ccc !important;
+  color: #333;
+}

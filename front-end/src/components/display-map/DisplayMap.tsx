@@ -11,6 +11,8 @@ import AnimalUtils from './AnimalUtils';
 import { labelIcon } from '../../assets/Icon';
 import { Navbar } from '../navbar/Navbar';
 import { EditModeBar } from '../editModeBar/EditModeBar';
+import { useConfirm } from "../confirmModal/useConfirm";
+
 
 import goBack from '../../assets/back-arrow.png';
 
@@ -32,6 +34,8 @@ export const DisplayMap = () => {
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const { confirm, ConfirmModalComponent } = useConfirm();
+
   const isMapLoaded = useRef(false);
 
   const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
@@ -265,15 +269,16 @@ export const DisplayMap = () => {
 
   const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
-      if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
+      const confirmed = await confirm("Are you sure you want to delete this pasture?");
+      if (!AnimalUtils.hasAnimalsInPasture(pastureId) && confirmed) {
         hereMap.removeObject(existingPasture.pasture);
         hereMap.removeObject(existingPasture.labelMarker);
         deletePasture(pastureId);
       }
-      else{
+      else {
         alert("Cannot delete pasture with animals in it");
       }
-      
+
       return;
     };
 
@@ -490,7 +495,7 @@ export const DisplayMap = () => {
       <Modal>
         <div className="modal-content">
           {modalIsSelected === "animals" && displayAnimal.map((animal) => (
-            <div key={animal.id} className="animal-item" onClick ={() => {
+            <div key={animal.id} className="animal-item" onClick={() => {
               selectedAnimalRef.current.animal = animal;
               setModalIsSelected("selectedAnimal");
             }}>
@@ -552,6 +557,7 @@ export const DisplayMap = () => {
         <EditModeBar modeRefs={modeRefs} handleClickDone={(e) => cleanUpPastureMarkers(e)} />
       )}
 
+      {ConfirmModalComponent}
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
