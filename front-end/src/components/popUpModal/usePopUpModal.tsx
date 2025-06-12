@@ -4,13 +4,14 @@ import PopUpModal from "./PopUpModal";
 export function usePopUpModal() {
   const [modalState, setModalState] = useState<{
     message: string;
+    modalType: 'animal' | 'pasture';
     onClose: () => void;
   } | null>(null);
 
-  const showModal = (message: string) => {
+  const showModal = (message: string, modalType: 'animal' | 'pasture') => {
     return new Promise<void>((resolve) => {
       setModalState({
-        message, onClose: () => resolve(),
+        message, modalType, onClose: () => resolve(),
       });
     });
   };
@@ -18,6 +19,7 @@ export function usePopUpModal() {
   const PopUpModalComponent = modalState ? (
     <PopUpModal
       message={modalState.message}
+      modalType={modalState.modalType}
       onClose={() => {
         modalState.onClose();
         setModalState(null);
