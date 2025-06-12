@@ -11,8 +11,7 @@ import AnimalUtils from './AnimalUtils';
 import { labelIcon } from '../../assets/Icon';
 import { Navbar } from '../navbar/Navbar';
 import { EditModeBar } from '../editModeBar/EditModeBar';
-import { useConfirm } from "../confirmModal/useConfirm";
-
+import { usePopUpModal } from '../popUpModal/usePopUpModal';
 
 import goBack from '../../assets/back-arrow.png';
 
@@ -34,7 +33,7 @@ export const DisplayMap = () => {
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const { confirm, ConfirmModalComponent } = useConfirm();
+  const { showModal, PopUpModalComponent } = usePopUpModal();
 
   const isMapLoaded = useRef(false);
 
@@ -269,7 +268,8 @@ export const DisplayMap = () => {
 
   const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
-      const confirmed = await confirm("Are you sure you want to delete this pasture?");
+      // const confirmed = await confirm("Are you sure you want to delete this pasture?");
+      const confirmed = await showModal("Are you sure you want to delete this pasture? This action cannot be undone.");
       if (!AnimalUtils.hasAnimalsInPasture(pastureId) && confirmed) {
         hereMap.removeObject(existingPasture.pasture);
         hereMap.removeObject(existingPasture.labelMarker);
@@ -557,7 +557,7 @@ export const DisplayMap = () => {
         <EditModeBar modeRefs={modeRefs} handleClickDone={(e) => cleanUpPastureMarkers(e)} />
       )}
 
-      {ConfirmModalComponent}
+      {PopUpModalComponent}
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />
