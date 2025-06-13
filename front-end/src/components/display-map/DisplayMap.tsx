@@ -268,9 +268,15 @@ export const DisplayMap = () => {
 
   const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
-      // const confirmed = await confirm("Are you sure you want to delete this pasture?");
-      const confirmed = await showModal("Are you sure you want to delete this pasture? This action cannot be undone.", 'pasture');
-      if (!AnimalUtils.hasAnimalsInPasture(pastureId) && confirmed) {
+      if (AnimalUtils.hasAnimalsInPasture(pastureId)) {
+        const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
+
+        if (relocateAnimalsConfirmed) {
+          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation');
+        }
+      }
+
+      if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
         hereMap.removeObject(existingPasture.pasture);
         hereMap.removeObject(existingPasture.labelMarker);
         deletePasture(pastureId);
