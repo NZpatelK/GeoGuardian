@@ -272,7 +272,7 @@ export const DisplayMap = () => {
         const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
 
         if (relocateAnimalsConfirmed) {
-          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation');
+          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation', pastureId);
         }
       }
 

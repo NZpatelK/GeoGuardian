@@ -5,10 +5,11 @@ import { useEffect, useState } from 'react';
 interface PopUpModalProps {
     message: string;
     modalType: 'deleteConfirmation' | 'animal' | 'pasture' | 'relocateConfirmation';
+    currentPastureId?: string;
     onConfirm: (value: boolean) => void;
 }
 
-export default function PopUpModal({ message, modalType, onConfirm }: PopUpModalProps) {
+export default function PopUpModal({ message, modalType, currentPastureId, onConfirm }: PopUpModalProps) {
     const [listPastures, setListPastures] = useState<any[]>([]);
 
     useEffect(() => {
@@ -35,11 +36,13 @@ export default function PopUpModal({ message, modalType, onConfirm }: PopUpModal
             }
             {(modalType === 'relocateConfirmation') &&
                 <div className="modal-box">
-                    <p className="modal-message">{message}</p>
-                    <label htmlFor="relocate"> Relocate Animals to:</label>
-                    <select id="relocate" className="relocate-select">
+                    <p className="modal-message select-label">{message}</p>
+                    <select id="relocate" className="custom-select">
+                        <option value="" disabled selected>
+                            Select a pasture to relocate animals
+                        </option>
                         {listPastures && listPastures.map((pasture: any) => (
-                            <option key={pasture.id} value={pasture.id}>
+                            (currentPastureId !== pasture.id) && <option key={pasture.id} value={pasture.id}>
                                 {pasture.name}
                             </option>
                         ))}
