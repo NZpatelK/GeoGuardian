@@ -6,23 +6,31 @@ export function usePopUpModal() {
     message: string;
     modalType: 'animal' | 'pasture' | 'deleteConfirmation' | 'relocateConfirmation';
     currentPastureId?: string;
-    resolve?: (value: boolean) => void;
+    resolve?: (value: boolean | string) => void;
   } | null>(null);
 
-  const showModal = (message: string, modalType: 'deleteConfirmation' | 'animal' | 'pasture' | 'relocateConfirmation', currentPastureId?: string) => {
-    return new Promise<boolean>((resolve) => {
-      setModalState({
-        message, modalType, currentPastureId, resolve,
-      });
+const showModal = (
+  message: string,
+  modalType: 'deleteConfirmation' | 'animal' | 'pasture' | 'relocateConfirmation',
+  currentPastureId?: string
+): Promise<boolean | string> => {
+  return new Promise<boolean | string>((resolve) => {
+    setModalState({
+      message,
+      modalType,
+      currentPastureId,
+      resolve,
     });
-  };
+  });
+};
+
 
   const PopUpModalComponent = modalState ? (
     <PopUpModal
       message={modalState.message}
       modalType={modalState.modalType}
       currentPastureId={modalState.currentPastureId}
-      onConfirm={(value: boolean) => {
+      onConfirm={(value: boolean | string) => {
         modalState.resolve?.(value);
         setModalState(null);
       }}

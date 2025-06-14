@@ -6,11 +6,12 @@ interface PopUpModalProps {
     message: string;
     modalType: 'deleteConfirmation' | 'animal' | 'pasture' | 'relocateConfirmation';
     currentPastureId?: string;
-    onConfirm: (value: boolean) => void;
+    onConfirm: (value: boolean | string) => void;
 }
 
-export default function PopUpModal({ message, modalType, currentPastureId, onConfirm }: PopUpModalProps) {
+export default function PopUpModal({ message, modalType, currentPastureId, onConfirm}: PopUpModalProps) {
     const [listPastures, setListPastures] = useState<any[]>([]);
+    const [selectedRelocatePastureId, setSelectedRelocatePastureId] = useState<string>('');
 
     useEffect(() => {
         async function fetchPastures() {
@@ -37,8 +38,9 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
             {(modalType === 'relocateConfirmation') &&
                 <div className="modal-box">
                     <p className="modal-message select-label">{message}</p>
-                    <select id="relocate" className="custom-select">
-                        <option value="" disabled selected>
+                    {/* <label htmlFor="relocate" className="select-label">Select Pasture: {selectedRelocatePastureId}</label> */}
+                    <select id="relocate" className="custom-select" onChange={(e) => setSelectedRelocatePastureId(e.target.value)} value={selectedRelocatePastureId}>
+                        <option value="" disabled>
                             Select a pasture to relocate animals
                         </option>
                         {listPastures && listPastures.map((pasture: any) => (
@@ -48,7 +50,7 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
                         ))}
                     </select>
                     <div className="modal-buttons">
-                        <button className="btn btn-relocate" onClick={() => onConfirm(true)}>
+                        <button className="btn btn-relocate" onClick={() => onConfirm(selectedRelocatePastureId)}>
                             Confirm Relocation
                         </button>
                         <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
