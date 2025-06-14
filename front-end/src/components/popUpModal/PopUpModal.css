@@ -34,21 +34,29 @@
 }
 
 .btn {
-  padding: 8px 16px;
-  font-size: 14px;
+  padding: 12px 15px;
+  font-size: 16px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.btn-yes {
-  background-color: #d9534f !important; /* Bootstrap danger color */
+.btn-confirm {
+  background-color: #EF4444 !important; 
   color: white;
 }
 
-.btn-no {
-  background-color: #ccc !important;
-  color: #333;
+.btn-confirm:hover {
+  background-color: #f22121 !important;
+}
+
+.btn-cancel {
+  background-color: #9CA3AF !important;
+  color: #ffffff !important; 
+}
+
+.btn-cancel:hover {
+  background-color: #6B7280 !important; 
 }
 
 .select-label {
