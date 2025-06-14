@@ -273,6 +273,15 @@ export const DisplayMap = () => {
 
         if (relocateAnimalsConfirmed) {
           const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation', pastureId);
+          if (relocatePastureId && typeof relocatePastureId === 'string' && relocatePastureId !== pastureId) {
+            const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
+            if (animals && animals.length > 0) {
+              for (const animal of animals) {
+                relocateAnimal(animal, relocatePastureId);
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+              }
+            }
+          }
         }
       }
 
