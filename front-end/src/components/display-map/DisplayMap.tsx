@@ -281,17 +281,13 @@ export const DisplayMap = () => {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
               }
             }
+            if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
+              hereMap.removeObject(existingPasture.pasture);
+              hereMap.removeObject(existingPasture.labelMarker);
+              deletePasture(pastureId);
+            }
           }
         }
-      }
-
-      if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
-        hereMap.removeObject(existingPasture.pasture);
-        hereMap.removeObject(existingPasture.labelMarker);
-        deletePasture(pastureId);
-      }
-      else {
-        alert("Cannot delete pasture with animals in it");
       }
 
       return;
