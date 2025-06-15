@@ -437,7 +437,7 @@ export const DisplayMap = () => {
 
       setPolygonState(updatePolygonState.polygonState);
 
-      console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
+      // console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
 
       if (updatePolygonState.notificationMsg) {
         toast(updatePolygonState.notificationMsg, {
