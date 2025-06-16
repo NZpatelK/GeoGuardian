@@ -70,6 +70,13 @@ export class AnimalUtils {
         AnimalApi.updateRelocatedAnimal(id, newPastureId);
     }
 
+    static removeAnimal = (id: number) => {
+        const index = animals.findIndex(animal => animal.id === id);
+        if (index !== -1) {
+            animals.splice(index, 1);
+            AnimalApi.removeAnimal(id);
+        } 
+    }
     static randomiseAnimalCoordinates = (animal: Animal) => {
 
         // Generate new random lat/lng within a small range

@@ -26,33 +26,40 @@ const addAnimal = async (req, res) => {
 
 const deleteAnimal = async (req, res) => {
     const { id } = req.params;
+    console.log("Deleting animal with id:", id);
+
     try {
         let existData = await getData(animalFilePath);
 
-        // Ensure it's a flat array
+        // Flatten if accidentally nested
         if (Array.isArray(existData) && existData.length === 1 && Array.isArray(existData[0])) {
-            existData = existData[0]; // Flatten if accidentally nested
+            existData = existData[0];
         }
 
-        // Check if data is valid
+        // Ensure valid data structure
         if (!Array.isArray(existData)) {
             console.error("Data format error: Expected an array but got:", existData);
             return res.status(500).json({ message: "Data format error" });
         }
 
-        const animalIndex = existData.findIndex((animal) => animal.id === id);
+        const animalIndex = existData.findIndex((animal) => String(animal.id) === String(id).trim());
         if (animalIndex === -1) {
             return res.status(404).json({ message: `Animal with id ${id} not found` });
         }
 
         existData.splice(animalIndex, 1);
+
+        const writeData = async (filePath, data) => {
+            await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
+        };
+
         await writeData(animalFilePath, existData);
         res.status(200).json({ message: 'Animal deleted successfully' });
     } catch (error) {
+        console.error("Error deleting animal:", error);
         handleDBError(res, error);
     }
 };
-
 const relocateAnimal = async (req, res) => {
     const { animalId, pastureId } = req.body;
     if (!animalId || !pastureId) {
@@ -82,7 +89,7 @@ const relocateAnimal = async (req, res) => {
         const writeData = async (filePath, data) => {
             await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
         };
-        
+
         await writeData(animalFilePath, existData);
         res.status(200).json({ message: 'Animal relocated successfully' });
     } catch (error) {

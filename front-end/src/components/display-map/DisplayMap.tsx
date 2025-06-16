@@ -465,6 +465,20 @@ export const DisplayMap = () => {
     }
   }
 
+  const removeAnimal = (animalId: number) => {
+    const animalPosition = animalRef.current[animalId];
+    if (animalPosition) {
+      mapInstance?.removeObject(animalPosition);
+      delete animalRef.current[animalId];
+      const updatedAnimals = displayAnimal.filter(animal => animal.id !== animalId);
+      setDisplayAnimal(updatedAnimals);
+      AnimalUtils.removeAnimal(animalId);
+      toast.success(`Animal with ID ${animalId} has been removed successfully.`);
+    } else {
+      toast.error(`Animal with ID ${animalId} not found.`);
+    }
+  }
+
   const toggleModal = (modal: string) => {
     setModalIsSelected(modal);
   };
@@ -527,7 +541,7 @@ export const DisplayMap = () => {
 
               {!selectedOption && <div className="animal-btn-group modal-btn-group">
                 <button style={{ backgroundColor: "#ff9800" }} onClick={() => setSelectedOption("relocate")}>Relocate</button>
-                <button style={{ backgroundColor: "#f44336" }}>Remove</button>
+                <button style={{ backgroundColor: "#f44336" }} onClick={() => removeAnimal(selectedAnimalRef.current.animal?.id as number)}>Remove</button>
                 <button style={{ backgroundColor: "#555555" }} onClick={() => setModalIsSelected("animals")}>Close</button>
               </div>}
 

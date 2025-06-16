@@ -51,6 +51,19 @@ export class AnimalApi {
             }
         }
     }
+
+    static async removeAnimal(animalId: number) {
+        try {
+            // Send data to the backend using axios
+            await axios.delete(`http://localhost:3000/api/animals/deleteAnimal/${animalId}`);
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.error('Error:', err.response ? err.response.data : err.message);
+            } else {
+                console.error('Error:', err);
+            }
+        }
+    }
 }
 
 export default AnimalApi
