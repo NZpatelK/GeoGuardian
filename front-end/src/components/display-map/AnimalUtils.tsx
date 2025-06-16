@@ -61,13 +61,22 @@ export class AnimalUtils {
     static updateAnimal = (id: number, newCoordinates: { lat: number, lng: number }) => {
         const index = animals.findIndex(animal => animal.id === id);
         animals[index].coordinates = newCoordinates;
+        AnimalApi.updateAnimalCoordinates(id, newCoordinates)
     }
 
     static updateAnimalPasture = (id: number, newPastureId: string) => {
         const index = animals.findIndex(animal => animal.id === id);
         animals[index].pastureId = newPastureId;
+        AnimalApi.updateRelocatedAnimal(id, newPastureId);
     }
 
+    static removeAnimal = (id: number) => {
+        const index = animals.findIndex(animal => animal.id === id);
+        if (index !== -1) {
+            animals.splice(index, 1);
+            AnimalApi.removeAnimal(id);
+        } 
+    }
     static randomiseAnimalCoordinates = (animal: Animal) => {
 
         // Generate new random lat/lng within a small range
@@ -111,7 +120,6 @@ export class AnimalUtils {
         const pastureCoordinates = pasture.coordinates;
         const animalCoordinates = animal.coordinates;
         const isInside = isPointInPolygon(animalCoordinates, pastureCoordinates);
-        // console.log(`Animal ${animalId} is inside pasture ${pasture.name}: ${isInside}`);
         return isInside;
 
     }
@@ -122,7 +130,6 @@ export class AnimalUtils {
         let notificationMsg = "";
 
         listPastures.forEach((pasture: Pasture) => {
-            // console.log(animalData);
             const isInside = isPointInPolygon(animalData.coordinates, pasture.coordinates);
             const previousState = polygonState[pasture.name]?.[animalData.id] ?? false;
 

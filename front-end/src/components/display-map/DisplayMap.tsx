@@ -11,6 +11,9 @@ import AnimalUtils from './AnimalUtils';
 import { labelIcon } from '../../assets/Icon';
 import { Navbar } from '../navbar/Navbar';
 import { EditModeBar } from '../editModeBar/EditModeBar';
+import { usePopUpModal } from '../popUpModal/usePopUpModal';
+
+import goBack from '../../assets/back-arrow.png';
 
 interface Animal {
   id: number;
@@ -30,6 +33,8 @@ export const DisplayMap = () => {
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const { showModal, PopUpModalComponent } = usePopUpModal();
+
   const isMapLoaded = useRef(false);
 
   const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
@@ -225,7 +230,8 @@ export const DisplayMap = () => {
     const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords);
 
     if (distanceToStart < 10) {
-      const inputName = prompt("Please enter the name of the pasture:");
+
+      const inputName = await showModal("Please enter a name for the pasture:", 'Input');
       const result = await closePolygon(startPoint, inputName as string);
 
       if (result) {
@@ -263,15 +269,28 @@ export const DisplayMap = () => {
 
   const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
-      if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
-        hereMap.removeObject(existingPasture.pasture);
-        hereMap.removeObject(existingPasture.labelMarker);
-        deletePasture(pastureId);
+      if (AnimalUtils.hasAnimalsInPasture(pastureId)) {
+        const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
+
+        if (relocateAnimalsConfirmed) {
+          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation', pastureId);
+          if (relocatePastureId && typeof relocatePastureId === 'string' && relocatePastureId !== pastureId) {
+            const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
+            if (animals && animals.length > 0) {
+              for (const animal of animals) {
+                relocateAnimal(animal, relocatePastureId);
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+              }
+            }
+            if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
+              hereMap.removeObject(existingPasture.pasture);
+              hereMap.removeObject(existingPasture.labelMarker);
+              deletePasture(pastureId);
+            }
+          }
+        }
       }
-      else{
-        alert("Cannot delete pasture with animals in it");
-      }
-      
+
       return;
     };
 
@@ -419,7 +438,7 @@ export const DisplayMap = () => {
 
       setPolygonState(updatePolygonState.polygonState);
 
-      console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
+      // console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
 
       if (updatePolygonState.notificationMsg) {
         toast(updatePolygonState.notificationMsg, {
@@ -444,6 +463,41 @@ export const DisplayMap = () => {
           fontWeight: "bold",
         },
       });
+    }
+  }
+
+  const removeAnimal = async (animalId: number) => {
+    const deleteConfirmation = await showModal(`Are you sure you want to remove the animal with ID ${animalId}?`, 'deleteConfirmation');
+
+    if (deleteConfirmation) {
+      const animalPosition = animalRef.current[animalId];
+
+      if (animalPosition) {
+
+        mapInstance?.removeObject(animalPosition);
+
+        delete animalRef.current[animalId];
+        const updatedAnimals = displayAnimal.filter(animal => animal.id !== animalId);
+        setDisplayAnimal(updatedAnimals);
+        AnimalUtils.removeAnimal(animalId);
+
+        toast.success(`Animal with ID ${animalId} has been removed successfully.`, {
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          position: "top-center",
+        });
+
+        setModalIsSelected("animals");
+
+      } else {
+        toast.error(`Animal with ID ${animalId} not found.`, {
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          position: "top-center",
+        });
+      }
     }
   }
 
@@ -488,7 +542,10 @@ export const DisplayMap = () => {
       <Modal>
         <div className="modal-content">
           {modalIsSelected === "animals" && displayAnimal.map((animal) => (
-            <div key={animal.id} className="animal-item">
+            <div key={animal.id} className="animal-item" onClick={() => {
+              selectedAnimalRef.current.animal = animal;
+              setModalIsSelected("selectedAnimal");
+            }}>
               <h3>{animal.name} - {animal.id} </h3>
               <p>Type: {animal.type}</p>
               <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
@@ -497,12 +554,17 @@ export const DisplayMap = () => {
 
           {modalIsSelected === "selectedAnimal" && (
             <div>
+              {selectedOption === "relocate" && <button className='go-back-btn' onClick={() => setSelectedOption(null)}>
+                <img src={goBack} alt="Go Back" className='go-back-icon' />
+                Back</button>}
+
               <h3>Animal ID: {selectedAnimalRef.current.animal?.id}</h3>
               <h4>Current Pasture: {getPastures().find((pasture) => pasture.id === selectedAnimalRef.current.animal?.pastureId)?.name}</h4>
 
               {!selectedOption && <div className="animal-btn-group modal-btn-group">
                 <button style={{ backgroundColor: "#ff9800" }} onClick={() => setSelectedOption("relocate")}>Relocate</button>
-                <button style={{ backgroundColor: "#f44336" }}>Remove</button>
+                <button style={{ backgroundColor: "#f44336" }} onClick={() => removeAnimal(selectedAnimalRef.current.animal?.id as number)}>Remove</button>
+                <button style={{ backgroundColor: "#555555" }} onClick={() => setModalIsSelected("animals")}>Close</button>
               </div>}
 
               {selectedOption === "relocate" && (
@@ -530,14 +592,21 @@ export const DisplayMap = () => {
               {getPastures().map((pasture) => (
                 <div key={pasture.id} className="pasture-item">
                   <h3>{pasture.name}</h3>
-                  <p>Id: {pasture.id}</p>
+
+                  {AnimalUtils.getAnimals() &&
+                    <div>
+                      <p>Total Animals: {AnimalUtils.getAnimalsByPastureId(pasture.id).length}</p>
+
+                      <div className="animal-counts">
+                        <p>Pig: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Pig").length}</p>
+                        <p>Goat: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Goat").length}</p>
+                        <p>Sheep: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Sheep").length}</p>
+                        <p>Cow: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Cow").length}</p>
+                      </div>
+                    </div>}
+
                 </div>))}
               <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
-              {/* <div className=" pasture-btn-group modal-btn-group">
-                <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0" }}>Add</button>
-                <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
-                <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0" }}>Delete</button>
-              </div>  */}
             </>
           )}
         </div>
@@ -547,6 +616,7 @@ export const DisplayMap = () => {
         <EditModeBar modeRefs={modeRefs} handleClickDone={(e) => cleanUpPastureMarkers(e)} />
       )}
 
+      {PopUpModalComponent}
       <Navbar toggleModal={toggleModal} />
       <ToastContainer
         stacked />

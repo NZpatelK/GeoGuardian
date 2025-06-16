@@ -60,19 +60,20 @@ export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickD
     return (
         <div className='edit-mode-bar-container'>
             <div>
-                {!isSelectedMode && <div className="pasture-btn-group modal-btn-group">
-                    <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0", background: "#21bd02", color: "#fff" }}>Add</button>
+                {isSelectedMode && <h3 className="pasture-message">{modeRefs.current?.message}</h3>}
+                
+                {!modeRefs.current.isEdit && <div className="pasture-btn-group modal-btn-group">
+                    <button onClick={() => togglePastureControl(1)} disabled={modeRefs.current.isAdd} style={{ marginLeft: "0", background: "#28a745", color: "#fff" }}>Add</button>
                     <button onClick={() => togglePastureControl(2)} disabled={modeRefs.current.isEdit}>Edit</button>
-                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0", background: "#d40202", color: "#fff" }} >Delete</button>
+                    <button onClick={() => togglePastureControl(3)} disabled={modeRefs.current.isDelete} style={{ marginRight: "0", background: "#F44336", color: "#fff" }} >Delete</button>
                 </div>}
 
-                {isSelectedMode && <h3 className="pasture-message">{modeRefs.current?.message}</h3>}
                 {modeRefs.current.isEdit && <div className="point-btn-group modal-btn-group">
-                    <button onClick={() => togglePastureControl(4)} disabled={modeRefs.current.isAddPoint} style={{ background: "#21bd02", color: "#fff" }}>Add Point</button>
+                    <button onClick={() => togglePastureControl(4)} disabled={modeRefs.current.isAddPoint} style={{ background: "#4CAF50", color: "#fff" }}>Add Point</button>
                     <button onClick={() => togglePastureControl(5)} disabled={modeRefs.current.isDeletePoint} style={{ background: "#d40202", color: "#fff" }}>Delete Point</button>
                 </div>}
                 <div className="pasture-btn-group modal-btn-group">
-                    {isSelectedMode && <button className={'back-btn'} onClick={() => togglePastureControl(0, true)}> Go Back </button>}
+                    {modeRefs.current.isEdit && <button className={'back-btn'} onClick={() => togglePastureControl(0, true)}> Go Back </button>}
                     <button className={modeRefs.current.isEdit ? 'done-btn' : 'cancel-btn'} onClick={() => togglePastureControl(0)}>{modeRefs.current.isEdit ? "Done" : "Cancel"}</button>
                 </div>
             </div>
