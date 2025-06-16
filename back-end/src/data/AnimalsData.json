@@ -1,202 +1,202 @@
 [
   {
-    "id": 8920,
-    "name": "Joey",
-    "type": "Cow",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.77786553099872,
-      "lng": -122.40857782439438
-    }
-  },
-  {
-    "id": 9232,
-    "name": "Max",
+    "id": 9165,
+    "name": "Finn",
     "type": "Pig",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.7782133030966,
-      "lng": -122.40876589092031
+      "lat": 37.773008917684585,
+      "lng": -122.4421734393776
     }
   },
   {
-    "id": 2302,
-    "name": "Ace",
+    "id": 1053,
+    "name": "Joey",
     "type": "Goat",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76674624780132,
-      "lng": -122.4418901759173
+      "lat": 37.768347618229136,
+      "lng": -122.44113651240687
     }
   },
   {
-    "id": 9943,
-    "name": "Tuffy",
+    "id": 3703,
+    "name": "Nala",
+    "type": "Pig",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.7674989269127,
+      "lng": -122.44248797002629
+    }
+  },
+  {
+    "id": 2667,
+    "name": "Ginger",
+    "type": "Pig",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.76633441087792,
+      "lng": -122.44168560207058
+    }
+  },
+  {
+    "id": 2585,
+    "name": "Daisy",
+    "type": "Pig",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.77260879974809,
+      "lng": -122.44536512967942
+    }
+  },
+  {
+    "id": 6998,
+    "name": "Jax",
+    "type": "Goat",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.772883475242146,
+      "lng": -122.44557205313833
+    }
+  },
+  {
+    "id": 8658,
+    "name": "Archie",
+    "type": "Pig",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.773037936026505,
+      "lng": -122.44506129549174
+    }
+  },
+  {
+    "id": 7042,
+    "name": "Ollie",
+    "type": "Sheep",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.76708213536652,
+      "lng": -122.44234169778035
+    }
+  },
+  {
+    "id": 7484,
+    "name": "Archie",
     "type": "Cow",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.765870870028465,
-      "lng": -122.4429872224055
+      "lat": 37.76888373940213,
+      "lng": -122.44113333130784
     }
   },
   {
-    "id": 8124,
-    "name": "Tuffy",
-    "type": "Cow",
+    "id": 2787,
+    "name": "Charlie",
+    "type": "Sheep",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.772949467030884,
-      "lng": -122.44573943510645
+      "lat": 37.77199680350717,
+      "lng": -122.44667803545333
     }
   },
   {
-    "id": 8599,
+    "id": 7734,
+    "name": "Hank",
+    "type": "Goat",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.77247300978519,
+      "lng": -122.44549464785763
+    }
+  },
+  {
+    "id": 4957,
+    "name": "Bentley",
+    "type": "Sheep",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.7679537768526,
+      "lng": -122.44374955836065
+    }
+  },
+  {
+    "id": 5147,
+    "name": "Milo",
+    "type": "Goat",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.7668223120783,
+      "lng": -122.44426528711794
+    }
+  },
+  {
+    "id": 8882,
+    "name": "Nala",
+    "type": "Goat",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.77275348352506,
+      "lng": -122.4444818870311
+    }
+  },
+  {
+    "id": 5773,
+    "name": "Stella",
+    "type": "Sheep",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.772797844113846,
+      "lng": -122.4400877472093
+    }
+  },
+  {
+    "id": 8604,
+    "name": "Dixie",
+    "type": "Pig",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.76606420873367,
+      "lng": -122.44259048003848
+    }
+  },
+  {
+    "id": 9380,
     "name": "Coco",
     "type": "Cow",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.766391892798616,
-      "lng": -122.44225200462616
-    }
-  },
-  {
-    "id": 3895,
-    "name": "Tuffy",
-    "type": "Cow",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76719957599353,
-      "lng": -122.4425016871288
-    }
-  },
-  {
-    "id": 6055,
-    "name": "Nova",
-    "type": "Cow",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77220690447069,
-      "lng": -122.44542549726725
+      "lat": 37.77256624478674,
+      "lng": -122.44448751513563
     }
   },
   {
-    "id": 2643,
-    "name": "Ginger",
-    "type": "Pig",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76892071452715,
-      "lng": -122.44221765681131
-    }
-  },
-  {
-    "id": 8870,
-    "name": "Bella",
-    "type": "Goat",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76728994300787,
-      "lng": -122.44143643256525
-    }
-  },
-  {
-    "id": 9970,
-    "name": "Lola",
-    "type": "Pig",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76720274099014,
-      "lng": -122.44180378330506
-    }
-  },
-  {
-    "id": 7613,
-    "name": "Nala",
-    "type": "Sheep",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.77165643523507,
-      "lng": -122.44581721628967
-    }
-  },
-  {
-    "id": 3972,
-    "name": "Max",
-    "type": "Pig",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.773201328468566,
-      "lng": -122.44221776751245
-    }
-  },
-  {
-    "id": 2179,
-    "name": "Bailey",
-    "type": "Sheep",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76905199129918,
-      "lng": -122.44113954863091
-    }
-  },
-  {
-    "id": 4153,
+    "id": 8844,
     "name": "Jack",
-    "type": "Sheep",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.777612474218266,
-      "lng": -122.409650965148
-    }
-  },
-  {
-    "id": 1544,
-    "name": "Max",
-    "type": "Sheep",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.766237147584775,
-      "lng": -122.44289843807029
-    }
-  },
-  {
-    "id": 9091,
-    "name": "Buddy",
     "type": "Pig",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.777861928343704,
-      "lng": -122.4060788595569
-    }
-  },
-  {
-    "id": 9279,
-    "name": "Ginger",
-    "type": "Cow",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76682818430588,
-      "lng": -122.44355727085485
-    }
-  },
-  {
-    "id": 7376,
-    "name": "Gus",
-    "type": "Pig",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76603251456402,
-      "lng": -122.44359823897376
-    }
-  },
-  {
-    "id": 8917,
-    "name": "Charlie",
-    "type": "Cow",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77290104536254,
-      "lng": -122.4441187782225
+      "lat": 37.772635994131655,
+      "lng": -122.4445374889119
+    }
+  },
+  {
+    "id": 6810,
+    "name": "Dixie",
+    "type": "Pig",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.77269015483927,
+      "lng": -122.44580772730521
+    }
+  },
+  {
+    "id": 9014,
+    "name": "Nala",
+    "type": "Pig",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.77295236288827,
+      "lng": -122.44577852059109
     }
   }
 ]

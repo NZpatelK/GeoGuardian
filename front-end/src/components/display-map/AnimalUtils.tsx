@@ -67,6 +67,7 @@ export class AnimalUtils {
     static updateAnimalPasture = (id: number, newPastureId: string) => {
         const index = animals.findIndex(animal => animal.id === id);
         animals[index].pastureId = newPastureId;
+        AnimalApi.updateRelocatedAnimal(id, newPastureId);
     }
 
     static randomiseAnimalCoordinates = (animal: Animal) => {
