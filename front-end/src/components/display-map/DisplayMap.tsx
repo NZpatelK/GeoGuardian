@@ -474,6 +474,8 @@ export const DisplayMap = () => {
       setDisplayAnimal(updatedAnimals);
       AnimalUtils.removeAnimal(animalId);
       toast.success(`Animal with ID ${animalId} has been removed successfully.`);
+      setModalIsSelected("animals");
+
     } else {
       toast.error(`Animal with ID ${animalId} not found.`);
     }
