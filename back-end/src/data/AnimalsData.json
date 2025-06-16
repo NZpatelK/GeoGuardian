@@ -1,22 +1,12 @@
 [
   {
-    "id": 1664,
-    "name": "Tuffy",
-    "type": "Pig",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.77740264576686,
-      "lng": -122.40800397156526
-    }
-  },
-  {
     "id": 9428,
     "name": "Louie",
     "type": "Cow",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76735738598206,
-      "lng": -122.4424522181757
+      "lat": 37.766755054880164,
+      "lng": -122.44435827590239
     }
   },
   {
@@ -25,8 +15,8 @@
     "type": "Sheep",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77147469522903,
-      "lng": -122.44648899047161
+      "lat": 37.77252961880894,
+      "lng": -122.44432617402815
     }
   },
   {
@@ -35,18 +25,8 @@
     "type": "Sheep",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77295868812536,
-      "lng": -122.44410839407695
-    }
-  },
-  {
-    "id": 6079,
-    "name": "Cookie",
-    "type": "Cow",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.77757877437781,
-      "lng": -122.40847218288924
+      "lat": 37.772289237258896,
+      "lng": -122.44466673573338
     }
   },
   {
@@ -55,8 +35,8 @@
     "type": "Sheep",
     "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
     "coordinates": {
-      "lat": 37.77784774771349,
-      "lng": -122.40789728606208
+      "lat": 37.778017652578654,
+      "lng": -122.40711630119877
     }
   },
   {
@@ -65,8 +45,8 @@
     "type": "Cow",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77310537274703,
-      "lng": -122.44372754575842
+      "lat": 37.77290414903155,
+      "lng": -122.44239263433057
     }
   },
   {
@@ -75,8 +55,8 @@
     "type": "Sheep",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76594361998684,
-      "lng": -122.44385544346946
+      "lat": 37.76438414518488,
+      "lng": -122.44425071048065
     }
   },
   {
@@ -85,8 +65,8 @@
     "type": "Goat",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76856365758783,
-      "lng": -122.44232477815765
+      "lat": 37.767726924338206,
+      "lng": -122.44308410391702
     }
   },
   {
@@ -95,8 +75,8 @@
     "type": "Sheep",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76772954434992,
-      "lng": -122.443119649778
+      "lat": 37.77038440406308,
+      "lng": -122.4396005904573
     }
   },
   {
@@ -105,8 +85,8 @@
     "type": "Cow",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.773071650019745,
-      "lng": -122.44399516313058
+      "lat": 37.77226847144417,
+      "lng": -122.44467987986178
     }
   },
   {
@@ -115,8 +95,8 @@
     "type": "Sheep",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77273425363899,
-      "lng": -122.4443175555363
+      "lat": 37.77303994961568,
+      "lng": -122.44521285021129
     }
   },
   {
@@ -125,8 +105,8 @@
     "type": "Sheep",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77301166563217,
-      "lng": -122.44455538960639
+      "lat": 37.7733404318979,
+      "lng": -122.44201257351581
     }
   },
   {
@@ -135,8 +115,8 @@
     "type": "Sheep",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.77277763610848,
-      "lng": -122.44469983541728
+      "lat": 37.7725166235801,
+      "lng": -122.44372196968486
     }
   },
   {
@@ -145,18 +125,8 @@
     "type": "Pig",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76915564271329,
-      "lng": -122.44203710810544
-    }
-  },
-  {
-    "id": 6673,
-    "name": "Kobe",
-    "type": "Pig",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.77697065163832,
-      "lng": -122.40774667349109
+      "lat": 37.7674401853878,
+      "lng": -122.44306648206793
     }
   },
   {
@@ -165,18 +135,8 @@
     "type": "Cow",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.766824924771115,
-      "lng": -122.44252166508657
-    }
-  },
-  {
-    "id": 8907,
-    "name": "Bandit",
-    "type": "Goat",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.77871298372789,
-      "lng": -122.40830827224868
+      "lat": 37.76737938557524,
+      "lng": -122.44340330901379
     }
   }
 ]

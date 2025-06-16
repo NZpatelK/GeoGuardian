@@ -27,7 +27,7 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
                     <p className="modal-message">{message}</p>
                     <div className="modal-buttons">
                         <button className="btn btn-confirm" onClick={() => onConfirm(true)}>
-                            {modalType === 'pasture' ? 'Relocate Animals and Delete Pasture' : 'Delete Pasture'}
+                            {modalType === 'pasture' ? 'Relocate Animals and Delete Pasture' : 'Delete Animal'}
                         </button>
                         <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
                             Cancel

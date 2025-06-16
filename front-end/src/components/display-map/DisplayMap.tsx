@@ -465,19 +465,38 @@ export const DisplayMap = () => {
     }
   }
 
-  const removeAnimal = (animalId: number) => {
-    const animalPosition = animalRef.current[animalId];
-    if (animalPosition) {
-      mapInstance?.removeObject(animalPosition);
-      delete animalRef.current[animalId];
-      const updatedAnimals = displayAnimal.filter(animal => animal.id !== animalId);
-      setDisplayAnimal(updatedAnimals);
-      AnimalUtils.removeAnimal(animalId);
-      toast.success(`Animal with ID ${animalId} has been removed successfully.`);
-      setModalIsSelected("animals");
+  const removeAnimal = async (animalId: number) => {
+    const deleteConfirmation = await showModal(`Are you sure you want to remove the animal with ID ${animalId}?`, 'deleteConfirmation');
 
-    } else {
-      toast.error(`Animal with ID ${animalId} not found.`);
+    if (deleteConfirmation) {
+      const animalPosition = animalRef.current[animalId];
+      
+      if (animalPosition) {
+
+        mapInstance?.removeObject(animalPosition);
+        
+        delete animalRef.current[animalId];
+        const updatedAnimals = displayAnimal.filter(animal => animal.id !== animalId);
+        setDisplayAnimal(updatedAnimals);
+        AnimalUtils.removeAnimal(animalId);
+
+        toast.success(`Animal with ID ${animalId} has been removed successfully.`, {
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          position: "top-center",
+        });
+
+        setModalIsSelected("animals");
+
+      } else {
+        toast.error(`Animal with ID ${animalId} not found.`, {
+          autoClose: 3000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          position: "top-center",
+        });
+      }
     }
   }
 
