@@ -475,7 +475,7 @@ export const DisplayMap = () => {
       if (animalPosition) {
 
         mapInstance?.removeObject(animalPosition);
-        
+
         delete animalRef.current[animalId];
         const updatedAnimals = displayAnimal.filter(animal => animal.id !== animalId);
         setDisplayAnimal(updatedAnimals);
@@ -592,7 +592,19 @@ export const DisplayMap = () => {
               {getPastures().map((pasture) => (
                 <div key={pasture.id} className="pasture-item">
                   <h3>{pasture.name}</h3>
-                  <p>Id: {pasture.id}</p>
+
+                  {AnimalUtils.getAnimals() &&
+                    <div>
+                      <p>Total Animals: {AnimalUtils.getAnimalsByPastureId(pasture.id).length}</p>
+
+                      <div className="animal-counts">
+                        <p>Pig: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Pig").length}</p>
+                        <p>Goat: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Goat").length}</p>
+                        <p>Sheep: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Sheep").length}</p>
+                        <p>Cow: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Cow").length}</p>
+                      </div>
+                    </div>}
+
                 </div>))}
               <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
             </>
