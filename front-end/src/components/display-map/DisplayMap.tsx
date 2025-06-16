@@ -230,7 +230,8 @@ export const DisplayMap = () => {
     const distanceToStart = calculateDistanceBetweenPoints(startPoint, coords);
 
     if (distanceToStart < 10) {
-      const inputName = prompt("Please enter the name of the pasture:");
+
+      const inputName = await showModal("Please enter a name for the pasture:", 'Input');
       const result = await closePolygon(startPoint, inputName as string);
 
       if (result) {
@@ -470,7 +471,7 @@ export const DisplayMap = () => {
 
     if (deleteConfirmation) {
       const animalPosition = animalRef.current[animalId];
-      
+
       if (animalPosition) {
 
         mapInstance?.removeObject(animalPosition);

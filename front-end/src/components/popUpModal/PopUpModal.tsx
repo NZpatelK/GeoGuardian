@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 
 interface PopUpModalProps {
     message: string;
-    modalType: 'deleteConfirmation' | 'animal' | 'pasture' | 'relocateConfirmation';
+    modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input';
     currentPastureId?: string;
     onConfirm: (value: boolean | string) => void;
 }
 
-export default function PopUpModal({ message, modalType, currentPastureId, onConfirm}: PopUpModalProps) {
+export default function PopUpModal({ message, modalType, currentPastureId, onConfirm }: PopUpModalProps) {
     const [listPastures, setListPastures] = useState<any[]>([]);
+    const [inputValue, setInputValue] = useState<string>('');
     const [selectedRelocatePastureId, setSelectedRelocatePastureId] = useState<string>('');
 
     useEffect(() => {
@@ -56,6 +57,20 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
                         <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
                             Cancel
                         </button>
+                    </div>
+                </div>
+            }
+            {(modalType === 'Input') &&
+                <div className="modal-box">
+                    <p className="modal-message">{message}</p>
+                    <input type="text" className="modal-input" value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
+                    <div className="modal-buttons">
+                        <button className="btn btn-input-confirm" onClick={() => onConfirm(inputValue)} >
+                            Confirm
+                        </button>
+                        {/* <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
+                            Cancel
+                        </button> */}
                     </div>
                 </div>
             }
