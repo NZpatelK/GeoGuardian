@@ -16,8 +16,7 @@ const __dirname = dirname(__filename);
 const animalFilePath = path.join(__dirname, '../data/AnimalsData.json');
 const pastureFilePath = path.join(__dirname, '../data/PastureData.json');
 
-const getAnimals = async (req, res) => {
-
+const getAnimals = async (_req, res) => {
     try {
         const fetchData = await getData(animalFilePath);
         res.json(fetchData);
@@ -79,11 +78,11 @@ const deleteAnimal = async (req, res) => {
 
         existData.splice(animalIndex, 1);
 
-        const writeData = async (filePath, data) => {
-            await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        };
+        // const writeData = async (filePath, data) => {
+        //     await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
+        // };
 
-        await writeData(animalFilePath, existData);
+        await writeData(animalFilePath, null, existData);
         res.status(200).json({ message: 'Animal deleted successfully' });
     } catch (error) {
         console.error("Error deleting animal:", error);
@@ -116,11 +115,11 @@ const relocateAnimal = async (req, res) => {
 
         existData[animalIndex].pastureId = pastureId;
 
-        const writeData = async (filePath, data) => {
-            await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        };
+        // const writeData = async (filePath, data) => {
+        //     await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
+        // };
 
-        await writeData(animalFilePath, existData);
+        await writeData(animalFilePath, null, existData);
         res.status(200).json({ message: 'Animal relocated successfully' });
     } catch (error) {
         handleDBError(res, error);
@@ -141,11 +140,11 @@ const updateAnimalCoordinates = async (req, res) => {
         animals[animalIndex].coordinates.lat = latitude;
         animals[animalIndex].coordinates.lng = longitude;
 
-        const writeData = async (filePath, data) => {
-            await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        };
+        // const writeData = async (filePath, data) => {
+        //     await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
+        // };
 
-        await writeData(animalFilePath, animals);
+        await writeData(animalFilePath, null, animals);
         res.status(200).json({ message: 'Animal coordinates updated successfully' });
     } catch (error) {
         handleDBError(res, error);

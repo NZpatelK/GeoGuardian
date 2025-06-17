@@ -31,7 +31,7 @@ export const writeData = (filePath, data, existData) => {
             reject(parseError);
         }
 
-        currentData.push(data);
+        if (data) { currentData.push(data) };
 
         fs.promises.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8')
             .then(() => resolve())
