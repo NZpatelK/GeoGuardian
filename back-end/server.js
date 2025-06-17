@@ -1,14 +1,22 @@
 // server.js
-const express = require('express');
-const fs = require('fs');
-const {faker} = require('@faker-js/faker')
-const path = require('path');
+import express from 'express';
+import fs from 'fs';
+import { faker } from '@faker-js/faker';
+import path from 'path';
+import cors from 'cors';
+
+import pastureRoutes from './src/routes/pastures.js';
+import animalRoutes from './src/routes/animals.js';
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Fix __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 const port = 3000;
-const cors = require('cors');
-
-const pastureRoutes = require('./src/routes/pastures');
-const animalRoutes = require('./src/routes/animals');
 
 const pastureFilePath = path.join(__dirname, 'src/data/PastureData.json');
 const animalFilePath = path.join(__dirname, 'src/data/AnimalsData.json');

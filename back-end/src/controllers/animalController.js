@@ -1,6 +1,17 @@
-const fs = require('fs');
-const path = require('path');
-const { getData, writeData, handleDBError } = require('../utils/dbHelpers');
+// Change CommonJS `require` to ES Module `import`
+import fs from 'fs';
+import path from 'path';
+import { faker } from '@faker-js/faker';
+
+import { getData, writeData, handleDBError } from '../utils/dbHelpers.js';
+
+// __dirname isn't defined in ESM by default; use this workaround:
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const animalFilePath = path.join(__dirname, '../data/AnimalsData.json');
 
 const getAnimals = async (req, res) => {
@@ -13,16 +24,40 @@ const getAnimals = async (req, res) => {
     }
 }
 
+// const addAnimal = async (req, res) => {
+//     const data = req.body;
+//     try {
+//         const existData = await getData(animalFilePath);
+//         await writeData(animalFilePath, data, existData);
+//         res.status(200).json({ message: 'Data saved successfully' });
+//     } catch (error) {
+//         handleDBError(res, error);
+//     }
+// };
+
+
 const addAnimal = async (req, res) => {
+  try {
     const data = req.body;
-    try {
-        const existData = await getData(animalFilePath);
-        await writeData(animalFilePath, data, existData);
-        res.status(200).json({ message: 'Data saved successfully' });
-    } catch (error) {
-        handleDBError(res, error);
-    }
+    const existData = await getData(animalFilePath);
+    const existingIds = new Set(existData.map(animal => animal.id));
+
+    let newId;
+    do {
+      newId = faker.number.int({ min: 1000, max: 9999 });
+    } while (existingIds.has(newId));
+
+    const newAnimal = { id: newId, ...data };
+    const updatedData = [...existData, newAnimal];
+
+    await writeData(animalFilePath, updatedData);
+
+    res.status(200).json({ message: 'Data saved successfully', animal: newAnimal });
+  } catch (error) {
+    handleDBError(res, error);
+  }
 };
+
 
 const deleteAnimal = async (req, res) => {
     const { id } = req.params;
@@ -123,7 +158,7 @@ const updateAnimalCoordinates = async (req, res) => {
 };
 
 
-module.exports = {
+export default {
     getAnimals,
     addAnimal,
     updateAnimalCoordinates,

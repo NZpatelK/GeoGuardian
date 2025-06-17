@@ -1,8 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+import { de } from '@faker-js/faker';
+import fs from 'fs';
+import path from 'path';
 
 
-const getData = (filePath) => {
+export const getData = (filePath) => {
     return new Promise((resolve, reject) => {
         fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
@@ -18,7 +19,7 @@ const getData = (filePath) => {
     });
 };
 
-const writeData = (filePath, data, existData) => {
+export const writeData = (filePath, data, existData) => {
     return new Promise((resolve, reject) => {
         let currentData = [];
         try {
@@ -42,7 +43,7 @@ const writeData = (filePath, data, existData) => {
     });
 };
 
-const handleDBError = (res, error) => {
+export const handleDBError = (res, error) => {
     let errorCode, errorMessage, errorDetails;
 
     if (error.code === 'ENOENT') {
@@ -69,9 +70,3 @@ const handleDBError = (res, error) => {
         details: errorDetails,
     });
 };
-
-module.exports = {
-    getData,
-    writeData,
-    handleDBError
-}
