@@ -33,11 +33,25 @@ export const writeData = (filePath, data, existData) => {
 
         currentData.push(data);
 
-        fs.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8', (err) => {
+        fs.promises.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8')
+            .then(() => resolve())
+            .catch(err => reject(err));
+    });
+};
+
+export const getDatabyId = (filePath, id) => {
+    return new Promise((resolve, reject) => {
+        fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
                 reject(err);
             } else {
-                resolve();
+                try {
+                    const parsedData = JSON.parse(data);
+                    const filteredData = parsedData.filter(item => item.id === id);
+                    resolve(filteredData);
+                } catch (parseError) {
+                    reject(parseError);
+                }
             }
         });
     });

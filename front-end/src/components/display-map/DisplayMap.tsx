@@ -395,6 +395,33 @@ export const DisplayMap = () => {
     return markersRef.current;
   };
 
+
+  const CreateNewAnimal = async () => {
+    const animal = await showModal("Please enter the animal's name:", 'CreateAnimal');
+    const newAnimal = await AnimalUtils.addAnimal(animal as Animal);
+
+    if (!newAnimal) return;
+
+    animalRef.current[newAnimal.id] = newAnimal.coordinates;
+
+    if (!mapInstance) return;
+    const newlabel = labelIcon(newAnimal.id.toString());
+    const position = new H.map.Marker(
+      { lat: newAnimal.coordinates.lat, lng: newAnimal.coordinates.lng },
+      { icon: newlabel, data: {} });
+
+    mapInstance.addObject(position);
+    position.addEventListener('tap', () => {
+      selectedAnimalRef.current.animal = newAnimal;
+      setModalIsSelected("selectedAnimal");
+    });
+
+    animalRef.current[newAnimal.id] = position;
+
+    setDisplayAnimal((prevAnimals) => [...prevAnimals, newAnimal]);
+    setModalIsSelected("animals");    
+  }
+
   const updateAnimal = async (pastureId: string) => {
     const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
     if (!animals) return;
@@ -541,16 +568,20 @@ export const DisplayMap = () => {
     >
       <Modal>
         <div className="modal-content">
-          {modalIsSelected === "animals" && displayAnimal.map((animal) => (
-            <div key={animal.id} className="animal-item" onClick={() => {
-              selectedAnimalRef.current.animal = animal;
-              setModalIsSelected("selectedAnimal");
-            }}>
-              <h3>{animal.name} - {animal.id} </h3>
-              <p>Type: {animal.type}</p>
-              <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
-            </div>
-          ))}
+          {modalIsSelected === "animals" &&
+            <div>
+              {displayAnimal.map((animal) => (
+                <div key={animal.id} className="animal-item" onClick={() => {
+                  selectedAnimalRef.current.animal = animal;
+                  setModalIsSelected("selectedAnimal");
+                }}>
+                  <h3>{animal.name} - {animal.id} </h3>
+                  <p>Type: {animal.type}</p>
+                  <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
+                </div>
+              ))}
+              <button className='add-animal-btn' onClick={CreateNewAnimal}>Create New Animal</button>
+            </div>}
 
           {modalIsSelected === "selectedAnimal" && (
             <div>

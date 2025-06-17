@@ -58,6 +58,12 @@ export class AnimalUtils {
         return animals.some(animal => animal.pastureId === pastureId);
     }
 
+    static addAnimal = async (animal: Animal) => {
+        const newAnimal = await AnimalApi.addAnimal(animal);
+        animals.push(newAnimal.animal);
+        return newAnimal.animal;
+    }
+
     static updateAnimal = (id: number, newCoordinates: { lat: number, lng: number }) => {
         const index = animals.findIndex(animal => animal.id === id);
         animals[index].coordinates = newCoordinates;
