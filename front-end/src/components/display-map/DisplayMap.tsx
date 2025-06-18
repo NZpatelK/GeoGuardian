@@ -14,6 +14,7 @@ import { EditModeBar } from '../editModeBar/EditModeBar';
 import { usePopUpModal } from '../popUpModal/usePopUpModal';
 
 import goBack from '../../assets/back-arrow.png';
+import DisplayPastures from './DisplayPastures';
 
 interface Animal {
   id: number;
@@ -396,25 +397,25 @@ export const DisplayMap = () => {
   };
 
   const handleClickRecenter = (id: string | number | undefined, type: string) => {
-    if(id === undefined) return;
-    
+    if (id === undefined) return;
+
     let Hcentroid = new H.geo.Point(0, 0);
 
-    if(type === 'pasture') {
+    if (type === 'pasture') {
       const pasture = getPastures().find(pasture => pasture.id === id);
-      if(!pasture?.coordinates) return;
+      if (!pasture?.coordinates) return;
       const centroid = calculateCentroid(pasture.coordinates);
       console.log(centroid);
-      if(centroid === null) return;
+      if (centroid === null) return;
       Hcentroid = new H.geo.Point(centroid.lat, centroid.lng);
     }
-    else{
+    else {
       const animal = AnimalUtils.getAnimals().find(animal => animal.id === id);
-      if(!animal?.coordinates) return;
+      if (!animal?.coordinates) return;
       Hcentroid = new H.geo.Point(animal.coordinates.lat, animal.coordinates.lng);
     }
 
-    mapInstance?.setZoom(18); 
+    mapInstance?.setZoom(18);
     mapInstance?.setCenter(Hcentroid, true);
   }
 
@@ -442,7 +443,7 @@ export const DisplayMap = () => {
     animalRef.current[newAnimal.id] = position;
 
     setDisplayAnimal((prevAnimals) => [...prevAnimals, newAnimal]);
-    setModalIsSelected("animals");    
+    setModalIsSelected("animals");
   }
 
   const updateAnimal = async (id: string) => {
@@ -643,26 +644,11 @@ export const DisplayMap = () => {
           )}
 
           {modalIsSelected === "pastures" && (
-            <>
-              {getPastures().map((pasture) => (
-                <div key={pasture.id} className="pasture-item" onClick={() => handleClickRecenter(pasture.id as string, "pasture")}>
-                  <h3>{pasture.name}</h3>
-
-                  {AnimalUtils.getAnimals() &&
-                    <div>
-                      <p>Total Animals: {AnimalUtils.getAnimalsByPastureId(pasture.id).length}</p>
-
-                      <div className="animal-counts">
-                        <p>Pig: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Pig").length}</p>
-                        <p>Goat: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Goat").length}</p>
-                        <p>Sheep: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Sheep").length}</p>
-                        <p>Cow: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Cow").length}</p>
-                      </div>
-                    </div>}
-
-                </div>))}
-              <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
-            </>
+            <DisplayPastures
+              pastures={getPastures()}
+              handleClickRecenter={handleClickRecenter}
+              setSelectedOption={(e) => setSelectedOption(e)}
+              selectedOption={selectedOption || ''} />
           )}
         </div>
       </Modal>
