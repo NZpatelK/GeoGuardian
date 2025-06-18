@@ -124,6 +124,21 @@
     margin-right: 5px;
 }
 
+.pasture-item{
+    border-bottom: 2px solid #ccc;
+    padding: 0 0 10px 0;
+}
+
+.pasture-item h3{
+    margin: 5px 0;
+    padding: 0;
+}
+
+.pasture-item p{
+    margin: 0;
+    padding: 0;
+}
+
 .animal-counts{
     display: flex;
     justify-content: space-between;
@@ -136,4 +151,20 @@
     font-size: 16px;
     font-weight: 500;
     color: #000;
+}
+
+.animal-counts .animal-type{
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #0066ff !important;
+}
+
+.recentre-pasture{
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    background-color: #0066ff !important;
+    cursor: pointer;
+    height: 40px !important;
 }
