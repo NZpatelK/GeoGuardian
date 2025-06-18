@@ -1,14 +1,24 @@
 // server.js
-const express = require('express');
-const fs = require('fs');
-const {faker} = require('@faker-js/faker')
-const path = require('path');
+import express from 'express';
+import fs from 'fs';
+import { faker } from '@faker-js/faker';
+import path from 'path';
+import cors from 'cors';
+
+const { getRandomCoordinate } = await import('./src/utils/calculationUtils.js');
+
+import pastureRoutes from './src/routes/pastures.js';
+import animalRoutes from './src/routes/animals.js';
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Fix __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 const port = 3000;
-const cors = require('cors');
-
-const pastureRoutes = require('./src/routes/pastures');
-const animalRoutes = require('./src/routes/animals');
 
 const pastureFilePath = path.join(__dirname, 'src/data/PastureData.json');
 const animalFilePath = path.join(__dirname, 'src/data/AnimalsData.json');
@@ -165,22 +175,22 @@ const dummyData = [
   }
 ];
 
-function getRandomCoordinate(pasture) {
-  const latitudes = pasture.coordinates.map(coord => coord.lat);
-  const longitudes = pasture.coordinates.map(coord => coord.lng);
+// function getRandomCoordinate(pasture) {
+//   const latitudes = pasture.coordinates.map(coord => coord.lat);
+//   const longitudes = pasture.coordinates.map(coord => coord.lng);
 
-  // Calculate min/max latitude and longitude
-  const minLat = Math.min(...latitudes);
-  const maxLat = Math.max(...latitudes);
-  const minLng = Math.min(...longitudes);
-  const maxLng = Math.max(...longitudes);
+//   // Calculate min/max latitude and longitude
+//   const minLat = Math.min(...latitudes);
+//   const maxLat = Math.max(...latitudes);
+//   const minLng = Math.min(...longitudes);
+//   const maxLng = Math.max(...longitudes);
 
-  // Generate a random coordinate within the bounding box of the pasture
-  const randomLat = faker.number.float({ min: minLat, max: maxLat });
-  const randomLng = faker.number.float({ min: minLng, max: maxLng });
+//   // Generate a random coordinate within the bounding box of the pasture
+//   const randomLat = faker.number.float({ min: minLat, max: maxLat });
+//   const randomLng = faker.number.float({ min: minLng, max: maxLng });
 
-  return { lat: randomLat, lng: randomLng };
-}
+//   return { lat: randomLat, lng: randomLng };
+// }
 
 function generateAnimal(){
   const pasture = dummyData[faker.number.int({min: 0, max: dummyData.length - 1})];

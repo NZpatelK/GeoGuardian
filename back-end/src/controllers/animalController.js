@@ -1,10 +1,17 @@
-const fs = require('fs');
-const path = require('path');
-const { getData, writeData, handleDBError } = require('../utils/dbHelpers');
+import path from 'path';
+import { faker } from '@faker-js/faker';
+import { getData, writeData, handleDBError, getDatabyId } from '../utils/dbHelpers.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { getRandomCoordinate } from '../utils/calculationUtils.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const animalFilePath = path.join(__dirname, '../data/AnimalsData.json');
+const pastureFilePath = path.join(__dirname, '../data/PastureData.json');
 
-const getAnimals = async (req, res) => {
-
+const getAnimals = async (_req, res) => {
     try {
         const fetchData = await getData(animalFilePath);
         res.json(fetchData);
@@ -13,16 +20,33 @@ const getAnimals = async (req, res) => {
     }
 }
 
+
 const addAnimal = async (req, res) => {
-    const data = req.body;
     try {
+        const data = req.body;
         const existData = await getData(animalFilePath);
-        await writeData(animalFilePath, data, existData);
-        res.status(200).json({ message: 'Data saved successfully' });
+        const existingIds = new Set(existData.map(animal => animal.id));
+
+        let newId;
+        do {
+            newId = faker.number.int({ min: 1000, max: 9999 });
+        } while (existingIds.has(newId));
+
+        const pastureData = await getDatabyId(pastureFilePath, data.pastureId);
+
+        const animalCoordinates = getRandomCoordinate(pastureData[0])
+        const newAnimal = { id: newId, ...data, coordinates: animalCoordinates };
+
+        console.log("Adding new animal:", newAnimal);
+
+        await writeData(animalFilePath, newAnimal, existData);
+
+        res.status(200).json({ message: 'Data saved successfully', animal: newAnimal });
     } catch (error) {
         handleDBError(res, error);
     }
 };
+
 
 const deleteAnimal = async (req, res) => {
     const { id } = req.params;
@@ -49,11 +73,7 @@ const deleteAnimal = async (req, res) => {
 
         existData.splice(animalIndex, 1);
 
-        const writeData = async (filePath, data) => {
-            await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        };
-
-        await writeData(animalFilePath, existData);
+        await writeData(animalFilePath, null, existData);
         res.status(200).json({ message: 'Animal deleted successfully' });
     } catch (error) {
         console.error("Error deleting animal:", error);
@@ -86,11 +106,7 @@ const relocateAnimal = async (req, res) => {
 
         existData[animalIndex].pastureId = pastureId;
 
-        const writeData = async (filePath, data) => {
-            await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        };
-
-        await writeData(animalFilePath, existData);
+        await writeData(animalFilePath, null, existData);
         res.status(200).json({ message: 'Animal relocated successfully' });
     } catch (error) {
         handleDBError(res, error);
@@ -111,11 +127,8 @@ const updateAnimalCoordinates = async (req, res) => {
         animals[animalIndex].coordinates.lat = latitude;
         animals[animalIndex].coordinates.lng = longitude;
 
-        const writeData = async (filePath, data) => {
-            await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        };
-
-        await writeData(animalFilePath, animals);
+  
+        await writeData(animalFilePath, null, animals);
         res.status(200).json({ message: 'Animal coordinates updated successfully' });
     } catch (error) {
         handleDBError(res, error);
@@ -123,7 +136,7 @@ const updateAnimalCoordinates = async (req, res) => {
 };
 
 
-module.exports = {
+export default {
     getAnimals,
     addAnimal,
     updateAnimalCoordinates,

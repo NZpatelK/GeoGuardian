@@ -1,8 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+import { de } from '@faker-js/faker';
+import fs from 'fs';
+import path from 'path';
 
 
-const getData = (filePath) => {
+export const getData = (filePath) => {
     return new Promise((resolve, reject) => {
         fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
@@ -18,7 +19,7 @@ const getData = (filePath) => {
     });
 };
 
-const writeData = (filePath, data, existData) => {
+export const writeData = (filePath, data, existData) => {
     return new Promise((resolve, reject) => {
         let currentData = [];
         try {
@@ -30,19 +31,33 @@ const writeData = (filePath, data, existData) => {
             reject(parseError);
         }
 
-        currentData.push(data);
+        if (data) { currentData.push(data) };
 
-        fs.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8', (err) => {
+        fs.promises.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8')
+            .then(() => resolve())
+            .catch(err => reject(err));
+    });
+};
+
+export const getDatabyId = (filePath, id) => {
+    return new Promise((resolve, reject) => {
+        fs.readFile(filePath, 'utf8', (err, data) => {
             if (err) {
                 reject(err);
             } else {
-                resolve();
+                try {
+                    const parsedData = JSON.parse(data);
+                    const filteredData = parsedData.filter(item => item.id === id);
+                    resolve(filteredData);
+                } catch (parseError) {
+                    reject(parseError);
+                }
             }
         });
     });
 };
 
-const handleDBError = (res, error) => {
+export const handleDBError = (res, error) => {
     let errorCode, errorMessage, errorDetails;
 
     if (error.code === 'ENOENT') {
@@ -69,9 +84,3 @@ const handleDBError = (res, error) => {
         details: errorDetails,
     });
 };
-
-module.exports = {
-    getData,
-    writeData,
-    handleDBError
-}

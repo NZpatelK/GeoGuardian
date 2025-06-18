@@ -4,15 +4,20 @@ import { useEffect, useState } from 'react';
 
 interface PopUpModalProps {
     message: string;
-    modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input';
+    modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input' | 'CreateAnimal';
     currentPastureId?: string;
-    onConfirm: (value: boolean | string) => void;
+    onConfirm: (value: boolean | string | { name: string; type: string; pastureId: string }) => void;
 }
 
 export default function PopUpModal({ message, modalType, currentPastureId, onConfirm }: PopUpModalProps) {
     const [listPastures, setListPastures] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
     const [selectedRelocatePastureId, setSelectedRelocatePastureId] = useState<string>('');
+    const [newAnimal, setNewAnimal] = useState<{ name: string; type: string; pastureId: string }>({
+        name: '',
+        type: '',
+        pastureId: ''
+    });
 
     useEffect(() => {
         async function fetchPastures() {
@@ -71,6 +76,43 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
                         {/* <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
                             Cancel
                         </button> */}
+                    </div>
+                </div>
+            }
+            {
+                (modalType === 'CreateAnimal') &&
+                <div className="modal-box">
+                    <p className="modal-message">{message}</p>
+                    <input type="text" className="modal-input" placeholder="Animal Name" value={newAnimal.name} onChange={(e) => setNewAnimal({ ...newAnimal, name: e.target.value })} />
+
+                    <select id="animalType" className="custom-select" onChange={(e) => setNewAnimal({ ...newAnimal, type: e.target.value })} value={newAnimal.type}>
+                        <option value="" disabled>
+                            Select Animal Type
+                        </option>
+                        <option value="Cow">Cow</option>
+                        <option value="Sheep">Sheep</option>
+                        <option value="Goat">Goat</option>
+                    </select>
+
+                    <p className="modal-message">Please select a pasture to create the animal in.</p>
+                    <select id="pasture" className="custom-select" onChange={(e) => setNewAnimal({ ...newAnimal, pastureId: e.target.value })} value={newAnimal.pastureId}>
+                        <option value="" disabled>
+                            Select Pasture
+                        </option>
+                        {listPastures && listPastures.map((pasture: any) => (
+                            <option key={pasture.id} value={pasture.id}>
+                                {pasture.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    <div className="modal-buttons">
+                        <button className="btn btn-confirm" onClick={() => onConfirm(newAnimal)}>
+                            Create Animal
+                        </button>
+                        <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
+                            Cancel
+                        </button>
                     </div>
                 </div>
             }

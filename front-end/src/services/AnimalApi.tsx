@@ -10,6 +10,29 @@ export class AnimalApi {
             console.error('Error fetching data:', err);
         }
     }
+
+    static async addAnimal(animal: { name: string; type: string; pastureId?: string }) {
+        const data = {
+            name: animal.name,
+            type: animal.type,
+            pastureId: animal.pastureId,
+        };
+        try {
+            // Send data to the backend using axios
+            const response = await axios.post('http://localhost:3000/api/animals/addAnimal', data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data; 
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.error('Error:', err.response ? err.response.data : err.message);
+            } else {
+                console.error('Error:', err);
+            }
+        }
+    }
     static async updateAnimalCoordinates(animalId: number, newCoordinates: { lat: number; lng: number }) {
         const data = {
             latitude: newCoordinates.lat,
