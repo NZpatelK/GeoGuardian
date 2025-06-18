@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Map as HMap } from '@here/maps-api-for-javascript';
+import { Map as HMap, map } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture, cleanupTemporaryObjects, checkIfCurrentPolygon } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture, cleanupTemporaryObjects, checkIfCurrentPolygon, calculateCentroid } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -395,6 +395,18 @@ export const DisplayMap = () => {
     return markersRef.current;
   };
 
+  const handleRecenterToPasture = (pastureId: string) => {
+    const pasture = getPastures().find(pasture => pasture.id === pastureId);
+    if(!pasture?.coordinates) return;
+    const centroid = calculateCentroid(pasture.coordinates);
+    console.log(centroid);
+    if(centroid === null) return;
+    const Hcentroid = new H.geo.Point(centroid.lat, centroid.lng);
+
+    mapInstance?.setZoom(18); 
+    mapInstance?.setCenter(Hcentroid, true);
+  }
+
 
   const CreateNewAnimal = async () => {
     const animal = await showModal("Please enter the animal's name:", 'CreateAnimal');
@@ -625,7 +637,7 @@ export const DisplayMap = () => {
                   <h3>{pasture.name}</h3>
 
                   {AnimalUtils.getAnimals() &&
-                    <div>
+                    <div onClick={() => handleRecenterToPasture(pasture.id)}>
                       <p>Total Animals: {AnimalUtils.getAnimalsByPastureId(pasture.id).length}</p>
 
                       <div className="animal-counts">

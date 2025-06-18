@@ -92,9 +92,23 @@ const calculateGeodeticAreaInSquareKilometers = (pastureCoordinates: { lat: numb
  *
  * @returns The centroid of the polygon.
  */
-const calculateCentroid = () => {
+export const calculateCentroid = (coords?: { lat: number; lng: number }[]) => {
 
-    const centriod = CompletedPolygon.reduce(
+    let centroid = { lat: 0, lng: 0 };
+
+    if (coords) {
+        centroid = coords.reduce(
+            (acc, coord) => ({
+                lat: acc.lat + coord.lat / coords.length,
+                lng: acc.lng + coord.lng / coords.length,
+            }),
+            { lat: 0, lng: 0 }
+        );
+        return centroid;
+
+    }
+
+    centroid = CompletedPolygon.reduce(
         (acc, coord) => ({
             lat: acc.lat + coord.lat / CompletedPolygon.length,
             lng: acc.lng + coord.lng / CompletedPolygon.length,
@@ -102,7 +116,7 @@ const calculateCentroid = () => {
         { lat: 0, lng: 0 }
     );
 
-    return centriod;
+    return centroid;
 }
 
 /**
@@ -366,14 +380,14 @@ export const addNewPoint = (newPoint: H.geo.Point, points: H.geo.Point[], pastur
     return { pasture: updatedPasture, points: updatePoint };
 }
 
-export const updatePastureDatabase = async (pastureId: string, coord: { lat: number; lng: number } []) => {
+export const updatePastureDatabase = async (pastureId: string, coord: { lat: number; lng: number }[]) => {
 
     const pasture = listPastures.find(pasture => pasture.id === pastureId);
     if (!pasture) return;
     pasture.coordinates = coord;
 
     await PasturesApi.updatePasture(pastureId, coord);
-    
+
 }
 
 export const deletePasture = async (pastureId: string) => {
