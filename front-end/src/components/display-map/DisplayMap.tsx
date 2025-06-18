@@ -15,6 +15,7 @@ import { usePopUpModal } from '../popUpModal/usePopUpModal';
 
 import goBack from '../../assets/back-arrow.png';
 import DisplayPastures from './DisplayPastures';
+import DisplayAnimals from './DisplayAnimals';
 
 interface Animal {
   id: number;
@@ -593,19 +594,8 @@ export const DisplayMap = () => {
       <Modal>
         <div className="modal-content">
           {modalIsSelected === "animals" &&
-            <div>
-              {displayAnimal.map((animal) => (
-                <div key={animal.id} className="animal-item" onClick={() => {
-                  selectedAnimalRef.current.animal = animal;
-                  setModalIsSelected("selectedAnimal");
-                }}>
-                  <h3>{animal.name} - {animal.id} </h3>
-                  <p>Type: {animal.type}</p>
-                  <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
-                </div>
-              ))}
-              <button className='add-animal-btn' onClick={CreateNewAnimal}>Create New Animal</button>
-            </div>}
+            <DisplayAnimals animals={displayAnimal} setModalIsSelected={setModalIsSelected} CreateNewAnimal={CreateNewAnimal} selectedAnimalRef={(e) => selectedAnimalRef.current.animal = e} />
+          }
 
           {modalIsSelected === "selectedAnimal" && (
             <div>
