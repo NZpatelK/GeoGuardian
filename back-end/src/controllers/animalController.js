@@ -1,11 +1,6 @@
-// Change CommonJS `require` to ES Module `import`
-import fs from 'fs';
 import path from 'path';
 import { faker } from '@faker-js/faker';
-
 import { getData, writeData, handleDBError, getDatabyId } from '../utils/dbHelpers.js';
-
-// __dirname isn't defined in ESM by default; use this workaround:
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { getRandomCoordinate } from '../utils/calculationUtils.js';
@@ -78,10 +73,6 @@ const deleteAnimal = async (req, res) => {
 
         existData.splice(animalIndex, 1);
 
-        // const writeData = async (filePath, data) => {
-        //     await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        // };
-
         await writeData(animalFilePath, null, existData);
         res.status(200).json({ message: 'Animal deleted successfully' });
     } catch (error) {
@@ -115,10 +106,6 @@ const relocateAnimal = async (req, res) => {
 
         existData[animalIndex].pastureId = pastureId;
 
-        // const writeData = async (filePath, data) => {
-        //     await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        // };
-
         await writeData(animalFilePath, null, existData);
         res.status(200).json({ message: 'Animal relocated successfully' });
     } catch (error) {
@@ -140,10 +127,7 @@ const updateAnimalCoordinates = async (req, res) => {
         animals[animalIndex].coordinates.lat = latitude;
         animals[animalIndex].coordinates.lng = longitude;
 
-        // const writeData = async (filePath, data) => {
-        //     await fs.promises.writeFile(filePath, JSON.stringify(data, null, 2));
-        // };
-
+  
         await writeData(animalFilePath, null, animals);
         res.status(200).json({ message: 'Animal coordinates updated successfully' });
     } catch (error) {

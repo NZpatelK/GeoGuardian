@@ -4,7 +4,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  backdrop-filter: blur(2px); /* <- This is the blur effect */
+  backdrop-filter: blur(2px);
+  /* <- This is the blur effect */
   background-color: rgba(0, 0, 0, 0.127);
   display: flex;
   justify-content: center;
@@ -13,9 +14,10 @@
 }
 
 .modal-box {
+  box-sizing: border-box;
   background-color: white;
   color: #333;
-  padding: 20px 30px;
+  padding: 20px 20px;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   max-width: 400px;
@@ -42,7 +44,7 @@
 }
 
 .btn-confirm {
-  background-color: #EF4444 !important; 
+  background-color: #EF4444 !important;
   color: white;
 }
 
@@ -52,11 +54,11 @@
 
 .btn-cancel {
   background-color: #9CA3AF !important;
-  color: #ffffff !important; 
+  color: #ffffff !important;
 }
 
 .btn-cancel:hover {
-  background-color: #6B7280 !important; 
+  background-color: #6B7280 !important;
 }
 
 .select-label {
@@ -89,8 +91,9 @@
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
 }
 
-.modal-input{
-  width: 85%;
+.modal-input {
+ box-sizing: border-box;
+  width: 100%;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
   font-size: 1rem;
