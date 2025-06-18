@@ -395,13 +395,24 @@ export const DisplayMap = () => {
     return markersRef.current;
   };
 
-  const handleRecenterToPasture = (pastureId: string) => {
-    const pasture = getPastures().find(pasture => pasture.id === pastureId);
-    if(!pasture?.coordinates) return;
-    const centroid = calculateCentroid(pasture.coordinates);
-    console.log(centroid);
-    if(centroid === null) return;
-    const Hcentroid = new H.geo.Point(centroid.lat, centroid.lng);
+  const handleClickRecenter = (id: string | number | undefined, type: string) => {
+    if(id === undefined) return;
+    
+    let Hcentroid = new H.geo.Point(0, 0);
+
+    if(type === 'pasture') {
+      const pasture = getPastures().find(pasture => pasture.id === id);
+      if(!pasture?.coordinates) return;
+      const centroid = calculateCentroid(pasture.coordinates);
+      console.log(centroid);
+      if(centroid === null) return;
+      Hcentroid = new H.geo.Point(centroid.lat, centroid.lng);
+    }
+    else{
+      const animal = AnimalUtils.getAnimals().find(animal => animal.id === id);
+      if(!animal?.coordinates) return;
+      Hcentroid = new H.geo.Point(animal.coordinates.lat, animal.coordinates.lng);
+    }
 
     mapInstance?.setZoom(18); 
     mapInstance?.setCenter(Hcentroid, true);
@@ -434,7 +445,7 @@ export const DisplayMap = () => {
     setModalIsSelected("animals");    
   }
 
-  const updateAnimal = async (pastureId: string) => {
+  const updateAnimal = async (id: string) => {
     const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
     if (!animals) return;
 
@@ -605,6 +616,7 @@ export const DisplayMap = () => {
               <h4>Current Pasture: {getPastures().find((pasture) => pasture.id === selectedAnimalRef.current.animal?.pastureId)?.name}</h4>
 
               {!selectedOption && <div className="animal-btn-group modal-btn-group">
+                <button style={{ backgroundColor: "#2196F3" }} onClick={() => handleClickRecenter(selectedAnimalRef.current.animal?.id, "animal")}>Track Animal</button>
                 <button style={{ backgroundColor: "#ff9800" }} onClick={() => setSelectedOption("relocate")}>Relocate</button>
                 <button style={{ backgroundColor: "#f44336" }} onClick={() => removeAnimal(selectedAnimalRef.current.animal?.id as number)}>Remove</button>
                 <button style={{ backgroundColor: "#555555" }} onClick={() => setModalIsSelected("animals")}>Close</button>
@@ -633,11 +645,11 @@ export const DisplayMap = () => {
           {modalIsSelected === "pastures" && (
             <>
               {getPastures().map((pasture) => (
-                <div key={pasture.id} className="pasture-item">
+                <div key={pasture.id} className="pasture-item" onClick={() => handleClickRecenter(pasture.id as string, "pasture")}>
                   <h3>{pasture.name}</h3>
 
                   {AnimalUtils.getAnimals() &&
-                    <div onClick={() => handleRecenterToPasture(pasture.id)}>
+                    <div>
                       <p>Total Animals: {AnimalUtils.getAnimalsByPastureId(pasture.id).length}</p>
 
                       <div className="animal-counts">
