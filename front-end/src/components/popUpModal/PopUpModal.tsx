@@ -5,12 +5,13 @@ import DisplayAnimalsCount from './DisplayAnimalsCount';
 
 interface PopUpModalProps {
     message?: string;
-    modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input' | 'CreateAnimal'| 'animalCount';
+    type?: "Animal" | "Pasture";
+    modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input' | 'CreateAnimal';
     currentPastureId?: string;
     onConfirm: (value: boolean | string | { name: string; type: string; pastureId: string }) => void;
 }
 
-export default function PopUpModal({ message, modalType, currentPastureId, onConfirm }: PopUpModalProps) {
+export default function PopUpModal({ message, modalType, type ,currentPastureId, onConfirm }: PopUpModalProps) {
     const [listPastures, setListPastures] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
     const [selectedRelocatePastureId, setSelectedRelocatePastureId] = useState<string>('');
@@ -34,7 +35,7 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
                     <p className="modal-message">{message}</p>
                     <div className="modal-buttons">
                         <button className="btn btn-confirm" onClick={() => onConfirm(true)}>
-                            {modalType === 'pasture' ? 'Relocate Animals and Delete Pasture' : 'Delete Animal'}
+                            {modalType === 'pasture' ? 'Relocate Animals and Delete Pasture' : `Delete ${type}`}
                         </button>
                         <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
                             Cancel

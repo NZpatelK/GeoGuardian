@@ -261,7 +261,7 @@ export const DisplayMap = () => {
 
         polygon.addEventListener("tap", () => {
           if (result.pastureId) {
-            initialisePastureEditor(hereMap, { pasture: polygon, labelMarker: label }, result.pastureId, behavior);
+            initialisePastureEditor(hereMap, { createPasture: polygon, labelMarker: label }, result.pastureId, behavior);
           } else {
             console.error("Pasture ID is undefined");
           }
@@ -284,6 +284,8 @@ export const DisplayMap = () => {
 
 
   const initialisePastureEditor = async (hereMap: HMap, existingPasture: { createPasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
+
+    let deleteComfirmed = false;
     if (modeRefs.current.isDelete) {
       if (AnimalUtils.hasAnimalsInPasture(pastureId)) {
         const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
@@ -298,13 +300,20 @@ export const DisplayMap = () => {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
               }
             }
-            if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
-              hereMap.removeObject(existingPasture.createPasture);
-              hereMap.removeObject(existingPasture.labelMarker);
-              deletePasture(pastureId);
-            }
+            deleteComfirmed = true;
           }
         }
+      }
+      else{
+        const response = await showModal("Are you sure you want to delete this pasture?", 'deleteConfirmation', 'Pasture');
+        deleteComfirmed = response as boolean;
+      }
+      
+      if (!AnimalUtils.hasAnimalsInPasture(pastureId) && deleteComfirmed) {
+        console.log("deleting pasture");
+        hereMap.removeObject(existingPasture.createPasture);
+        hereMap.removeObject(existingPasture.labelMarker);
+        deletePasture(pastureId);
       }
 
       return;
