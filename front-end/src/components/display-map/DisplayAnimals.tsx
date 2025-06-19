@@ -1,14 +1,16 @@
 import { getPastures } from "./BoundariesUtils";
 
-interface Animal {
-    id: number;
-    name: string;
-    type: string;
-    pastureId: string;
-    coordinates: {
-        lat: number;
-        lng: number;
-    };
+export interface Animal {
+  id: number;
+  name: string;
+  type: string;
+  age: number;
+  status: string;
+  pastureId: string;
+  coordinates: {
+      lat: number;
+      lng: number;
+  };
 }
 
 interface DisplayAnimalsProps {
@@ -29,8 +31,8 @@ export default function DisplayAnimals({ animals, setModalIsSelected, CreateNewA
                 }}>
                     <h3>{animal.id} - {animal.name}</h3>
                     <p>Type: {animal.type}</p>
-                    <p>Age:</p>
-                    <p>Status:</p>
+                    <p>Age: {animal.age}</p>
+                    <p>Status: {animal.status}</p>
                     <p>Current Location: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
                 </div>
             ))}

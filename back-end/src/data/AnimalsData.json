@@ -1,203 +1,242 @@
 [
   {
-    "id": 7944,
+    "id": 3225,
+    "name": "Ollie",
+    "type": "Cow",
+    "age": 7,
+    "status": "Injured",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.772968374525206,
+      "lng": -122.4431060542009
+    }
+  },
+  {
+    "id": 8116,
+    "name": "Stella",
+    "type": "Pig",
+    "age": 9,
+    "status": "Sick",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.77270170199713,
+      "lng": -122.44098072943235
+    }
+  },
+  {
+    "id": 2289,
+    "name": "Charlie",
+    "type": "Sheep",
+    "age": 2,
+    "status": "Need Check-Up",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.7682999434831,
+      "lng": -122.44164758755973
+    }
+  },
+  {
+    "id": 2350,
     "name": "Maggie",
     "type": "Pig",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76594628842613,
-      "lng": -122.4438016099336
-    }
-  },
-  {
-    "id": 6916,
-    "name": "Finn",
-    "type": "Pig",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.77808548765479,
-      "lng": -122.40778158035806
-    }
-  },
-  {
-    "id": 9523,
-    "name": "Teddy",
-    "type": "Pig",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.766859760187174,
-      "lng": -122.44297207784922
-    }
-  },
-  {
-    "id": 6055,
-    "name": "Cooper",
-    "type": "Pig",
+    "age": 6,
+    "status": "Sick",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.7724045738606,
-      "lng": -122.44477609205197
+      "lat": 37.772217575750055,
+      "lng": -122.4457469765655
     }
   },
   {
-    "id": 3598,
-    "name": "Cookie",
-    "type": "Pig",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76670923486596,
-      "lng": -122.44330667455661
-    }
-  },
-  {
-    "id": 6878,
-    "name": "Mia",
-    "type": "Goat",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.77186022962075,
-      "lng": -122.44228024596458
-    }
-  },
-  {
-    "id": 4388,
-    "name": "Gus",
-    "type": "Sheep",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.777966360881074,
-      "lng": -122.40932842520313
-    }
-  },
-  {
-    "id": 9506,
-    "name": "Louie",
-    "type": "Sheep",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76894190860368,
-      "lng": -122.44170867979881
-    }
-  },
-  {
-    "id": 5944,
-    "name": "Ace",
+    "id": 9975,
+    "name": "Ollie",
     "type": "Cow",
+    "age": 2,
+    "status": "Need Check-Up",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76731395725276,
-      "lng": -122.44154192387558
+      "lat": 37.76743094199866,
+      "lng": -122.44304896014205
     }
   },
   {
-    "id": 8241,
-    "name": "Nala",
-    "type": "Sheep",
-    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
-    "coordinates": {
-      "lat": 37.76756844682338,
-      "lng": -122.44234756220405
-    }
-  },
-  {
-    "id": 1400,
-    "name": "Gus",
+    "id": 5248,
+    "name": "Max",
     "type": "Cow",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.77216987934599,
-      "lng": -122.44497345694008
-    }
-  },
-  {
-    "id": 7654,
-    "name": "Ace",
-    "type": "Cow",
-    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
-    "coordinates": {
-      "lat": 37.777953604436036,
-      "lng": -122.40746441060642
-    }
-  },
-  {
-    "id": 8784,
-    "name": "Teddy",
-    "type": "Goat",
+    "age": 8,
+    "status": "Injured",
     "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
     "coordinates": {
-      "lat": 37.76616542979942,
-      "lng": -122.44177077897979
+      "lat": 37.76824426704443,
+      "lng": -122.44116315568844
     }
   },
   {
-    "id": 7610,
+    "id": 7294,
+    "name": "Bentley",
+    "type": "Cow",
+    "age": 5,
+    "status": "Sick",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.76698642558889,
+      "lng": -122.44218603604322
+    }
+  },
+  {
+    "id": 8732,
     "name": "Jack",
-    "type": "Sheep",
+    "type": "Cow",
+    "age": 7,
+    "status": "Injured",
     "pastureId": "3EQgVfD9gFCJTS9ptainQ",
     "coordinates": {
-      "lat": 37.772088696739665,
-      "lng": -122.44542229459593
+      "lat": 37.77233747079518,
+      "lng": -122.44528566331937
     }
   },
   {
-    "id": 4929,
+    "id": 3693,
+    "name": "Lucy",
+    "type": "Cow",
+    "age": 4,
+    "status": "Sick",
+    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
+    "coordinates": {
+      "lat": 37.779682785311,
+      "lng": -122.40722687511574
+    }
+  },
+  {
+    "id": 5385,
+    "name": "Nala",
+    "type": "Cow",
+    "age": 2,
+    "status": "Sick",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.76991374560887,
+      "lng": -122.44139154948911
+    }
+  },
+  {
+    "id": 6700,
+    "name": "Bailey",
+    "type": "Pig",
+    "age": 4,
+    "status": "Need Check-Up",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.76659348227244,
+      "lng": -122.4422732886085
+    }
+  },
+  {
+    "id": 6720,
+    "name": "Nova",
+    "type": "Pig",
+    "age": 10,
+    "status": "Sick",
+    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
+    "coordinates": {
+      "lat": 37.77759196221784,
+      "lng": -122.40807971854612
+    }
+  },
+  {
+    "id": 1296,
+    "name": "Scout",
+    "type": "Pig",
+    "age": 4,
+    "status": "Need Check-Up",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.773138228726076,
+      "lng": -122.44371841733032
+    }
+  },
+  {
+    "id": 3453,
+    "name": "Leo",
+    "type": "Pig",
+    "age": 8,
+    "status": "Healthy",
+    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
+    "coordinates": {
+      "lat": 37.77269195399665,
+      "lng": -122.44245047656895
+    }
+  },
+  {
+    "id": 6059,
+    "name": "Jack",
+    "type": "Cow",
+    "age": 1,
+    "status": "Sick",
+    "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
+    "coordinates": {
+      "lat": 37.777344127688245,
+      "lng": -122.40760329697531
+    }
+  },
+  {
+    "id": 5162,
+    "name": "Lucy",
+    "type": "Cow",
+    "age": 3,
+    "status": "Sick",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.767742174386406,
+      "lng": -122.44161391067915
+    }
+  },
+  {
+    "id": 3356,
+    "name": "Buddy",
+    "type": "Pig",
+    "age": 5,
+    "status": "Sick",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.76862068259276,
+      "lng": -122.43974574752895
+    }
+  },
+  {
+    "id": 3001,
+    "name": "Kobe",
+    "type": "Pig",
+    "age": 7,
+    "status": "Injured",
+    "pastureId": "HkZnCQFYM0uRkQoA0jxfV",
+    "coordinates": {
+      "lat": 37.765934822124194,
+      "lng": -122.44271954571363
+    }
+  },
+  {
+    "id": 7275,
     "name": "Daisy",
     "type": "Pig",
+    "age": 9,
+    "status": "Sick",
     "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
     "coordinates": {
-      "lat": 37.778594983215996,
-      "lng": -122.40808568999462
+      "lat": 37.77859356758829,
+      "lng": -122.40818324368612
     }
   },
   {
-    "id": 8455,
-    "name": "Bentley",
+    "id": 9939,
+    "name": "Nala",
     "type": "Goat",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.773061960411475,
-      "lng": -122.44344659985526
-    }
-  },
-  {
-    "id": 5340,
-    "name": "Buddy",
-    "type": "Cow",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.773339552629174,
-      "lng": -122.44199349353084
-    }
-  },
-  {
-    "id": 5513,
-    "name": "Stella",
-    "type": "Cow",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.773260496667696,
-      "lng": -122.44138862945974
-    }
-  },
-  {
-    "id": 1109,
-    "name": "Teddy",
-    "type": "Cow",
-    "pastureId": "3EQgVfD9gFCJTS9ptainQ",
-    "coordinates": {
-      "lat": 37.77178105111751,
-      "lng": -122.4448742370111
-    }
-  },
-  {
-    "id": 7358,
-    "name": "Rosie",
-    "type": "Sheep",
+    "age": 7,
+    "status": "Sick",
     "pastureId": "x-TPvphQsc9QFz3Q8qIjK",
     "coordinates": {
-      "lat": 37.777704016507684,
-      "lng": -122.40771029101839
+      "lat": 37.777257891534596,
+      "lng": -122.4083736913707
     }
   }
-]
 ]

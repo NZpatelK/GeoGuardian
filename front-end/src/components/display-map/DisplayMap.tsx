@@ -17,10 +17,12 @@ import goBack from '../../assets/back-arrow.png';
 import DisplayPastures from './DisplayPastures';
 import DisplayAnimals from './DisplayAnimals';
 
-interface Animal {
+export interface Animal {
   id: number;
   name: string;
   type: string;
+  age: number;
+  status: string;
   pastureId: string;
   coordinates: {
     lat: number;
