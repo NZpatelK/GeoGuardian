@@ -1,0 +1,109 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.animal-modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 300px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animal-modal-content h2 {
+  margin-top: 0;
+}
+
+.modal-animal-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list-animal-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.animal-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.animal-line {
+  display: grid;
+  grid-template-columns: 55px 10px auto;
+  gap: 4px;
+  align-items: center;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.animal-label {
+  font-weight: 500;
+}
+
+.colon {
+  text-align: center;
+  width: 10px;
+}
+
+.animal-value {
+  font-weight: 600;
+}
+
+.list-animal-count{
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+.animal-icon{
+    margin-right: 10px;
+    width: 30px;
+    height: 30px;
+}
+.list-animal-count p {
+    margin: 0;
+    padding: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000;
+}
+.list-animal-count p span{
+    font-weight: 600;
+}
+
+.animal-modal-content button {
+  margin-top: 16px;
+  margin-bottom: 0;
+  padding: 8px 16px;
+  border: none;
+  background-color: #0077ff;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

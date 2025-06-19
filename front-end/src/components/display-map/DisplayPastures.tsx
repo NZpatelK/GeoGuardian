@@ -1,3 +1,5 @@
+import { useState } from "react";
+import AnimalCountPopUpModal from "../animalCountPopUpModal/animalCountPopUpModal";
 import AnimalUtils from "./AnimalUtils";
 
 interface Pasture {
@@ -10,40 +12,68 @@ interface Pasture {
 }
 
 interface DisplayPasturesProps {
-    pastures: Pasture[]
+    pastures: Pasture[];
     handleClickRecenter: (id: string | number | undefined, type: string) => void;
     setSelectedOption: (option: string) => void;
     selectedOption: string;
 }
 
+export default function DisplayPastures({
+    pastures,
+    handleClickRecenter,
+    setSelectedOption,
+    selectedOption
+}: DisplayPasturesProps) {
+    const [openModalPastureId, setOpenModalPastureId] = useState<string | null>(null);
 
-export default function DisplayPastures({ pastures, handleClickRecenter, setSelectedOption, selectedOption }: DisplayPasturesProps) {
     return (
         <>
-            {pastures.map((pasture) => (
-                <div key={pasture.id} className="pasture-item">
-                    <h3>{pasture.name}</h3>
+            {pastures.map((pasture) => {
+                const animals = AnimalUtils.getAnimalsByPastureId(pasture.id) || [];
 
-                    {AnimalUtils.getAnimals() &&
-                        <div className="animal-counts">
-                            <p>Total Animals: {AnimalUtils.getAnimalsByPastureId(pasture.id).length}</p>
-                            <p className="animal-type">More Info</p>
+                return (
+                    <div key={pasture.id} className="pasture-item">
+                        <h3>{pasture.name}</h3>
 
-                            {/* <div className="animal-counts">
-                                <p>Pig: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Pig").length}</p>
-                                <p>Goat: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Goat").length}</p>
-                                <p>Sheep: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Sheep").length}</p>
-                                <p>Cow: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Cow").length}</p>
-                            </div> */}
-                        </div>}
+                        {AnimalUtils.getAnimals() && (
+                            <div className="animal-counts">
+                                <p>Total Animals: {animals.length}</p>
+                                <p
+                                    className="animal-type"
+                                    onClick={() => setOpenModalPastureId(pasture.id)}
+                                >
+                                    More Info
+                                </p>
+                                {openModalPastureId === pasture.id && (
+                                    <AnimalCountPopUpModal
+                                        isOpen={true}
+                                        onClose={() => setOpenModalPastureId(null)}
+                                        pastureId={pasture.id}
+                                    />
+                                )}
+                            </div>
+                        )}
 
                         <p>Health Alert:</p>
                         <p>Glazing Status:</p>
-                        <p>Pasture Size</p>
-                        <button className="recentre-pasture" onClick={() => handleClickRecenter(pasture.id as string, "pasture")}>Recenter Pasture</button>
+                        <p>Pasture Size:</p>
+                        <button
+                            className="recentre-pasture"
+                            onClick={() => handleClickRecenter(pasture.id, "pasture")}
+                        >
+                            Recenter Pasture
+                        </button>
+                    </div>
+                );
+            })}
 
-                </div>))}
-            <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
+            <button
+                className="pasture-btn"
+                onClick={() => setSelectedOption("pasture-edit")}
+                disabled={selectedOption === "pasture-edit"}
+            >
+                Edit Pasture
+            </button>
         </>
-    )
+    );
 }

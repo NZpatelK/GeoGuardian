@@ -1,10 +1,11 @@
 import './PopUpModal.css';
 import PasturesApi from '../../services/PasturesApi';
 import { useEffect, useState } from 'react';
+import DisplayAnimalsCount from './DisplayAnimalsCount';
 
 interface PopUpModalProps {
-    message: string;
-    modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input' | 'CreateAnimal';
+    message?: string;
+    modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input' | 'CreateAnimal'| 'animalCount';
     currentPastureId?: string;
     onConfirm: (value: boolean | string | { name: string; type: string; pastureId: string }) => void;
 }
