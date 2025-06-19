@@ -17,6 +17,7 @@ import goBack from '../../assets/back-arrow.png';
 import DisplayPastures from './DisplayPastures';
 import DisplayAnimals from './DisplayAnimals';
 
+
 export interface Animal {
   id: number;
   name: string;
@@ -28,6 +29,17 @@ export interface Animal {
     lat: number;
     lng: number;
   };
+}
+
+export interface Pasture {
+  id: string;
+  name: string;
+  glazing: "Available for Grazing" | "Currently Grazing" | "Resting / Recovering" | "Scheduled for Grazing" | "Out of Use / Idle" | "Unavailable (Environmental or Maintenance)";
+  size: number;
+  coordinates: {
+    lat: number;
+    lng: number;
+  }[];
 }
 
 export const DisplayMap = () => {
@@ -99,16 +111,16 @@ export const DisplayMap = () => {
         // ---------------------------------------------------------------------------------------------------------------------------//
 
         let isDrawing = false;
-        const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
+        const existPasturesCoordinates: Pasture[] = await PasturesApi.getPasturesCoordinates();
 
         if (existPasturesCoordinates) {
           for (const item of existPasturesCoordinates) {
             const coord = item.coordinates as { lat: number; lng: number }[];
-            const existingPasture = addExistingPasture(coord, item.name, item.id);
+            const existingPasture = addExistingPasture(item);
 
             let tapDisabled = false; // Flag to track if tap is disabled
 
-            existingPasture.pasture.addEventListener('tap', () => {
+            existingPasture.createPasture.addEventListener('tap', () => {
               if (!tapDisabled) {
                 initialisePastureEditor(hereMap, existingPasture, item.id, behavior);
               }
@@ -118,7 +130,7 @@ export const DisplayMap = () => {
               setTimeout(() => tapDisabled = false, 1000);
             });
 
-            hereMap.addObject(existingPasture.pasture);
+            hereMap.addObject(existingPasture.createPasture);
             hereMap.addObject(existingPasture.labelMarker);
           }
         }
@@ -271,7 +283,7 @@ export const DisplayMap = () => {
   };
 
 
-  const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
+  const initialisePastureEditor = async (hereMap: HMap, existingPasture: { createPasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
     if (modeRefs.current.isDelete) {
       if (AnimalUtils.hasAnimalsInPasture(pastureId)) {
         const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
@@ -287,7 +299,7 @@ export const DisplayMap = () => {
               }
             }
             if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
-              hereMap.removeObject(existingPasture.pasture);
+              hereMap.removeObject(existingPasture.createPasture);
               hereMap.removeObject(existingPasture.labelMarker);
               deletePasture(pastureId);
             }
@@ -300,7 +312,7 @@ export const DisplayMap = () => {
 
     if (!modeRefs.current.isEdit || selectedPastureRef.current.id) return;
 
-    const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+    const markers = selectPasture(existingPasture.createPasture, hereMap, behavior);
     markers?.forEach(marker => hereMap.addObject(marker));
 
     selectedPastureRef.current.id = pastureId;
@@ -408,7 +420,7 @@ export const DisplayMap = () => {
       const pasture = getPastures().find(pasture => pasture.id === id);
       if (!pasture?.coordinates) return;
       const centroid = calculateCentroid(pasture.coordinates);
-      console.log(centroid);
+
       if (centroid === null) return;
       Hcentroid = new H.geo.Point(centroid.lat, centroid.lng);
     }
@@ -450,17 +462,15 @@ export const DisplayMap = () => {
   }
 
   const updateAnimal = async (id: string) => {
-    const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
+    const animals = AnimalUtils.getAnimalsByPastureId(id);
     if (!animals) return;
 
-    console.log(animals[0].id, animals[0].coordinates);
 
     for (const animal of animals) {
       bringAnimalBackToPasture(animal);
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
-    console.log(animals[0].id, animals[0].coordinates);
     setDisplayAnimal(AnimalUtils.getAnimals());
   }
 

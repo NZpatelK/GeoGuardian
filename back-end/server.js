@@ -30,6 +30,8 @@ const dummyData = [
   {
     "id": "3EQgVfD9gFCJTS9ptainQ",
     "name": "Willow Brook",
+    "glazing": "Currently Grazing",
+    "size": 4.55727198535952,
     "coordinates": [
       {
         "lat": 37.77299146011582,
@@ -56,6 +58,8 @@ const dummyData = [
   {
     "id": "HkZnCQFYM0uRkQoA0jxfV",
     "name": "Sunny Bend",
+    "glazing": "Currently Grazing",
+    "size": 16.560144968839598,
     "coordinates": [
       {
         "lat": 37.77047148374791,
@@ -150,6 +154,8 @@ const dummyData = [
   {
     "id": "x-TPvphQsc9QFz3Q8qIjK",
     "name": "Meadow Haven",
+    "glazing": "Currently Grazing",
+    "size": 5.390837993978934,
     "coordinates": [
       {
         "lat": 37.779829374902974,
