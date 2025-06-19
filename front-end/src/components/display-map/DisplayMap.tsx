@@ -115,7 +115,6 @@ export const DisplayMap = () => {
 
         if (existPasturesCoordinates) {
           for (const item of existPasturesCoordinates) {
-            const coord = item.coordinates as { lat: number; lng: number }[];
             const existingPasture = addExistingPasture(item);
 
             let tapDisabled = false; // Flag to track if tap is disabled
@@ -291,7 +290,7 @@ export const DisplayMap = () => {
         const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
 
         if (relocateAnimalsConfirmed) {
-          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation', pastureId);
+          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation', 'Pasture', pastureId);
           if (relocatePastureId && typeof relocatePastureId === 'string' && relocatePastureId !== pastureId) {
             const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
             if (animals && animals.length > 0) {
@@ -310,7 +309,6 @@ export const DisplayMap = () => {
       }
       
       if (!AnimalUtils.hasAnimalsInPasture(pastureId) && deleteComfirmed) {
-        console.log("deleting pasture");
         hereMap.removeObject(existingPasture.createPasture);
         hereMap.removeObject(existingPasture.labelMarker);
         deletePasture(pastureId);
@@ -540,7 +538,7 @@ export const DisplayMap = () => {
   }
 
   const removeAnimal = async (animalId: number) => {
-    const deleteConfirmation = await showModal(`Are you sure you want to remove the animal with ID ${animalId}?`, 'deleteConfirmation');
+    const deleteConfirmation = await showModal(`Are you sure you want to remove the animal with ID ${animalId}?`, 'deleteConfirmation', 'Animal');
 
     if (deleteConfirmation) {
       const animalPosition = animalRef.current[animalId];
