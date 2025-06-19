@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker';
 import path from 'path';
 import cors from 'cors';
 
-const { getRandomCoordinate } = await import('./src/utils/calculationUtils.js');
+const { getRandomCoordinate, getWeightedStatus } = await import('./src/utils/randomUtils.js');
 
 import pastureRoutes from './src/routes/pastures.js';
 import animalRoutes from './src/routes/animals.js';
@@ -177,14 +177,14 @@ const dummyData = [
 
 
 
-function generateAnimal(){
-  const pasture = dummyData[faker.number.int({min: 0, max: dummyData.length - 1})];
+function generateAnimal() {
+  const pasture = dummyData[faker.number.int({ min: 0, max: dummyData.length - 1 })];
   return {
-    'id': faker.number.int({min: 1000, max: 9999}),
+    'id': faker.number.int({ min: 1000, max: 9999 }),
     'name': faker.animal.petName(),
     'type': faker.helpers.arrayElement(['Cow', 'Pig', 'Sheep', 'Goat']),
-    'age': faker.number.int({min: 1, max: 10}),
-    'status': faker.helpers.arrayElement(['Healthy', 'Sick', 'Injured', 'Need Check-Up']),
+    'age': faker.number.int({ min: 1, max: 10 }),
+    'status': getWeightedStatus(),
     'pastureId': pasture.id,
     'coordinates': getRandomCoordinate(pasture)
   }
@@ -202,7 +202,7 @@ function initalisePastureDataFile() {
 }
 
 function initaliseAnimalDataFile() {
-  const animals = Array.from({length: 20}, generateAnimal);
+  const animals = Array.from({ length: 20 }, generateAnimal);
   if (fs.existsSync(animalFilePath)) {
     console.log("File exists. Clearing and adding dummy data.");
     fs.writeFileSync(animalFilePath, JSON.stringify(animals, null, 2), 'utf8');

@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { getData, writeData, handleDBError, getDatabyId } from '../utils/dbHelpers.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { getRandomCoordinate } from '../utils/calculationUtils.js';
+import { getRandomCoordinate } from '../utils/randomUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
