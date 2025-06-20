@@ -1,17 +1,8 @@
 import { useState } from "react";
-import AnimalCountPopUpModal from "../animalCountPopUpModal/animalCountPopUpModal";
+import AnimalCountPopUpModal from "../animalCountPopUpModal/AnimalCountPopUpModal";
 import AnimalUtils from "./AnimalUtils";
+import { Pasture } from "../../types/pasture";
 
-interface Pasture {
-    id: string;
-    name: string;
-    glazing: "Available for Grazing" | "Currently Grazing" | "Resting / Recovering" | "Scheduled for Grazing" | "Out of Use / Idle" | "Unavailable (Environmental or Maintenance)";
-    size: number; // in hectares or relevant unit
-    coordinates: {
-        lat: number;
-        lng: number
-    }[];
-}
 interface DisplayPasturesProps {
     pastures: Pasture[];
     handleClickRecenter: (id: string | number | undefined, type: string) => void;
