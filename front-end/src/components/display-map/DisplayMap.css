@@ -169,3 +169,35 @@
     height: 40px !important;
     border-radius: 8px !important;
 }
+
+.filter-container {
+  max-width: 300px;
+  margin: 20px auto;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #ccc;
+  font-family: Arial, sans-serif;
+}
+
+.filter-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #000;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus {
+  border-color: #007bff;
+}
+
