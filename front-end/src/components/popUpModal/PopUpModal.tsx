@@ -44,7 +44,7 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
             }
             {(modalType === 'relocateConfirmation') &&
                 <div className="modal-box">
-                    <p className="modal-message select-label">{message}</p>
+                    <label className="select-label">{message}</label>
                     <select id="relocate" className="custom-select" onChange={(e) => setSelectedRelocatePastureId(e.target.value)} value={selectedRelocatePastureId}>
                         <option value="" disabled>
                             Select a pasture to relocate animals
@@ -82,9 +82,10 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
             {
                 (modalType === 'CreateAnimal') &&
                 <div className="modal-box">
-                    <p className="modal-message">{message}</p>
+                    <label className="input-label">{message}</label>
                     <input type="text" className="modal-input" placeholder="Animal Name" value={newAnimal.name} onChange={(e) => setNewAnimal({ ...newAnimal, name: e.target.value })} />
-
+                    
+                    <label htmlFor="animalType" className="select-label">Select Animal Type:</label>
                     <select id="animalType" className="custom-select" onChange={(e) => setNewAnimal({ ...newAnimal, type: e.target.value })} value={newAnimal.type}>
                         <option value="" disabled>
                             Select Animal Type
@@ -92,9 +93,10 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
                         <option value="Cow">Cow</option>
                         <option value="Sheep">Sheep</option>
                         <option value="Goat">Goat</option>
+                        <option value="Pig">Pig</option>
                     </select>
 
-                    <p className="modal-message">Please select a pasture to create the animal in.</p>
+                    <label className="select-label">Please select a pasture to create the animal in.</label>
                     <select id="pasture" className="custom-select" onChange={(e) => setNewAnimal({ ...newAnimal, pastureId: e.target.value })} value={newAnimal.pastureId}>
                         <option value="" disabled>
                             Select Pasture
@@ -107,7 +109,7 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
                     </select>
 
                     <div className="modal-buttons">
-                        <button className="btn btn-confirm" onClick={() => onConfirm(newAnimal)}>
+                        <button className="btn btn-create" onClick={() => onConfirm(newAnimal)} style={{backgroundColor: "#0e5501"}}>
                             Create Animal
                         </button>
                         <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
