@@ -3,13 +3,14 @@ import PasturesApi from '../../services/PasturesApi';
 import { useEffect, useState } from 'react';
 
 interface PopUpModalProps {
-    message: string;
+    message?: string;
+    type?: "Animal" | "Pasture";
     modalType: 'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input' | 'CreateAnimal';
     currentPastureId?: string;
     onConfirm: (value: boolean | string | { name: string; type: string; pastureId: string }) => void;
 }
 
-export default function PopUpModal({ message, modalType, currentPastureId, onConfirm }: PopUpModalProps) {
+export default function PopUpModal({ message, modalType, type ,currentPastureId, onConfirm }: PopUpModalProps) {
     const [listPastures, setListPastures] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
     const [selectedRelocatePastureId, setSelectedRelocatePastureId] = useState<string>('');
@@ -33,7 +34,7 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
                     <p className="modal-message">{message}</p>
                     <div className="modal-buttons">
                         <button className="btn btn-confirm" onClick={() => onConfirm(true)}>
-                            {modalType === 'pasture' ? 'Relocate Animals and Delete Pasture' : 'Delete Animal'}
+                            {modalType === 'pasture' ? 'Relocate Animals and Delete Pasture' : `Delete ${type}`}
                         </button>
                         <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
                             Cancel
@@ -44,7 +45,6 @@ export default function PopUpModal({ message, modalType, currentPastureId, onCon
             {(modalType === 'relocateConfirmation') &&
                 <div className="modal-box">
                     <p className="modal-message select-label">{message}</p>
-                    {/* <label htmlFor="relocate" className="select-label">Select Pasture: {selectedRelocatePastureId}</label> */}
                     <select id="relocate" className="custom-select" onChange={(e) => setSelectedRelocatePastureId(e.target.value)} value={selectedRelocatePastureId}>
                         <option value="" disabled>
                             Select a pasture to relocate animals

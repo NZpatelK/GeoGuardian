@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Map as HMap } from '@here/maps-api-for-javascript';
+import { Map as HMap, map } from '@here/maps-api-for-javascript';
 import { ToastContainer, toast } from 'react-toastify';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons"; // Font Awesome icon
-import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture, cleanupTemporaryObjects, checkIfCurrentPolygon } from './BoundariesUtils';
+import { startPolygon, getSpecifcPolygonCoordinates, calculateDistanceBetweenPoints, closePolygon, addPointToPolygon, createLabel, addExistingPasture, getPastures, updatePolygonState, createMarker, updatePasture, addNewPoint, updatePastureDatabase, deletePasture, cleanupTemporaryObjects, checkIfCurrentPolygon, calculateCentroid } from './BoundariesUtils';
 import PasturesApi from '../../services/PasturesApi';
 import { Modal } from '../modal/Modal';
 import './DisplayMap.css';
@@ -14,17 +14,14 @@ import { EditModeBar } from '../editModeBar/EditModeBar';
 import { usePopUpModal } from '../popUpModal/usePopUpModal';
 
 import goBack from '../../assets/back-arrow.png';
+import DisplayPastures from './DisplayPastures';
+import DisplayAnimals from './DisplayAnimals';
 
-interface Animal {
-  id: number;
-  name: string;
-  type: string;
-  pastureId: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-}
+import { Pasture } from '../../types/pasture';
+import { Animal } from '../../types/animal';
+
+
+
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);
@@ -95,16 +92,15 @@ export const DisplayMap = () => {
         // ---------------------------------------------------------------------------------------------------------------------------//
 
         let isDrawing = false;
-        const existPasturesCoordinates: any = await PasturesApi.getPasturesCoordinates();
+        const existPasturesCoordinates: Pasture[] = await PasturesApi.getPasturesCoordinates();
 
         if (existPasturesCoordinates) {
           for (const item of existPasturesCoordinates) {
-            const coord = item.coordinates as { lat: number; lng: number }[];
-            const existingPasture = addExistingPasture(coord, item.name, item.id);
+            const existingPasture = addExistingPasture(item);
 
             let tapDisabled = false; // Flag to track if tap is disabled
 
-            existingPasture.pasture.addEventListener('tap', () => {
+            existingPasture.createPasture.addEventListener('tap', () => {
               if (!tapDisabled) {
                 initialisePastureEditor(hereMap, existingPasture, item.id, behavior);
               }
@@ -114,7 +110,7 @@ export const DisplayMap = () => {
               setTimeout(() => tapDisabled = false, 1000);
             });
 
-            hereMap.addObject(existingPasture.pasture);
+            hereMap.addObject(existingPasture.createPasture);
             hereMap.addObject(existingPasture.labelMarker);
           }
         }
@@ -245,7 +241,7 @@ export const DisplayMap = () => {
 
         polygon.addEventListener("tap", () => {
           if (result.pastureId) {
-            initialisePastureEditor(hereMap, { pasture: polygon, labelMarker: label }, result.pastureId, behavior);
+            initialisePastureEditor(hereMap, { createPasture: polygon, labelMarker: label }, result.pastureId, behavior);
           } else {
             console.error("Pasture ID is undefined");
           }
@@ -267,13 +263,15 @@ export const DisplayMap = () => {
   };
 
 
-  const initialisePastureEditor = async (hereMap: HMap, existingPasture: { pasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
+  const initialisePastureEditor = async (hereMap: HMap, existingPasture: { createPasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
+
+    let deleteComfirmed = false;
     if (modeRefs.current.isDelete) {
       if (AnimalUtils.hasAnimalsInPasture(pastureId)) {
         const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
 
         if (relocateAnimalsConfirmed) {
-          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation', pastureId);
+          const relocatePastureId = await showModal("Please select a pasture to relocate animals to:", 'relocateConfirmation', 'Pasture', pastureId);
           if (relocatePastureId && typeof relocatePastureId === 'string' && relocatePastureId !== pastureId) {
             const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
             if (animals && animals.length > 0) {
@@ -282,13 +280,19 @@ export const DisplayMap = () => {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
               }
             }
-            if (!AnimalUtils.hasAnimalsInPasture(pastureId)) {
-              hereMap.removeObject(existingPasture.pasture);
-              hereMap.removeObject(existingPasture.labelMarker);
-              deletePasture(pastureId);
-            }
+            deleteComfirmed = true;
           }
         }
+      }
+      else{
+        const response = await showModal("Are you sure you want to delete this pasture?", 'deleteConfirmation', 'Pasture');
+        deleteComfirmed = response as boolean;
+      }
+      
+      if (!AnimalUtils.hasAnimalsInPasture(pastureId) && deleteComfirmed) {
+        hereMap.removeObject(existingPasture.createPasture);
+        hereMap.removeObject(existingPasture.labelMarker);
+        deletePasture(pastureId);
       }
 
       return;
@@ -296,7 +300,7 @@ export const DisplayMap = () => {
 
     if (!modeRefs.current.isEdit || selectedPastureRef.current.id) return;
 
-    const markers = selectPasture(existingPasture.pasture, hereMap, behavior);
+    const markers = selectPasture(existingPasture.createPasture, hereMap, behavior);
     markers?.forEach(marker => hereMap.addObject(marker));
 
     selectedPastureRef.current.id = pastureId;
@@ -395,6 +399,29 @@ export const DisplayMap = () => {
     return markersRef.current;
   };
 
+  const handleClickRecenter = (id: string | number | undefined, type: string) => {
+    if (id === undefined) return;
+
+    let Hcentroid = new H.geo.Point(0, 0);
+
+    if (type === 'pasture') {
+      const pasture = getPastures().find(pasture => pasture.id === id);
+      if (!pasture?.coordinates) return;
+      const centroid = calculateCentroid(pasture.coordinates);
+
+      if (centroid === null) return;
+      Hcentroid = new H.geo.Point(centroid.lat, centroid.lng);
+    }
+    else {
+      const animal = AnimalUtils.getAnimals().find(animal => animal.id === id);
+      if (!animal?.coordinates) return;
+      Hcentroid = new H.geo.Point(animal.coordinates.lat, animal.coordinates.lng);
+    }
+
+    mapInstance?.setZoom(18);
+    mapInstance?.setCenter(Hcentroid, true);
+  }
+
 
   const CreateNewAnimal = async () => {
     const animal = await showModal("Please enter the animal's name:", 'CreateAnimal');
@@ -419,21 +446,19 @@ export const DisplayMap = () => {
     animalRef.current[newAnimal.id] = position;
 
     setDisplayAnimal((prevAnimals) => [...prevAnimals, newAnimal]);
-    setModalIsSelected("animals");    
+    setModalIsSelected("animals");
   }
 
-  const updateAnimal = async (pastureId: string) => {
-    const animals = AnimalUtils.getAnimalsByPastureId(pastureId);
+  const updateAnimal = async (id: string) => {
+    const animals = AnimalUtils.getAnimalsByPastureId(id);
     if (!animals) return;
 
-    console.log(animals[0].id, animals[0].coordinates);
 
     for (const animal of animals) {
       bringAnimalBackToPasture(animal);
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
-    console.log(animals[0].id, animals[0].coordinates);
     setDisplayAnimal(AnimalUtils.getAnimals());
   }
 
@@ -494,7 +519,7 @@ export const DisplayMap = () => {
   }
 
   const removeAnimal = async (animalId: number) => {
-    const deleteConfirmation = await showModal(`Are you sure you want to remove the animal with ID ${animalId}?`, 'deleteConfirmation');
+    const deleteConfirmation = await showModal(`Are you sure you want to remove the animal with ID ${animalId}?`, 'deleteConfirmation', 'Animal');
 
     if (deleteConfirmation) {
       const animalPosition = animalRef.current[animalId];
@@ -569,19 +594,8 @@ export const DisplayMap = () => {
       <Modal>
         <div className="modal-content">
           {modalIsSelected === "animals" &&
-            <div>
-              {displayAnimal.map((animal) => (
-                <div key={animal.id} className="animal-item" onClick={() => {
-                  selectedAnimalRef.current.animal = animal;
-                  setModalIsSelected("selectedAnimal");
-                }}>
-                  <h3>{animal.name} - {animal.id} </h3>
-                  <p>Type: {animal.type}</p>
-                  <p> Pasture: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
-                </div>
-              ))}
-              <button className='add-animal-btn' onClick={CreateNewAnimal}>Create New Animal</button>
-            </div>}
+            <DisplayAnimals animals={displayAnimal} setModalIsSelected={setModalIsSelected} CreateNewAnimal={CreateNewAnimal} selectedAnimalRef={(e) => selectedAnimalRef.current.animal = e} />
+          }
 
           {modalIsSelected === "selectedAnimal" && (
             <div>
@@ -593,6 +607,7 @@ export const DisplayMap = () => {
               <h4>Current Pasture: {getPastures().find((pasture) => pasture.id === selectedAnimalRef.current.animal?.pastureId)?.name}</h4>
 
               {!selectedOption && <div className="animal-btn-group modal-btn-group">
+                <button style={{ backgroundColor: "#2196F3" }} onClick={() => handleClickRecenter(selectedAnimalRef.current.animal?.id, "animal")}>Track Animal</button>
                 <button style={{ backgroundColor: "#ff9800" }} onClick={() => setSelectedOption("relocate")}>Relocate</button>
                 <button style={{ backgroundColor: "#f44336" }} onClick={() => removeAnimal(selectedAnimalRef.current.animal?.id as number)}>Remove</button>
                 <button style={{ backgroundColor: "#555555" }} onClick={() => setModalIsSelected("animals")}>Close</button>
@@ -619,26 +634,11 @@ export const DisplayMap = () => {
           )}
 
           {modalIsSelected === "pastures" && (
-            <>
-              {getPastures().map((pasture) => (
-                <div key={pasture.id} className="pasture-item">
-                  <h3>{pasture.name}</h3>
-
-                  {AnimalUtils.getAnimals() &&
-                    <div>
-                      <p>Total Animals: {AnimalUtils.getAnimalsByPastureId(pasture.id).length}</p>
-
-                      <div className="animal-counts">
-                        <p>Pig: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Pig").length}</p>
-                        <p>Goat: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Goat").length}</p>
-                        <p>Sheep: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Sheep").length}</p>
-                        <p>Cow: {AnimalUtils.getAnimalsByPastureId(pasture.id).filter((animal) => animal.type === "Cow").length}</p>
-                      </div>
-                    </div>}
-
-                </div>))}
-              <button className='pasture-btn' onClick={() => { setSelectedOption("pasture-edit") }} disabled={selectedOption === "pasture-edit"}>Edit Pasture</button>
-            </>
+            <DisplayPastures
+              pastures={getPastures()}
+              handleClickRecenter={handleClickRecenter}
+              setSelectedOption={(e) => setSelectedOption(e)}
+              selectedOption={selectedOption || ''} />
           )}
         </div>
       </Modal>

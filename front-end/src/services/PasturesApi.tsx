@@ -20,10 +20,12 @@ class PasturesApi {
         }
     }
 
-    static async addPasture(polygonCoordinates: { lat: number; lng: number }[], label: string) {
+    static async addPasture(polygonCoordinates: { lat: number; lng: number }[], label: string, size: number) {
         const data = {
             id: nanoid(),
             name: label,
+            glazing:  "Available for Grazing",
+            size: size,
             coordinates: polygonCoordinates,
         };
         try {

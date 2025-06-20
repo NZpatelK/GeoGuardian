@@ -17,3 +17,11 @@ export function getRandomCoordinate(pasture) {
 
   return { lat: randomLat, lng: randomLng };
 }
+
+export function getWeightedStatus() {
+  const rand = Math.random();
+  if (rand < 0.8) return 'Healthy';
+  else if (rand < 0.87) return 'Sick';         // 7%
+  else if (rand < 0.93) return 'Injured';      // 6%
+  else return 'Need Check-Up';                 // 7%
+}

@@ -5,7 +5,7 @@ import { faker } from '@faker-js/faker';
 import path from 'path';
 import cors from 'cors';
 
-const { getRandomCoordinate } = await import('./src/utils/calculationUtils.js');
+const { getRandomCoordinate, getWeightedStatus } = await import('./src/utils/randomUtils.js');
 
 import pastureRoutes from './src/routes/pastures.js';
 import animalRoutes from './src/routes/animals.js';
@@ -30,6 +30,8 @@ const dummyData = [
   {
     "id": "3EQgVfD9gFCJTS9ptainQ",
     "name": "Willow Brook",
+    "glazing": "Currently Grazing",
+    "size": 4.55727198535952,
     "coordinates": [
       {
         "lat": 37.77299146011582,
@@ -56,6 +58,8 @@ const dummyData = [
   {
     "id": "HkZnCQFYM0uRkQoA0jxfV",
     "name": "Sunny Bend",
+    "glazing": "Currently Grazing",
+    "size": 16.560144968839598,
     "coordinates": [
       {
         "lat": 37.77047148374791,
@@ -150,6 +154,8 @@ const dummyData = [
   {
     "id": "x-TPvphQsc9QFz3Q8qIjK",
     "name": "Meadow Haven",
+    "glazing": "Currently Grazing",
+    "size": 5.390837993978934,
     "coordinates": [
       {
         "lat": 37.779829374902974,
@@ -175,29 +181,16 @@ const dummyData = [
   }
 ];
 
-// function getRandomCoordinate(pasture) {
-//   const latitudes = pasture.coordinates.map(coord => coord.lat);
-//   const longitudes = pasture.coordinates.map(coord => coord.lng);
 
-//   // Calculate min/max latitude and longitude
-//   const minLat = Math.min(...latitudes);
-//   const maxLat = Math.max(...latitudes);
-//   const minLng = Math.min(...longitudes);
-//   const maxLng = Math.max(...longitudes);
 
-//   // Generate a random coordinate within the bounding box of the pasture
-//   const randomLat = faker.number.float({ min: minLat, max: maxLat });
-//   const randomLng = faker.number.float({ min: minLng, max: maxLng });
-
-//   return { lat: randomLat, lng: randomLng };
-// }
-
-function generateAnimal(){
-  const pasture = dummyData[faker.number.int({min: 0, max: dummyData.length - 1})];
+function generateAnimal() {
+  const pasture = dummyData[faker.number.int({ min: 0, max: dummyData.length - 1 })];
   return {
-    'id': faker.number.int({min: 1000, max: 9999}),
+    'id': faker.number.int({ min: 1000, max: 9999 }),
     'name': faker.animal.petName(),
     'type': faker.helpers.arrayElement(['Cow', 'Pig', 'Sheep', 'Goat']),
+    'age': faker.number.int({ min: 1, max: 10 }),
+    'status': getWeightedStatus(),
     'pastureId': pasture.id,
     'coordinates': getRandomCoordinate(pasture)
   }
@@ -215,7 +208,7 @@ function initalisePastureDataFile() {
 }
 
 function initaliseAnimalDataFile() {
-  const animals = Array.from({length: 20}, generateAnimal);
+  const animals = Array.from({ length: 20 }, generateAnimal);
   if (fs.existsSync(animalFilePath)) {
     console.log("File exists. Clearing and adding dummy data.");
     fs.writeFileSync(animalFilePath, JSON.stringify(animals, null, 2), 'utf8');

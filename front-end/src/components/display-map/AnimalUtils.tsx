@@ -2,30 +2,11 @@ import AnimalApi from "../../services/AnimalApi";
 import PasturesApi from "../../services/PasturesApi";
 import { isPointInPolygon } from "./BoundariesUtils";
 
-interface Animal {
-    id: number;
-    name: string;
-    type: string;
-    pastureId: string;
-    coordinates: {
-        lat: number;
-        lng: number;
-    };
-}
-
-interface Pasture {
-    id: string;
-    name: string;
-    coordinates: Coordinates[];
-}
-
-interface Coordinates {
-    lat: number;
-    lng: number;
-}
+import { Animal } from "../../types/animal";
+import { Pasture, Coordinate } from "../../types/pasture";
 
 interface PastureCoord {
-    coordinates: Coordinates[];
+    coordinates: Coordinate[];
 }
 
 const MOVE_INCREMENT = 0.001;
@@ -54,7 +35,7 @@ export class AnimalUtils {
         return animals.filter(animal => animal.pastureId === pastureId);
     }
 
-    static hasAnimalsInPasture = (pastureId: string) : boolean => {
+    static hasAnimalsInPasture = (pastureId: string): boolean => {
         return animals.some(animal => animal.pastureId === pastureId);
     }
 
@@ -81,7 +62,7 @@ export class AnimalUtils {
         if (index !== -1) {
             animals.splice(index, 1);
             AnimalApi.removeAnimal(id);
-        } 
+        }
     }
     static randomiseAnimalCoordinates = (animal: Animal) => {
 
@@ -156,7 +137,7 @@ export class AnimalUtils {
             };
         });
 
-        return {notificationMsg: notificationMsg, polygonState: polygonState};
+        return { notificationMsg: notificationMsg, polygonState: polygonState };
     };
 
     static moveAnimalBackToTheirPasture = async (animalId: number): Promise<Coordinates> => {

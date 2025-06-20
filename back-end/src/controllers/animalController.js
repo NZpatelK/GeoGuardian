@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import { getData, writeData, handleDBError, getDatabyId } from '../utils/dbHelpers.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { getRandomCoordinate } from '../utils/calculationUtils.js';
+import { getRandomCoordinate, getWeightedStatus } from '../utils/randomUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,9 +35,9 @@ const addAnimal = async (req, res) => {
         const pastureData = await getDatabyId(pastureFilePath, data.pastureId);
 
         const animalCoordinates = getRandomCoordinate(pastureData[0])
-        const newAnimal = { id: newId, ...data, coordinates: animalCoordinates };
-
-        console.log("Adding new animal:", newAnimal);
+        const age = faker.number.int({ min: 1, max: 10 });
+        const newStatus = getWeightedStatus();
+        const newAnimal = { id: newId, ...data, age, status: newStatus, coordinates: animalCoordinates };
 
         await writeData(animalFilePath, newAnimal, existData);
 
@@ -50,7 +50,6 @@ const addAnimal = async (req, res) => {
 
 const deleteAnimal = async (req, res) => {
     const { id } = req.params;
-    console.log("Deleting animal with id:", id);
 
     try {
         let existData = await getData(animalFilePath);

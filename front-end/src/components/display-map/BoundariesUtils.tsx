@@ -1,8 +1,9 @@
 import { Map as HMap } from "@here/maps-api-for-javascript";
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
+import { Pasture } from "../../types/pasture";
 
-const listPastures: { id: string, name: string, coordinates: { lat: number; lng: number }[] }[] = [];
+const listPastures: Pasture[] = [];
 let pastureCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
@@ -83,7 +84,7 @@ const calculateGeodeticAreaInSquareKilometers = (pastureCoordinates: { lat: numb
     area = Math.abs(area * (EARTH_RADIUS ** 2) / 2);
 
     // Convert square meters to square kilometers
-    return area / 1_000_000;
+    return area / 10_000;
 };
 
 /**
@@ -92,9 +93,23 @@ const calculateGeodeticAreaInSquareKilometers = (pastureCoordinates: { lat: numb
  *
  * @returns The centroid of the polygon.
  */
-const calculateCentroid = () => {
+export const calculateCentroid = (coords?: { lat: number; lng: number }[]) => {
 
-    const centriod = CompletedPolygon.reduce(
+    let centroid = { lat: 0, lng: 0 };
+
+    if (coords) {
+        centroid = coords.reduce(
+            (acc, coord) => ({
+                lat: acc.lat + coord.lat / coords.length,
+                lng: acc.lng + coord.lng / coords.length,
+            }),
+            { lat: 0, lng: 0 }
+        );
+        return centroid;
+
+    }
+
+    centroid = CompletedPolygon.reduce(
         (acc, coord) => ({
             lat: acc.lat + coord.lat / CompletedPolygon.length,
             lng: acc.lng + coord.lng / CompletedPolygon.length,
@@ -102,7 +117,7 @@ const calculateCentroid = () => {
         { lat: 0, lng: 0 }
     );
 
-    return centriod;
+    return centroid;
 }
 
 /**
@@ -163,10 +178,11 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
     // listPastures.push({ label: label, polygon: pastureCoordinates, id: nanoid() });
     CompletedPolygon = [];
     CompletedPolygon = pastureCoordinates;
-    const pastureDetail = await PasturesApi.addPasture(pastureCoordinates, label);
+    const size = calculateGeodeticAreaInSquareKilometers(pastureCoordinates);
+    const pastureDetail = await PasturesApi.addPasture(pastureCoordinates, label, size);
     let pastureId;
     if (pastureDetail) {
-        listPastures.push(pastureDetail);
+        listPastures.push(pastureDetail as Pasture);
         pastureId = pastureDetail.id;
     }
     pastureCoordinates = [];
@@ -183,19 +199,20 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
  * @param label - The label for the polygon.
  * @returns An object containing the newly created H.map.Polygon and H.map.Marker.
  */
-export const addExistingPasture = (coords: { lat: number; lng: number }[], label: string, id: string) => {
-    const lineString = createLineString(coords);
-    const pasture = new H.map.Polygon(lineString, {
+// export const addExistingPasture = (coords: { lat: number; lng: number }[], label: string, id: string) => {
+export const addExistingPasture = (pasture: Pasture) => {
+    const lineString = createLineString(pasture.coordinates);
+    const createPasture = new H.map.Polygon(lineString, {
         style: { fillColor: 'rgba(0, 128, 255, 0.4)', strokeColor: 'blue', lineWidth: 2 },
         data: {}
     });
 
-    CompletedPolygon = coords;
-    const labelMarker = createLabel(label);
+    CompletedPolygon = pasture.coordinates;
+    const labelMarker = createLabel(pasture.name);
     CompletedPolygon = [];
 
-    listPastures.push({ name: label, coordinates: coords, id: id });
-    return { pasture, labelMarker };
+    listPastures.push(pasture);
+    return { createPasture, labelMarker };
 }
 
 /**
@@ -366,14 +383,14 @@ export const addNewPoint = (newPoint: H.geo.Point, points: H.geo.Point[], pastur
     return { pasture: updatedPasture, points: updatePoint };
 }
 
-export const updatePastureDatabase = async (pastureId: string, coord: { lat: number; lng: number } []) => {
+export const updatePastureDatabase = async (pastureId: string, coord: { lat: number; lng: number }[]) => {
 
     const pasture = listPastures.find(pasture => pasture.id === pastureId);
     if (!pasture) return;
     pasture.coordinates = coord;
 
     await PasturesApi.updatePasture(pastureId, coord);
-    
+
 }
 
 export const deletePasture = async (pastureId: string) => {
