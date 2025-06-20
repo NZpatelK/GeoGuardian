@@ -2,31 +2,11 @@ import AnimalApi from "../../services/AnimalApi";
 import PasturesApi from "../../services/PasturesApi";
 import { isPointInPolygon } from "./BoundariesUtils";
 
-export interface Animal {
-    id: number;
-    name: string;
-    type: string;
-    age: number;
-    status: string;
-    pastureId: string;
-    coordinates: Coordinates;
-}
-
-interface Pasture {
-    id: string;
-    name: string;
-    glazing: "Available for Grazing" | "Currently Grazing" | "Resting / Recovering" | "Scheduled for Grazing" | "Out of Use / Idle" | "Unavailable (Environmental or Maintenance)";
-    size: number; // in hectares or relevant unit
-    coordinates: Coordinates[];
-}
-
-interface Coordinates {
-    lat: number;
-    lng: number;
-}
+import { Animal } from "../../types/animal";
+import { Pasture, Coordinate } from "../../types/pasture";
 
 interface PastureCoord {
-    coordinates: Coordinates[];
+    coordinates: Coordinate[];
 }
 
 const MOVE_INCREMENT = 0.001;

@@ -1,7 +1,6 @@
 import './PopUpModal.css';
 import PasturesApi from '../../services/PasturesApi';
 import { useEffect, useState } from 'react';
-import DisplayAnimalsCount from './DisplayAnimalsCount';
 
 interface PopUpModalProps {
     message?: string;
@@ -46,7 +45,6 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
             {(modalType === 'relocateConfirmation') &&
                 <div className="modal-box">
                     <p className="modal-message select-label">{message}</p>
-                    {/* <label htmlFor="relocate" className="select-label">Select Pasture: {selectedRelocatePastureId}</label> */}
                     <select id="relocate" className="custom-select" onChange={(e) => setSelectedRelocatePastureId(e.target.value)} value={selectedRelocatePastureId}>
                         <option value="" disabled>
                             Select a pasture to relocate animals

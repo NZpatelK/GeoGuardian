@@ -17,30 +17,11 @@ import goBack from '../../assets/back-arrow.png';
 import DisplayPastures from './DisplayPastures';
 import DisplayAnimals from './DisplayAnimals';
 
+import { Pasture } from '../../types/pasture';
+import { Animal } from '../../types/animal';
 
-export interface Animal {
-  id: number;
-  name: string;
-  type: string;
-  age: number;
-  status: string;
-  pastureId: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-}
 
-export interface Pasture {
-  id: string;
-  name: string;
-  glazing: "Available for Grazing" | "Currently Grazing" | "Resting / Recovering" | "Scheduled for Grazing" | "Out of Use / Idle" | "Unavailable (Environmental or Maintenance)";
-  size: number;
-  coordinates: {
-    lat: number;
-    lng: number;
-  }[];
-}
+
 
 export const DisplayMap = () => {
   const mapRef = useRef(null);

@@ -1,17 +1,7 @@
 import { Map as HMap } from "@here/maps-api-for-javascript";
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
-
- interface Pasture {
-  id: string;
-  name: string;
-  glazing:  "Available for Grazing" | "Currently Grazing" | "Resting / Recovering" | "Scheduled for Grazing" | "Out of Use / Idle" | "Unavailable (Environmental or Maintenance)";
-  size: number; // in hectares or relevant unit
-  coordinates: {
-    lat: number;
-    lng: number
-  }[];
-}
+import { Pasture } from "../../types/pasture";
 
 const listPastures: Pasture[] = [];
 let pastureCoordinates: { lat: number; lng: number }[] = [];
@@ -189,7 +179,7 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
     CompletedPolygon = [];
     CompletedPolygon = pastureCoordinates;
     const size = calculateGeodeticAreaInSquareKilometers(pastureCoordinates);
-    const pastureDetail = await PasturesApi.addPasture(pastureCoordinates, label, size);    
+    const pastureDetail = await PasturesApi.addPasture(pastureCoordinates, label, size);
     let pastureId;
     if (pastureDetail) {
         listPastures.push(pastureDetail as Pasture);
