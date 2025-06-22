@@ -1,5 +1,6 @@
 import axios from "axios";
 import { nanoid } from 'nanoid';
+import { toast } from 'react-toastify';
 
 class PasturesApi {
     static async getPasturesCoordinates() {
@@ -36,13 +37,33 @@ class PasturesApi {
                 },
             });
 
-            console.log(response.data.message); // Success message
+            toast.success(response.data.message, {
+                position: 'top-center',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false
+            })
             return data;
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
+                toast.error(err.message, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             } else {
                 console.error('Error:', err);
+                toast.error(err as string, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             }
         }
     }
@@ -60,13 +81,33 @@ class PasturesApi {
                 },
             });
 
-            console.log(response.data.message); // Success message
+            toast.success(response.data.message, {
+                position: 'top-center',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false
+            })
             return data;
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
+                toast.error(err.message, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             } else {
                 console.error('Error:', err);
+                toast.error(err as string, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             }
         }
     }
@@ -76,13 +117,33 @@ class PasturesApi {
             // Send data to the backend using axios
             const response = await axios.delete(`http://localhost:3000/api/pastures/deletePasture/${pastureId}`);
 
-            console.log(response.data.message); // Success message
+            toast.success(response.data.message, {
+                position: 'top-center',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false
+            })
             return pastureId;
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
+                toast.error(err.message, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             } else {
                 console.error('Error:', err);
+                toast.error(err as string, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             }
         }
     }

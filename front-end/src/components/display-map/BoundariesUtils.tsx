@@ -1,13 +1,13 @@
-import { Map as HMap } from "@here/maps-api-for-javascript";
 import { labelIcon, markerIcon } from "../../assets/Icon";
 import PasturesApi from "../../services/PasturesApi";
-import { Pasture } from "../../types/pasture";
+import { Pasture, Coordinate } from "../../types/pasture";
+
 
 const listPastures: Pasture[] = [];
 let pastureCoordinates: { lat: number; lng: number }[] = [];
 let temporaryPolyline: H.map.Polyline | null = null;
 let temporaryMarker: H.map.Marker | null = null;
-let CompletedPolygon: { lat: number; lng: number }[] = [];
+let CompletedPolygon: Coordinate[] = [];
 let polygon = null;
 
 
@@ -47,11 +47,18 @@ export const calculateDistanceBetweenPoints = (point1: { lat: number; lng: numbe
     return earthRadius * c;
 };
 
+
 /**
- * Calculates the area of a polygon in square kilometers on the surface of the Earth.
- * 
- * @param pastureCoordinates - The coordinates of the polygon in the format of an array of objects containing 'lat' and 'lng' properties.
- * @returns The area in square kilometers.
+ * Calculates the area of a polygon given its coordinates on the Earth's surface.
+ *
+ * This function implements the spherical excess formula to calculate the area of
+ * a polygon on the surface of a sphere. The area is calculated in square meters
+ * and then converted to square kilometers.
+ *
+ * @param pastureCoordinates - An array of coordinate objects containing the
+ *     latitude and longitude of each vertex of the polygon.
+ * @returns The area of the polygon in hectares.
+ *
  * @throws {Error} If the polygon has fewer than three vertices.
  */
 const calculateGeodeticAreaInSquareKilometers = (pastureCoordinates: { lat: number; lng: number }[]): number => {
@@ -157,6 +164,20 @@ export const startPolygon = (coords: { lat: number; lng: number }) => {
     return temporaryMarker;
 }
 
+    /**
+     * Closes the current polygon and adds it to the map.
+     *
+     * If the polygon has fewer than three vertices, this function will return
+     * without doing anything.
+     *
+     * @param startPoint - The coordinates of the first point of the polygon in the format of an object containing 'lat' and 'lng' properties.
+     * @param label - The label for the polygon.
+     * @returns An object containing the following properties:
+     *  - removeTempPolyline: The temporary polyline that was previously added to the map, if any.
+     *  - removeTempMarker: The temporary marker that was previously added to the map, if any.
+     *  - polygon: The newly created polygon.
+     *  - pastureId: The ID of the newly added pasture.
+     */
 export const closePolygon = async (startPoint: { lat: number; lng: number }, label: string) => {
     pastureCoordinates.push(startPoint);
 
@@ -255,13 +276,14 @@ export const addPointToPolygon = (coords: { lat: number; lng: number }) => {
 }
 
 /**
- * Removes the temporary polyline and marker from the map, if any, and returns them.
- * This function is used to clean up the temporary objects after a polygon has been completed.
+ * Cleans up temporary polyline and marker objects and optionally clears pasture coordinates.
  *
+ * @param isCleanData - Optional boolean flag to indicate whether pasture coordinates should be cleared.
  * @returns An object containing the following properties:
- *  - removeTempPolyline: The temporary polyline that was previously added to the map, if any.
- *  - removeTempMarker: The temporary marker that was previously added to the map, if any.
+ *  - removeTempPolyline: The temporary polyline that was cleared, if any.
+ *  - removeTempMarker: The temporary marker that was cleared, if any.
  */
+
 export function cleanupTemporaryObjects(isCleanData?: boolean) {
     let removeTempPolyline;
     let removeTempMarker;
@@ -284,11 +306,12 @@ export function cleanupTemporaryObjects(isCleanData?: boolean) {
 }
 
 /**
- * Creates a LineString from an array of geographical coordinates.
+ * Converts an array of coordinates into a LineString object.
  *
- * @param coordinates - An array of objects, each containing 'lat' and 'lng' properties representing the latitude and longitude of a point.
- * @returns A LineString object representing the path through the given coordinates.
+ * @param coordinates - An array of objects, each containing 'lat' and 'lng' properties representing latitude and longitude.
+ * @returns An H.geo.LineString object representing the path defined by the input coordinates.
  */
+
 function createLineString(coordinates: { lat: number; lng: number }[]) {
     const lineString = new H.geo.LineString();
     coordinates.forEach((coord) => lineString.pushLatLngAlt(coord.lat, coord.lng, 0));

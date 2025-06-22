@@ -38,7 +38,7 @@ const addPasture = async (req, res) => {
     try {
         const existData = await getData(pastureFilePath);
         await writeData(pastureFilePath, data, existData);
-        res.status(200).json({ message: 'Data saved successfully' });
+        res.status(200).json({ message: 'Pasture data saved successfully' });
     } catch (error) {
         handleDBError(res, error);
     }
@@ -76,7 +76,7 @@ const updatePasture = async (req, res) => {
         // Clear the file and write the updated data
         await fs.promises.writeFile(pastureFilePath, JSON.stringify(existData, null, 2)); // Overwrite the file
 
-        return res.status(200).json({ message: "Data updated successfully" });
+        return res.status(200).json({ message: "Updated Pasture successfully" });
     } catch (error) {
         console.error("Error updating pasture:", error);
         return res.status(500).json({ message: "Internal server error" });
@@ -111,7 +111,7 @@ const deletePasture = async (req, res) => {
         // Clear the file and write the updated data
         await fs.promises.writeFile(pastureFilePath, JSON.stringify(existData, null, 2)); // Overwrite the file
 
-        return res.status(200).json({ message: "Data deleted successfully" });
+        return res.status(200).json({ message: "Pasture deleted successfully" });
     }
     catch (error) {
         console.error("Error deleting pasture:", error);

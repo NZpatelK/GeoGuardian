@@ -1,4 +1,6 @@
 import axios from "axios";
+import { toast } from 'react-toastify';
+
 // import { nanoid } from 'nanoid';
 
 export class AnimalApi {
@@ -24,12 +26,33 @@ export class AnimalApi {
                     'Content-Type': 'application/json',
                 },
             });
-            return response.data; 
+            toast.success(response.data.message, {
+                position: 'top-center',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false
+            })
+            return response.data;
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
+                toast.error(err.message, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             } else {
                 console.error('Error:', err);
+                toast.error(err as string, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             }
         }
     }
@@ -45,9 +68,12 @@ export class AnimalApi {
                     'Content-Type': 'application/json',
                 },
             });
+
+
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
+
             } else {
                 console.error('Error:', err);
             }
@@ -61,16 +87,38 @@ export class AnimalApi {
         };
         try {
             // Send data to the backend using axios
-            await axios.put(`http://localhost:3000/api/animals/relocateAnimal`, data, {
+            const response = await axios.put(`http://localhost:3000/api/animals/relocateAnimal`, data, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
+
+            toast.success(response.data.message, {
+                position: 'top-center',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false
+            })
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
+                toast.error(err.message, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             } else {
                 console.error('Error:', err);
+                toast.error(err as string, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             }
         }
     }
@@ -78,12 +126,33 @@ export class AnimalApi {
     static async removeAnimal(animalId: number) {
         try {
             // Send data to the backend using axios
-            await axios.delete(`http://localhost:3000/api/animals/deleteAnimal/${animalId}`);
+            const response = await axios.delete (`http://localhost:3000/api/animals/deleteAnimal/${animalId}`);
+            toast.success(response.data.message, {
+                position: 'top-center',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: false
+            })
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error('Error:', err.response ? err.response.data : err.message);
+                toast.error(err.message, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             } else {
                 console.error('Error:', err);
+                toast.error(err as string, {
+                    position: 'top-center',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: false
+                })
             }
         }
     }

@@ -41,7 +41,7 @@ const addAnimal = async (req, res) => {
 
         await writeData(animalFilePath, newAnimal, existData);
 
-        res.status(200).json({ message: 'Data saved successfully', animal: newAnimal });
+        res.status(200).json({ message: 'Animal data saved successfully', animal: newAnimal });
     } catch (error) {
         handleDBError(res, error);
     }
@@ -106,7 +106,7 @@ const relocateAnimal = async (req, res) => {
         existData[animalIndex].pastureId = pastureId;
 
         await writeData(animalFilePath, null, existData);
-        res.status(200).json({ message: 'Animal relocated successfully' });
+        res.status(200).json({ message: `Animal with ID ${animalId} has been removed successfully.` });
     } catch (error) {
         handleDBError(res, error);
     }
