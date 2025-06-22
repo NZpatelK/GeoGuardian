@@ -248,6 +248,7 @@ export const DisplayMap = () => {
         });
       }
 
+      modeRefs.current.isAdd = false;
       cleanUpPastureMarkers(true);
       return false;
     }

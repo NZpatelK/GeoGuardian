@@ -19,25 +19,43 @@ export const getData = (filePath) => {
     });
 };
 
-export const writeData = (filePath, data, existData) => {
-    return new Promise((resolve, reject) => {
-        let currentData = [];
-        try {
-            currentData = existData;
-            if (!Array.isArray(currentData)) {
-                currentData = [];
-            }
-        } catch (parseError) {
-            reject(parseError);
-        }
+export const writeData = async (filePath, data, existData = null, options = {}) => {
+  const { append = true } = options;
 
-        if (data) { currentData.push(data) };
+  let currentData = [];
 
-        fs.promises.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8')
-            .then(() => resolve())
-            .catch(err => reject(err));
-    });
+  try {
+    if (existData) {
+      currentData = Array.isArray(existData) ? existData : [];
+    } else {
+      // Try reading from the file directly
+      const raw = await fs.promises.readFile(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      currentData = Array.isArray(parsed) ? parsed : [];
+    }
+  } catch (err) {
+    // If file doesn't exist or is invalid, start with empty array
+    currentData = [];
+  }
+
+  if (append && data) {
+    if (Array.isArray(data)) {
+      currentData.push(...data); // Spread to flatten
+    } else if (typeof data === 'object') {
+      currentData.push(data);
+    }
+  } else if (!append && data) {
+    // Overwrite with new data instead of appending
+    currentData = Array.isArray(data) ? data : [data];
+  }
+
+  try {
+    await fs.promises.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8');
+  } catch (err) {
+    throw err;
+  }
 };
+
 
 export const getDatabyId = (filePath, id) => {
     return new Promise((resolve, reject) => {
