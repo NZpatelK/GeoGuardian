@@ -64,7 +64,7 @@ This project is a focused version of a more complex system like *Halter*. While 
 
 ## 📸 Demo Video
 
-> *(Add screenshots or GIFs here if available to demonstrate features visually)*
+> [Click to View Video](https://www.linkedin.com/posts/karan-h-patel_webdevelopment-reactjs-nodejs-activity-7342705018937987073-rK9E?utm_source=share&utm_medium=member_desktop&rcm=ACoAADBGF6QB0QMDySUwhCV0IdNp7xgY9h60CLQ)
 
 ---
 
