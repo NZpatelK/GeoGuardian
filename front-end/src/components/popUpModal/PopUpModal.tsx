@@ -10,7 +10,18 @@ interface PopUpModalProps {
     onConfirm: (value: boolean | string | { name: string; type: string; pastureId: string }) => void;
 }
 
-export default function PopUpModal({ message, modalType, type ,currentPastureId, onConfirm }: PopUpModalProps) {
+/**
+ * A component that displays a modal with a message, buttons and/or input fields based on the given props.
+ * The modal type can be one of 'deleteConfirmation', 'pasture', 'relocateConfirmation', 'Input', or 'CreateAnimal'.
+ * The component will display different content and buttons based on the modal type.
+ * When the user clicks on one of the buttons or submits the input field, the component will call the onConfirm function with the appropriate value.
+ * @param {string} message The message to be displayed in the modal.
+ * @param {'deleteConfirmation' | 'pasture' | 'relocateConfirmation' | 'Input' | 'CreateAnimal'} modalType The type of the modal to be displayed.
+ * @param {'Animal' | 'Pasture'} type The type of the pasture to be deleted or the animal to be created.
+ * @param {string} currentPastureId The id of the pasture to be deleted or the pasture where the animal is to be created.
+ * @param {(value: boolean | string | { name: string; type: string; pastureId: string }) => void} onConfirm The function to be called when the user clicks on one of the buttons or submits the input field.
+ */
+export default function PopUpModal({ message, modalType, type, currentPastureId, onConfirm }: PopUpModalProps) {
     const [listPastures, setListPastures] = useState<any[]>([]);
     const [inputValue, setInputValue] = useState<string>('');
     const [selectedRelocatePastureId, setSelectedRelocatePastureId] = useState<string>('');
@@ -29,9 +40,11 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
 
     return (
         <div className="modal-overlay">
+
             ({(modalType === 'pasture' || modalType === 'deleteConfirmation') &&
                 <div className="modal-box">
                     <p className="modal-message">{message}</p>
+
                     <div className="modal-buttons">
                         <button className="btn btn-confirm" onClick={() => onConfirm(true)}>
                             {modalType === 'pasture' ? 'Relocate Animals and Delete Pasture' : `Delete ${type}`}
@@ -42,9 +55,11 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
                     </div>
                 </div>
             }
+
             {(modalType === 'relocateConfirmation') &&
                 <div className="modal-box">
                     <label className="select-label">{message}</label>
+
                     <select id="relocate" className="custom-select" onChange={(e) => setSelectedRelocatePastureId(e.target.value)} value={selectedRelocatePastureId}>
                         <option value="" disabled>
                             Select a pasture to relocate animals
@@ -55,6 +70,7 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
                             </option>
                         ))}
                     </select>
+
                     <div className="modal-buttons">
                         <button className="btn btn-confirm" onClick={() => onConfirm(selectedRelocatePastureId)}>
                             Confirm Relocation
@@ -65,26 +81,25 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
                     </div>
                 </div>
             }
+
             {(modalType === 'Input') &&
                 <div className="modal-box">
                     <p className="modal-message">{message}</p>
                     <input type="text" className="modal-input" value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
+
                     <div className="modal-buttons">
                         <button className="btn btn-input-confirm" onClick={() => onConfirm(inputValue)} >
                             Confirm
                         </button>
-                        {/* <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
-                            Cancel
-                        </button> */}
                     </div>
                 </div>
             }
-            {
-                (modalType === 'CreateAnimal') &&
+
+            {(modalType === 'CreateAnimal') &&
                 <div className="modal-box">
                     <label className="input-label">{message}</label>
                     <input type="text" className="modal-input" placeholder="Animal Name" value={newAnimal.name} onChange={(e) => setNewAnimal({ ...newAnimal, name: e.target.value })} />
-                    
+
                     <label htmlFor="animalType" className="select-label">Select Animal Type:</label>
                     <select id="animalType" className="custom-select" onChange={(e) => setNewAnimal({ ...newAnimal, type: e.target.value })} value={newAnimal.type}>
                         <option value="" disabled>
@@ -109,7 +124,7 @@ export default function PopUpModal({ message, modalType, type ,currentPastureId,
                     </select>
 
                     <div className="modal-buttons">
-                        <button className="btn btn-create" onClick={() => onConfirm(newAnimal)} style={{backgroundColor: "#0e5501"}}>
+                        <button className="btn btn-create" onClick={() => onConfirm(newAnimal)} style={{ backgroundColor: "#0e5501" }}>
                             Create Animal
                         </button>
                         <button className="btn btn-cancel" onClick={() => onConfirm(false)}>
