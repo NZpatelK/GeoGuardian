@@ -10,6 +10,17 @@ interface DisplayPasturesProps {
     selectedOption: string;
 }
 
+/**
+ * @description A component that displays a list of pastures with their respective information such as the number of animals, health issues, and pasture size.
+ * @param {Pasture[]} pastures The list of pastures to be displayed.
+ * @param {(id: string | number | undefined, type: string) => void} handleClickRecenter
+ * A function that is called when the user clicks on a pasture, which then recenters the map to the pasture.
+ * @param {(option: string) => void} setSelectedOption
+ * A function that is called when the user clicks on the edit pasture button, which then sets the selected option to "pasture-edit".
+ * @param {string} selectedOption
+ * The current selected option.
+ * @returns {JSX.Element} A JSX element containing the list of pastures and the edit pasture button.
+ */
 export default function DisplayPastures({
     pastures,
     handleClickRecenter,

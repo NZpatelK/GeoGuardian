@@ -13,6 +13,19 @@ interface AnimalModalProps {
     pastureId: string;
 }
 
+/**
+ * A React functional component that displays a modal with the count of various animal types
+ * in a specified pasture. The modal is only visible when the `isOpen` prop is true.
+ *
+ * Props:
+ * - isOpen: A boolean that determines whether the modal should be displayed.
+ * - onClose: A callback function that is triggered when the modal backdrop or the close button is clicked.
+ * - pastureId: A string representing the ID of the pasture for which the animal counts are to be displayed.
+ *
+ * The modal displays the count of Pigs, Goats, Sheep, and Cows using icons and labels, 
+ * and provides a close button to dismiss the modal.
+ */
+
 const AnimalCountPopUpModal
     : React.FC<AnimalModalProps> = ({ isOpen, onClose, pastureId }) => {
         if (!isOpen) return null;
