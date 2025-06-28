@@ -13,7 +13,6 @@ import animalRoutes from './src/routes/animals.js';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
-// Fix __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -181,8 +180,6 @@ const dummyData = [
   }
 ];
 
-
-
 function generateAnimal() {
   const pasture = dummyData[faker.number.int({ min: 0, max: dummyData.length - 1 })];
   return {
@@ -196,6 +193,11 @@ function generateAnimal() {
   }
 }
 
+/**
+ * Checks if the pasture data file exists.
+ * If it does, clears the existing data and populates it with dummy data.
+ * If it does not exist, creates a new file and populates it with dummy data.
+ */
 function initalisePastureDataFile() {
   if (fs.existsSync(pastureFilePath)) {
     console.log("File exists. Clearing and adding dummy data.");
@@ -207,6 +209,19 @@ function initalisePastureDataFile() {
   }
 }
 
+/**
+ * Checks if the animal data file exists.
+ * If it does, clears the existing data and populates it with dummy data.
+ * If it does not exist, creates a new file and populates it with dummy data.
+ * The dummy data is an array of 50 objects, each with the following properties:
+ * - id: a random integer between 1000 and 9999
+ * - name: a random pet name
+ * - type: a random animal type (Cow, Pig, Sheep, Goat)
+ * - age: a random integer between 1 and 10
+ * - status: a random status (Healthy, Sick, or Injured)
+ * - pastureId: a random id from the pasture data array
+ * - coordinates: a random coordinate pair within the pasture area
+ */
 function initaliseAnimalDataFile() {
   const animals = Array.from({ length: 50 }, generateAnimal);
   if (fs.existsSync(animalFilePath)) {
