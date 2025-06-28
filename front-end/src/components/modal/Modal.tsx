@@ -6,6 +6,13 @@ interface ModalProps {
     children: ReactNode;
 }
 
+/**
+ * A modal component that can be moved around the screen by dragging its handle.
+ * It will ensure that the modal stays within the window boundaries.
+ *
+ * @param children The content of the modal.
+ * @returns A JSX element representing the modal.
+ */
 export const Modal: React.FC<ModalProps> = ({ children }: ModalProps) => {
     const cardRef = useRef<HTMLDivElement | null>(null);
     let startX = 0;

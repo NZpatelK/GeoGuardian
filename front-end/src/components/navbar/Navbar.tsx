@@ -7,6 +7,21 @@ interface NavbarProps {
   toggleModal: (type: string) => void;
 }
 
+/**
+ * A component that renders a responsive bottom navigation bar.
+ *
+ * Props:
+ * - toggleModal: A function that will be called when an item is clicked. The function takes in a string argument indicating which item was clicked.
+ *
+ * State:
+ * - isOpened: A boolean that tracks whether the menu is open or not.
+ *
+ * The component will render a menu with two items: "Pastures" and "Animals". When an item is clicked, the toggleModal function will be called with the name of the item.
+ *
+ * The component will also render a toggle button that will open or close the menu when clicked. The button will display a hamburger icon when the menu is closed and a cross icon when the menu is open.
+ *
+ * The component is styled in the Navbar.css file.
+ */
 export const Navbar: React.FC<NavbarProps> = ({toggleModal}) => {
   const [isOpened, setIsOpened] = useState(false);
 
