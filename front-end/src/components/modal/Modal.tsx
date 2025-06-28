@@ -26,6 +26,12 @@ export const Modal: React.FC<ModalProps> = ({ children }: ModalProps) => {
         document.addEventListener('mouseup', mouseUp);
     };
 
+    /**
+     * Updates the position of the card based on the mouse movement
+     * since the last mouseDown event.
+     *
+     * @param e The MouseEvent object for the mouseMove event.
+     */
     const mouseMove = (e: MouseEvent) => {
         if (!cardRef.current) return;
 

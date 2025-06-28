@@ -14,6 +14,51 @@ interface EditModeBarProps {
     isDelete?: boolean;
 }
 
+/**
+ * A bar of buttons that allows the user to switch between different modes of selecting a pasture.
+ *
+ * The bar is used to control the state of the {@link Mode} component.
+ *
+ * The bar is rendered as a container with a group of buttons.
+ *
+ * The bar is used to switch between the following modes:
+ * - Adding a new pasture
+ * - Editing the shape of a pasture
+ * - Deleting a pasture
+ * - Adding a point to a pasture
+ * - Deleting a point from a pasture
+ *
+ * The bar is also used to go back to the previous mode.
+ *
+ * The bar is rendered with a message that informs the user of the current mode.
+ *
+ * The bar is rendered with a "Done" button that is enabled when the user is in edit mode.
+ * The bar is rendered with a "Cancel" button that is enabled when the user is in any mode.
+ *
+ * The bar is rendered with a "Go Back" button that is enabled when the user is in any mode.
+ *
+ * The bar is rendered with a "Add Point" button that is enabled when the user is in edit mode.
+ * The bar is rendered with a "Delete Point" button that is enabled when the user is in edit mode.
+ *
+ * The bar is rendered with a "Add" button that is enabled when the user is not in add mode.
+ * The bar is rendered with a "Edit" button that is enabled when the user is not in edit mode.
+ * The bar is rendered with a "Delete" button that is enabled when the user is not in delete mode.
+ *
+ * The bar is rendered with a "Done" button that is disabled when the user is not in edit mode.
+ * The bar is rendered with a "Cancel" button that is disabled when the user is not in any mode.
+ *
+ * The bar is rendered with a "Go Back" button that is disabled when the user is not in any mode.
+ *
+ * The bar is rendered with a "Add Point" button that is disabled when the user is not in edit mode.
+ * The bar is rendered with a "Delete Point" button that is disabled when the user is not in edit mode.
+ *
+ * The bar is rendered with a "Add" button that is disabled when the user is in add mode.
+ * The bar is rendered with a "Edit" button that is disabled when the user is in edit mode.
+ * The bar is rendered with a "Delete" button that is disabled when the user is in delete mode.
+ *
+ * @param {EditModeBarProps} props - The props for the component.
+ * @returns {JSX.Element} - The rendered component.
+ */
 export const EditModeBar: React.FC<EditModeBarProps> = ({ modeRefs, handleClickDone }) => {
     const [isSelectedMode, setIsSelectedMode] = useState(false);
 
