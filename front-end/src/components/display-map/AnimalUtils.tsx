@@ -15,6 +15,10 @@ let animals: Animal[] = [];
 
 export class AnimalUtils {
 
+    /**
+     * @description Initializes the animals by fetching their coordinates from the API.
+     * @returns {Promise<Animal[]>} A promise that resolves to the list of animals.
+     */
     static intialiseAnimals = async () => {
         try {
             const response = await AnimalApi.getAnimalsCoordinates();
@@ -64,6 +68,12 @@ export class AnimalUtils {
             AnimalApi.removeAnimal(id);
         }
     }
+
+    /**
+     * @description Randomly moves an animal within a small range of its current coordinates.
+     * @param {Animal} animal - The animal to be moved.
+     * @returns {Object} An object containing the updated animal's id, name, and new coordinates.
+     */
     static randomiseAnimalCoordinates = (animal: Animal) => {
 
         // Generate new random lat/lng within a small range
@@ -77,6 +87,11 @@ export class AnimalUtils {
         return { id: animal.id, name: animal.name, coordinates: coordinates };
     }
 
+    /**
+     * @description Gets a random position inside the pasture for the given animal.
+     * @param {Animal} animal - The animal for which to find a new position.
+     * @returns {Promise<Object>} An object containing the animal's id, name, and new coordinates.
+     */
     static getRandomPositionInsidePasture = async (animal: Animal) => {
         if (!animal) return;
         const pasture: Pasture = await PasturesApi.getPastureById(animal.pastureId);
@@ -99,6 +114,11 @@ export class AnimalUtils {
         return { id: animal.id, name: animal.name, coordinates: animalCoordinates };
     }
 
+    /**
+     * @description Checks if the animal is inside its pasture.
+     * @param {number} animalId - The ID of the animal to check.
+     * @returns {Promise<boolean>} A promise that resolves to true if the animal is inside the pasture, false otherwise.
+     */
     static checkAnimalInPasture = async (animalId: number) => {
         const animal = animals.find(animal => animal.id === animalId);
         if (!animal) return;
@@ -111,6 +131,12 @@ export class AnimalUtils {
 
     }
 
+    /**
+     * @description Updates the polygon state and generates a notification message if the animal enters or exits a pasture.
+     * @param {Object} animalData - The animal data containing id, name, and coordinates.
+     * @param {Object} polygonState - The current state of the polygons.
+     * @returns {Promise<Object>} An object containing the notification message and updated polygon state.
+     */
     static updatePolygonStateAndGenerateNotification = async (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
 
         const listPastures = await PasturesApi.getPasturesCoordinates();
@@ -140,6 +166,11 @@ export class AnimalUtils {
         return { notificationMsg: notificationMsg, polygonState: polygonState };
     };
 
+    /**
+     * @description Moves an animal back to the closest boundary point of its pasture.
+     * @param {number} animalId - The ID of the animal to be moved.
+     * @returns {Promise<Coordinates>} The new coordinates of the animal after moving it back to the pasture boundary.
+     */
     static moveAnimalBackToTheirPasture = async (animalId: number): Promise<Coordinates> => {
         const animal = animals.find(animal => animal.id === animalId);
 
@@ -203,6 +234,10 @@ export class AnimalUtils {
         return { lng: animalLocation.lng + stepLongitude, lat: animalLocation.lat + stepLatitude };
     }
 
+    /**
+     * @description Controls the movement of animals by randomly selecting one and updating its position.
+     * @returns {Promise<void>}
+     */
     static controlAnimalMovement = async () => {
         const randomIndex = Math.floor(Math.random() * animals.length);
         const animal = animals[randomIndex];
