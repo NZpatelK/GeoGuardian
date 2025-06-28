@@ -9,7 +9,6 @@ interface DisplayAnimalsProps {
     selectedAnimalRef: (arg0: Animal) => void;
 }
 
-
 /**
  * Component to display a list of all animals in the system.
  * 
@@ -60,7 +59,7 @@ export default function DisplayAnimals({ animals, setModalIsSelected, CreateNewA
                     <p>Current Location: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
                 </div>
             )}
-            
+
             <button className='add-animal-btn' onClick={CreateNewAnimal}>Create New Animal</button>
         </div>
     )

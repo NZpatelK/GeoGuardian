@@ -164,20 +164,20 @@ export const startPolygon = (coords: { lat: number; lng: number }) => {
     return temporaryMarker;
 }
 
-    /**
-     * Closes the current polygon and adds it to the map.
-     *
-     * If the polygon has fewer than three vertices, this function will return
-     * without doing anything.
-     *
-     * @param startPoint - The coordinates of the first point of the polygon in the format of an object containing 'lat' and 'lng' properties.
-     * @param label - The label for the polygon.
-     * @returns An object containing the following properties:
-     *  - removeTempPolyline: The temporary polyline that was previously added to the map, if any.
-     *  - removeTempMarker: The temporary marker that was previously added to the map, if any.
-     *  - polygon: The newly created polygon.
-     *  - pastureId: The ID of the newly added pasture.
-     */
+/**
+ * Closes the current polygon and adds it to the map.
+ *
+ * If the polygon has fewer than three vertices, this function will return
+ * without doing anything.
+ *
+ * @param startPoint - The coordinates of the first point of the polygon in the format of an object containing 'lat' and 'lng' properties.
+ * @param label - The label for the polygon.
+ * @returns An object containing the following properties:
+ *  - removeTempPolyline: The temporary polyline that was previously added to the map, if any.
+ *  - removeTempMarker: The temporary marker that was previously added to the map, if any.
+ *  - polygon: The newly created polygon.
+ *  - pastureId: The ID of the newly added pasture.
+ */
 export const closePolygon = async (startPoint: { lat: number; lng: number }, label: string) => {
     pastureCoordinates.push(startPoint);
 
@@ -194,9 +194,6 @@ export const closePolygon = async (startPoint: { lat: number; lng: number }, lab
         data: {}
     });
 
-    // const area = calculateGeodeticAreaInSquareKilometers(pastureCoordinates);
-
-    // listPastures.push({ label: label, polygon: pastureCoordinates, id: nanoid() });
     CompletedPolygon = [];
     CompletedPolygon = pastureCoordinates;
     const size = calculateGeodeticAreaInSquareKilometers(pastureCoordinates);
@@ -311,7 +308,6 @@ export function cleanupTemporaryObjects(isCleanData?: boolean) {
  * @param coordinates - An array of objects, each containing 'lat' and 'lng' properties representing latitude and longitude.
  * @returns An H.geo.LineString object representing the path defined by the input coordinates.
  */
-
 function createLineString(coordinates: { lat: number; lng: number }[]) {
     const lineString = new H.geo.LineString();
     coordinates.forEach((coord) => lineString.pushLatLngAlt(coord.lat, coord.lng, 0));
@@ -355,6 +351,24 @@ export const isPointInPolygon = (point: { lat: number; lng: number }, pastureCoo
 
     return intersects % 2 === 1;
 };
+
+/**
+ * Updates the polygon state by determining if an animal is within each pasture.
+ *
+ * This function iterates over all pastures, checking if the given animal's
+ * coordinates are inside each pasture's boundaries using the ray-casting
+ * algorithm. It modifies the polygon state to reflect whether the animal is
+ * inside or outside each pasture.
+ *
+ * @param animalData - An object containing the animal's id, name, and
+ *     coordinates.
+ * @param polygonState - A record that tracks the state of animals in relation
+ *     to pastures, where the key is the name of the pasture and the value is
+ *     another record mapping animal ids to a boolean indicating presence
+ *     inside the pasture.
+ * @returns The updated polygon state with the animal's presence status for
+ *     each pasture.
+ */
 
 export const updatePolygonState = (animalData: { id: number, name: string, coordinates: { lat: number, lng: number } }, polygonState: Record<string, Record<number, boolean>>) => {
     listPastures.forEach((pasutre) => {
