@@ -10,6 +10,17 @@ interface DisplayAnimalsProps {
 }
 
 
+/**
+ * Component to display a list of all animals in the system.
+ * 
+ * The component includes a dropdown to filter the animals by pasture.
+ * 
+ * @param animals - An array of all animals in the system
+ * @param setModalIsSelected - A function that sets the modal to be displayed
+ * @param CreateNewAnimal - A function to create a new animal
+ * @param selectedAnimalRef - A function that sets the selected animal
+ * @returns A JSX component that displays all animals in the system
+ */
 export default function DisplayAnimals({ animals, setModalIsSelected, CreateNewAnimal, selectedAnimalRef }: DisplayAnimalsProps) {
     const [selectedFilter, setSelectedFilter] = useState("all");
 
@@ -36,6 +47,7 @@ export default function DisplayAnimals({ animals, setModalIsSelected, CreateNewA
                     ))}
                 </select>
             </div>
+
             {animals.filter((animal) => animal.pastureId === selectedFilter || selectedFilter === "all").map((animal) =>
                 <div key={animal.id} className="animal-item" onClick={() => {
                     selectedAnimalRef(animal);
@@ -48,6 +60,7 @@ export default function DisplayAnimals({ animals, setModalIsSelected, CreateNewA
                     <p>Current Location: {getPastures().find((pasture) => pasture.id === animal.pastureId)?.name}</p>
                 </div>
             )}
+            
             <button className='add-animal-btn' onClick={CreateNewAnimal}>Create New Animal</button>
         </div>
     )
