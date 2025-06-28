@@ -23,23 +23,30 @@ import { Animal } from '../../types/animal';
 
 
 
+/**
+ * This component renders a HERE map with pastures and animals.
+ * It handles animal and pasture creation, deletion, and relocation.
+ * It also handles modal windows for animal and pasture details, and for editing pastures.
+ * @returns A JSX element representing the map component.
+ */
 export const DisplayMap = () => {
-  const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState<HMap | null>(null);
   const [polygonState, setPolygonState] = useState<Record<string, Record<number, boolean>>>({});
   const [displayAnimal, setDisplayAnimal] = useState<Animal[]>([]);
   const [modalIsSelected, setModalIsSelected] = useState("pastures");
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+
   const { showModal, PopUpModalComponent } = usePopUpModal();
 
   const isMapLoaded = useRef(false);
+
+  const mapRef = useRef(null);
 
   const selectedPastureRef = useRef<{ id: string | null; coord: { lat: number; lng: number }[] }>({ id: null, coord: [] });
   const markersRef = useRef<H.map.Marker[]>([]);
 
   const selectedAnimalRef = useRef<{ animal: Animal | null }>({ animal: null });
   const animalRef = useRef<Record<number, H.map.Marker>>({});
-
 
   const modeRefs = useRef({
     isAdd: false,
@@ -51,12 +58,25 @@ export const DisplayMap = () => {
 
   useEffect(() => {
 
+    /**
+     * Initializes the HERE map with predefined settings and event listeners.
+     * 
+     * - Checks if the map should be initialized based on the current state.
+     * - Loads the HERE Maps API key from the environment variables.
+     * - Sets up the platform and default map layers.
+     * - Creates a new map instance centered at San Francisco with a specific zoom level.
+     * - Enables map events and UI controls.
+     * - Loads existing pastures from the API and adds them to the map with event handlers.
+     * - Adds functionality to create new pastures by tapping on the map.
+     * - Sets the map instance for further use in the application.
+     * - Cleans up event listeners and map resources when the component is unmounted.
+     */
     const initializeMap = async () => {
 
       if (!mapRef.current || isMapLoaded.current) return;
       isMapLoaded.current = true;
 
-      const HereApiKey = import.meta.env.VITE_HERE_API_KEY; // Load API key from .env
+      const HereApiKey = import.meta.env.VITE_HERE_API_KEY; // Ensure you have your HERE Maps API key set in your environment variables
 
       if (!HereApiKey) {
         console.error("HERE Maps API key is missing!");
@@ -83,10 +103,7 @@ export const DisplayMap = () => {
         : null;
 
       if (hereMap) {
-        // Enable map events
         const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(hereMap));
-
-        // Add UI controls
         const ui = H.ui.UI.createDefault(hereMap, defaultLayers);
 
         // ---------------------------------------------------------------------------------------------------------------------------//
@@ -114,6 +131,8 @@ export const DisplayMap = () => {
             hereMap.addObject(existingPasture.labelMarker);
           }
         }
+
+        // ---------------------------------------------------------------------------------------------------------------------------//
 
         const addNewPasture = async (evt: any) => {
           if (!modeRefs.current.isAdd) return;
@@ -148,6 +167,17 @@ export const DisplayMap = () => {
 
   useEffect(() => {
     if (mapInstance) {
+      /**
+       * Initializes the animal data, fetches all animal data from the database and adds them to the map.
+       * 
+       * - Initializes the animal data using AnimalUtils.intialiseAnimals()
+       * - Fetches all animal data using AnimalUtils.getAnimals()
+       * - Creates a marker for each animal and adds it to the map
+       * - Sets the event listener for each marker to display the animal details modal when tapped
+       * - Adds the animal to the animalPosition object to keep track of the animal positions
+       * - Updates the polygon state by adding the animal to the polygon state
+       * - Sets the displayAnimal state to the fetched animal data
+       */
       const initialiseAndAddExistingAnimalsIntoMap = async () => {
         await AnimalUtils.intialiseAnimals()
         const animalData = AnimalUtils.getAnimals();
@@ -183,22 +213,25 @@ export const DisplayMap = () => {
 
 
   useEffect(() => {
+  /**
+   * Updates the animal's position and checks if the animal is inside the pasture.
+   * - Gets the updated animal position using AnimalUtils.controlAnimalMovement()
+   * - Updates the corresponding animal's position if the animal exists in the animalPosition object
+   * - Checks if the animal is inside the pasture using bringAnimalBackToPasture()
+   * - Updates the displayAnimal state with the new animal data
+   */
     const updateAnimalLocation = async () => {
       if (!animalRef.current) return;
 
       const updateAnimalPosition = await AnimalUtils.controlAnimalMovement();
-
       if (!updateAnimalPosition) return;
-
-      // Update the corresponding animal's position
+      
       const position = animalRef.current[updateAnimalPosition.id];
       if (position) {
         position.setGeometry(new H.geo.Point(updateAnimalPosition.coordinates.lat, updateAnimalPosition.coordinates.lng));
       }
 
-      // Check if the animal is inside the pasture
       bringAnimalBackToPasture(updateAnimalPosition as Animal);
-
 
       const newDisplayAnimal = AnimalUtils.getAnimals();
       setDisplayAnimal([...newDisplayAnimal]);
@@ -210,6 +243,14 @@ export const DisplayMap = () => {
   }, []);
 
 
+  /**
+   * Handles the logic for creating a new pasture.
+   * @param coords The coordinates of the user's click
+   * @param hereMap The HERE map instance
+   * @param behavior The HERE map behavior instance
+   * @param isDrawing Whether or not the user is currently drawing a polygon
+   * @returns A boolean indicating whether drawing should continue
+   */
   const createNewPasture = async (
     coords: { lat: number; lng: number },
     hereMap: HMap,
@@ -264,9 +305,18 @@ export const DisplayMap = () => {
   };
 
 
+  /**
+   * Initializes the pasture editor.
+   * If the user is in delete mode, this will check if there are any animals in the pasture and prompt the user to relocate them before deleting the pasture.
+   * If the user is in edit mode, this will add the pasture's vertices to the map as draggable markers for the user to edit the pasture.
+   * @param hereMap The HERE map instance
+   * @param existingPasture The existing pasture object
+   * @param pastureId The ID of the pasture
+   * @param behavior The HERE map behavior instance
+   */
   const initialisePastureEditor = async (hereMap: HMap, existingPasture: { createPasture: H.map.Polygon, labelMarker: H.map.Marker }, pastureId: string, behavior: H.mapevents.Behavior) => {
-
     let deleteComfirmed = false;
+    
     if (modeRefs.current.isDelete) {
       if (AnimalUtils.hasAnimalsInPasture(pastureId)) {
         const relocateAnimalsConfirmed = await showModal("Sorry, this pasture cannot be deleted because there are animals in it. Would you like to relocate the animals to another pasture?", 'pasture');
@@ -285,11 +335,11 @@ export const DisplayMap = () => {
           }
         }
       }
-      else{
+      else {
         const response = await showModal("Are you sure you want to delete this pasture?", 'deleteConfirmation', 'Pasture');
         deleteComfirmed = response as boolean;
       }
-      
+
       if (!AnimalUtils.hasAnimalsInPasture(pastureId) && deleteComfirmed) {
         hereMap.removeObject(existingPasture.createPasture);
         hereMap.removeObject(existingPasture.labelMarker);
@@ -308,12 +358,21 @@ export const DisplayMap = () => {
   }
 
 
+  /**
+   * Selects a pasture on the map, allowing the user to edit the pasture's
+   * vertices by dragging them around. This function is called when the user
+   * enters edit mode.
+   * @param pasture The pasture to select
+   * @param hereMap The HERE map instance
+   * @param behavior The HERE map behavior instance
+   * @returns An array of markers that represent the pasture's vertices
+   */
   const selectPasture = (pasture: H.map.Polygon, hereMap: HMap, behavior: H.mapevents.Behavior) => {
     if (!pasture || !hereMap) return;
 
     const geometry = pasture.getGeometry() as H.geo.Polygon;
     const exterior = geometry.getExterior();
-    // const markers: H.map.Marker[] = [];
+
     markersRef.current = [];
     const points: H.geo.Point[] = [];
 
@@ -371,6 +430,11 @@ export const DisplayMap = () => {
       return marker;
     };
 
+  /**
+   * Updates the markers that represent the vertices of the selected pasture.
+   * This method is called whenever the user drags a marker to a new location,
+   * or when the user adds or removes a marker.
+   */
     const updateMarkers = () => {
       markersRef.current.forEach((marker) => hereMap.removeObject(marker));
       markersRef.current.length = 0;
@@ -380,7 +444,7 @@ export const DisplayMap = () => {
       });
     };
 
-    updateMarkers(); // Initialize markers
+    updateMarkers();
 
     pasture.addEventListener("tap", (evt) => {
       if (!modeRefs.current.isAddPoint) return;
@@ -399,7 +463,16 @@ export const DisplayMap = () => {
 
     return markersRef.current;
   };
+  
 
+  /**
+   * Recenter the map to the given id and type.
+   * This function is used to recenter the map to a specific pasture or animal.
+   * If the type is 'pasture', the map is centered to the centroid of the pasture.
+   * If the type is 'animal', the map is centered to the coordinates of the animal.
+   * @param {string | number | undefined} id The id of the pasture or animal to center the map to.
+   * @param {string} type The type of the object to center the map to. Can be 'pasture' or 'animal'.
+   */
   const handleClickRecenter = (id: string | number | undefined, type: string) => {
     if (id === undefined) return;
 
@@ -424,6 +497,13 @@ export const DisplayMap = () => {
   }
 
 
+  /**
+   * Adds a new animal to the map and database.
+   * This function is called when the user clicks the "Create Animal" button.
+   * It prompts the user to enter the animal's name, and then adds the animal to the database and the map.
+   * A new marker is created on the map at the coordinates of the animal,
+   * and the animal is added to the displayAnimal state.
+   */
   const CreateNewAnimal = async () => {
     const animal = await showModal("Please enter the animal's name:", 'CreateAnimal');
     const newAnimal = await AnimalUtils.addAnimal(animal as Animal);
@@ -450,10 +530,19 @@ export const DisplayMap = () => {
     setModalIsSelected("animals");
   }
 
+/**
+ * Updates the position of all animals in a specified pasture and checks if they are inside the pasture.
+ * - Retrieves all animals by the given pasture ID using AnimalUtils.getAnimalsByPastureId().
+ * - For each animal, attempts to bring it back to its pasture using bringAnimalBackToPasture().
+ * - Waits for a short delay between each operation to simulate asynchronous processing.
+ * - Updates the displayAnimal state with the latest animal data.
+ * 
+ * @param id The ID of the pasture whose animals should be updated.
+ */
+
   const updateAnimal = async (id: string) => {
     const animals = AnimalUtils.getAnimalsByPastureId(id);
     if (!animals) return;
-
 
     for (const animal of animals) {
       bringAnimalBackToPasture(animal);
@@ -463,6 +552,14 @@ export const DisplayMap = () => {
     setDisplayAnimal(AnimalUtils.getAnimals());
   }
 
+  /**
+   * Relocates an animal to a different pasture.
+   * This function is used when the user wants to move an animal to a different pasture.
+   * It updates the animal's pastureId in the database using AnimalUtils.updateAnimalPasture(),
+   * and then calls bringAnimalBackToPasture() to move the animal's marker to the new pasture.
+   * @param {Animal} animal The animal to be relocated.
+   * @param {string} relocatePastureId The id of the pasture to which the animal is to be relocated.
+   */
   const relocateAnimal = async (animal: Animal, relocatePastureId: string) => {
     if (animal && relocatePastureId) {
       AnimalUtils.updateAnimalPasture(animal.id, relocatePastureId);
@@ -471,6 +568,16 @@ export const DisplayMap = () => {
 
   }
 
+  /**
+   * Attempts to move an animal back to its pasture.
+   * This function is called when the user wants to move an animal back to its pasture.
+   * It checks if the animal is inside its pasture using AnimalUtils.checkAnimalInPasture().
+   * If the animal is not inside its pasture, it attempts to move it back to the pasture using AnimalUtils.moveAnimalBackToTheirPasture(),
+   * and then updates the animal's position on the map.
+   * The function also updates the polygon state and generates a notification message based on the animal's movement.
+   * If the animal is stuck outside the pasture after a certain number of attempts, a toast notification is shown.
+   * @param {Animal} updateAnimalPosition The animal to be moved back to its pasture.
+   */
   const bringAnimalBackToPasture = async (updateAnimalPosition: Animal) => {
     const position = animalRef.current[updateAnimalPosition.id];
     if (!position) return;
@@ -488,10 +595,7 @@ export const DisplayMap = () => {
       isInside = await AnimalUtils.checkAnimalInPasture(updateAnimalPosition.id);
 
       const updatePolygonState = await AnimalUtils.updatePolygonStateAndGenerateNotification(updateAnimalPosition, polygonState);
-
       setPolygonState(updatePolygonState.polygonState);
-
-      // console.log(updateAnimalPosition.id, updatePolygonState.notificationMsg);
 
       if (updatePolygonState.notificationMsg) {
         toast(updatePolygonState.notificationMsg, {
@@ -519,6 +623,13 @@ export const DisplayMap = () => {
     }
   }
 
+  /**
+   * Removes an animal from the display and from the backend.
+   * It first checks if the user wants to delete the animal by showing a confirmation modal.
+   * If the user confirms, it removes the animal from the display and from the backend.
+   * If the animal is not found, it shows a toast notification with an error message.
+   * @param {number} animalId The id of the animal to be removed.
+   */
   const removeAnimal = async (animalId: number) => {
     const deleteConfirmation = await showModal(`Are you sure you want to remove the animal with ID ${animalId}?`, 'deleteConfirmation', 'Animal');
 
@@ -558,9 +669,17 @@ export const DisplayMap = () => {
     setModalIsSelected(modal);
   };
 
-  //TODO: rename this function to something more descriptive
-  const cleanUpPastureMarkers = (isModelClosed: boolean) => {
 
+/**
+ * Cleans up the markers and updates the pasture database.
+ * 
+ * This function updates the database with the current coordinates of the selected pasture, removes all markers from the map,
+ * and clears the markers reference. It also updates the animal data for the selected pasture and resets the selected pasture's
+ * reference values. Temporary polyline and marker objects are also removed from the map. If the modal is closed, the selected option is reset.
+ * 
+ * @param {boolean} isModelClosed - A flag indicating whether the model is closed, which determines if the selected option should be reset.
+ */
+  const cleanUpPastureMarkers = (isModelClosed: boolean) => {
     if (selectedPastureRef.current.id && selectedPastureRef.current.coord.length > 0) {
       updatePastureDatabase(selectedPastureRef.current.id, selectedPastureRef.current.coord);
 
@@ -571,7 +690,6 @@ export const DisplayMap = () => {
 
       selectedPastureRef.current.id = null;
       selectedPastureRef.current.coord = [];
-
     }
 
     const { removeTempPolyline, removeTempMarker } = cleanupTemporaryObjects(true);
@@ -594,6 +712,7 @@ export const DisplayMap = () => {
     >
       <Modal>
         <div className="modal-content">
+
           {modalIsSelected === "animals" &&
             <DisplayAnimals animals={displayAnimal} setModalIsSelected={setModalIsSelected} CreateNewAnimal={CreateNewAnimal} selectedAnimalRef={(e) => selectedAnimalRef.current.animal = e} />
           }
@@ -650,8 +769,7 @@ export const DisplayMap = () => {
 
       {PopUpModalComponent}
       <Navbar toggleModal={toggleModal} />
-      <ToastContainer
-        stacked />
+      <ToastContainer stacked />
     </div>
   );
 }
