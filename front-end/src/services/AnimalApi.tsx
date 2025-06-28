@@ -1,7 +1,12 @@
 import axios from "axios";
 import { toast } from 'react-toastify';
 
-// import { nanoid } from 'nanoid';
+/**
+ * AnimalApi class provides methods to interact with the animal-related API endpoints.
+ * It includes methods to fetch animal coordinates, add a new animal, update animal coordinates,
+ * relocate an animal to a different pasture, and remove an animal.
+ * Each method handles API requests and responses, including error handling and user notifications. 
+ */
 
 export class AnimalApi {
     static async getAnimalsCoordinates() {
@@ -19,6 +24,7 @@ export class AnimalApi {
             type: animal.type,
             pastureId: animal.pastureId,
         };
+
         try {
             // Send data to the backend using axios
             const response = await axios.post('http://localhost:3000/api/animals/addAnimal', data, {
@@ -56,11 +62,20 @@ export class AnimalApi {
             }
         }
     }
+
+    /**
+     * Update the coordinates of a specific animal
+     * This is called when an animal is moveing and changes its coordinates.
+     * @param animalId The id of the animal to be updated
+     * @param newCoordinates The new coordinates of the animal
+     * @returns Promise that resolves if the update is successful
+     */
     static async updateAnimalCoordinates(animalId: number, newCoordinates: { lat: number; lng: number }) {
         const data = {
             latitude: newCoordinates.lat,
             longitude: newCoordinates.lng,
         };
+
         try {
             // Send data to the backend using axios
             await axios.put(`http://localhost:3000/api/animals/updateAnimalCoordinates/${animalId}`, data, {
@@ -80,11 +95,19 @@ export class AnimalApi {
         }
     }
 
+    /**
+     * Update the pastureId of a specific animal
+     * This is called when an animal is relocated to a different pasture.
+     * @param animalId The id of the animal to be updated
+     * @param pastureId The id of the pasture to which the animal is to be relocated
+     * @returns Promise that resolves if the update is successful
+     */
     static async updateRelocatedAnimal(animalId: number, pastureId: string) {
         const data = {
             animalId: animalId,
             pastureId: pastureId,
         };
+        
         try {
             // Send data to the backend using axios
             const response = await axios.put(`http://localhost:3000/api/animals/relocateAnimal`, data, {

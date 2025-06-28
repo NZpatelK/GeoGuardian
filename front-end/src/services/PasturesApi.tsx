@@ -2,6 +2,13 @@ import axios from "axios";
 import { nanoid } from 'nanoid';
 import { toast } from 'react-toastify';
 
+
+/**
+ * PasturesApi class provides methods to interact with the pasture-related API endpoints.
+ * It includes methods to fetch pasture coordinates, add a new pasture, update pasture coordinates,
+ * and delete a pasture. Each method handles API requests and responses, including error handling
+ * and user notifications.
+ */
 class PasturesApi {
     static async getPasturesCoordinates() {
         try {
@@ -25,12 +32,12 @@ class PasturesApi {
         const data = {
             id: nanoid(),
             name: label,
-            glazing:  "Available for Grazing",
+            glazing: "Available for Grazing",
             size: size,
             coordinates: polygonCoordinates,
         };
+
         try {
-            // Send data to the backend using axios
             const response = await axios.post('http://localhost:3000/api/pastures/addPasture', data, {
                 headers: {
                     'Content-Type': 'application/json', // Ensure the server expects JSON
@@ -73,8 +80,8 @@ class PasturesApi {
             id: pastureId,
             coordinates: newCoordinates,
         };
+
         try {
-            // Send data to the backend using axios
             const response = await axios.put('http://localhost:3000/api/pastures/updatePasture', data, {
                 headers: {
                     'Content-Type': 'application/json', // Ensure the server expects JSON
@@ -114,7 +121,6 @@ class PasturesApi {
 
     static async deletePasture(pastureId: string) {
         try {
-            // Send data to the backend using axios
             const response = await axios.delete(`http://localhost:3000/api/pastures/deletePasture/${pastureId}`);
 
             toast.success(response.data.message, {
