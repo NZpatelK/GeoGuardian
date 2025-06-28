@@ -2,16 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import { getData, writeData, handleDBError } from '../utils/dbHelpers.js';
 
-// For __dirname in ES Modules (since it's not defined by default)
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { de } from '@faker-js/faker';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const pastureFilePath = path.join(__dirname, '../data/PastureData.json');
-
 
 const getPastures = async (req, res) => {
     try {
@@ -119,10 +116,6 @@ const deletePasture = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
-
-
-
 
 export default {
     getPastures,

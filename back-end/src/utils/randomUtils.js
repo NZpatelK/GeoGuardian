@@ -1,6 +1,12 @@
 import { faker } from '@faker-js/faker';
 
 
+/**
+ * Generates a random coordinate within the bounding box of the given pasture.
+ *
+ * @param pasture - The pasture object containing the coordinates of its vertices.
+ * @returns A random coordinate object with keys 'lat' and 'lng'.
+ */
 export function getRandomCoordinate(pasture) {
   const latitudes = pasture.coordinates.map(coord => coord.lat);
   const longitudes = pasture.coordinates.map(coord => coord.lng);

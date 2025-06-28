@@ -47,7 +47,6 @@ const addAnimal = async (req, res) => {
     }
 };
 
-
 const deleteAnimal = async (req, res) => {
     const { id } = req.params;
 
@@ -79,6 +78,15 @@ const deleteAnimal = async (req, res) => {
         handleDBError(res, error);
     }
 };
+
+/**
+ * Relocates an animal to a different pasture.
+ * @param {Object} req The request object.
+ * @param {number} req.body.animalId The id of the animal to be relocated.
+ * @param {string} req.body.pastureId The id of the pasture to which the animal is to be relocated.
+ * @param {Object} res The response object.
+ * @returns {Promise<void>} A promise that resolves if the relocation is successful.
+ */
 const relocateAnimal = async (req, res) => {
     const { animalId, pastureId } = req.body;
     if (!animalId || !pastureId) {
@@ -133,7 +141,6 @@ const updateAnimalCoordinates = async (req, res) => {
         handleDBError(res, error);
     }
 };
-
 
 export default {
     getAnimals,

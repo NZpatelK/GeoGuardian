@@ -1,77 +1,166 @@
-const { getAnimals, addAnimal } = require('../controllers/animalController');
-const { getData, writeData, handleDBError } = require('../utils/dbHelpers');
-const path = require('path');
+import animalController from '../controllers/animalController.js';
+import * as dbHelpers from '../utils/dbHelpers.js';
+import * as randomUtils from '../utils/randomUtils.js';
+import { faker } from '@faker-js/faker';
 
-jest.mock('../utils/dbHelpers'); // Mocking the dbHelpers module
+jest.mock('../utils/dbHelpers.js');
+jest.mock('../utils/randomUtils.js');
 
-const animalFilePath = path.join(__dirname, '../data/AnimalsData.json');
+const mockRes = () => {
+    const res = {};
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn().mockReturnValue(res);
+    return res;
+};
 
-describe('getAnimals', () => {
-    let res;
-
+describe('Animal Controller', () => {
     beforeEach(() => {
-        res = {
-            json: jest.fn(),
-        };
+        jest.clearAllMocks();
     });
 
-    it('should fetch and return animal data', async () => {
-        const mockData = [{ id: 1, name: 'Lion' }];
-        getData.mockResolvedValue(mockData);
+    describe('getAnimals', () => {
+        it('should return animals data', async () => {
+            const req = {};
+            const res = mockRes();
+            const mockData = [{ id: 1, name: 'Cow' }];
 
-        await getAnimals({}, res);
+            dbHelpers.getData.mockResolvedValue(mockData);
 
-        expect(getData).toHaveBeenCalledWith(animalFilePath);
-        expect(res.json).toHaveBeenCalledWith(mockData);
+            await animalController.getAnimals(req, res);
+
+            expect(dbHelpers.getData).toHaveBeenCalled();
+            expect(res.json).toHaveBeenCalledWith(mockData);
+        });
     });
 
-    it('should handle errors by calling handleDBError', async () => {
-        const error = new Error('Unable to fetch data');
-        getData.mockRejectedValue(error);
-        const handleDBErrorMock = jest.spyOn(require('../utils/dbHelpers'), 'handleDBError');
-        const req = {};
+    describe('addAnimal', () => {
+        it('should add a new animal with unique ID and return it', async () => {
+            const req = {
+                body: {
+                    name: 'Sheep',
+                    pastureId: 'pasture-1'
+                }
+            };
+            const res = mockRes();
+            const existingAnimals = [{ id: 1001, name: 'Cow' }];
+            const pastureData = [{ id: 'pasture-1', polygon: [] }];
+            const fakeCoordinate = { lat: 1, lng: 1 };
+            const fakeStatus = 'healthy';
 
-        await getAnimals(req, res);
+            dbHelpers.getData.mockResolvedValue(existingAnimals);
+            dbHelpers.getDatabyId.mockResolvedValue(pastureData);
+            randomUtils.getRandomCoordinate.mockReturnValue(fakeCoordinate);
+            randomUtils.getWeightedStatus.mockReturnValue(fakeStatus);
+            dbHelpers.writeData.mockResolvedValue();
 
-        expect(getData).toHaveBeenCalledWith(animalFilePath);
-        expect(handleDBError).toHaveBeenCalledWith(res, error);
-        handleDBErrorMock.mockRestore();
-    });
-});
+            await animalController.addAnimal(req, res);
 
-describe('addAnimal', () => {
-    let req, res;
-
-    beforeEach(() => {
-        req = {
-            body: { id: 2, name: 'Elephant' },
-        };
-        res = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn(),
-        };
-    });
-
-    it('should add new animal data successfully', async () => {
-        const mockExistingData = [{ id: 1, name: 'Lion' }];
-        getData.mockResolvedValue(mockExistingData);
-        writeData.mockResolvedValue();
-
-        await addAnimal(req, res);
-
-        expect(getData).toHaveBeenCalledWith(animalFilePath);
-        expect(writeData).toHaveBeenCalledWith(animalFilePath, req.body, mockExistingData);
-        expect(res.status).toHaveBeenCalledWith(200);
-        expect(res.json).toHaveBeenCalledWith({ message: 'Data saved successfully' });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                message: expect.stringContaining('data saved successfully'),
+                animal: expect.objectContaining({
+                    name: 'Sheep',
+                    status: fakeStatus,
+                    coordinates: fakeCoordinate
+                })
+            }));
+        });
     });
 
-    it('should handle errors when adding animal data', async () => {
-        const error = new Error('Unable to save data');
-        getData.mockRejectedValue(error);
+    describe('deleteAnimal', () => {
+        it('should delete the animal if it exists', async () => {
+            const req = { params: { id: '1001' } };
+            const res = mockRes();
+            const animals = [{ id: 1001, name: 'Sheep' }];
 
-        await addAnimal(req, res);
+            dbHelpers.getData.mockResolvedValue(animals);
+            dbHelpers.writeData.mockResolvedValue();
 
-        expect(getData).toHaveBeenCalledWith(animalFilePath);
-        expect(handleDBError).toHaveBeenCalledWith(res, error);
+            await animalController.deleteAnimal(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+                message: expect.stringContaining('removed successfully')
+            }));
+        });
+
+        it('should return 404 if animal not found', async () => {
+            const req = { params: { id: '9999' } };
+            const res = mockRes();
+
+            dbHelpers.getData.mockResolvedValue([{ id: 1001, name: 'Sheep' }]);
+
+            await animalController.deleteAnimal(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({ message: 'Animal with id 9999 not found' });
+        });
+    });
+
+    describe('relocateAnimal', () => {
+        it('should relocate an animal to another pasture', async () => {
+            const req = {
+                body: {
+                    animalId: 1001,
+                    pastureId: 'pasture-2'
+                }
+            };
+            const res = mockRes();
+            const animals = [{ id: 1001, pastureId: 'pasture-1' }];
+
+            dbHelpers.getData.mockResolvedValue(animals);
+            dbHelpers.writeData.mockResolvedValue();
+
+            await animalController.relocateAnimal(req, res);
+
+            expect(animals[0].pastureId).toBe('pasture-2');
+            expect(res.status).toHaveBeenCalledWith(200);
+        });
+
+        it('should return 404 if animal not found', async () => {
+            const req = { body: { animalId: 1234, pastureId: 'pasture-1' } };
+            const res = mockRes();
+            dbHelpers.getData.mockResolvedValue([]);
+
+            await animalController.relocateAnimal(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({
+                message: 'Animal with id 1234 not found'
+            });
+        });
+    });
+
+    describe('updateAnimalCoordinates', () => {
+        it('should update animal coordinates', async () => {
+            const req = {
+                params: { id: '1001' },
+                body: { latitude: 45.0, longitude: 90.0 }
+            };
+            const res = mockRes();
+            const animals = [{ id: 1001, coordinates: { lat: 0, lng: 0 } }];
+
+            dbHelpers.getData.mockResolvedValue(animals);
+            dbHelpers.writeData.mockResolvedValue();
+
+            await animalController.updateAnimalCoordinates(req, res);
+
+            expect(animals[0].coordinates).toEqual({ lat: 45.0, lng: 90.0 });
+            expect(res.status).toHaveBeenCalledWith(200);
+        });
+
+        it('should return 404 if animal not found', async () => {
+            const req = {
+                params: { id: '1234' },
+                body: { latitude: 45.0, longitude: 90.0 }
+            };
+            const res = mockRes();
+
+            dbHelpers.getData.mockResolvedValue([]);
+
+            await animalController.updateAnimalCoordinates(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+        });
     });
 });

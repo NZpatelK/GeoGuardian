@@ -19,33 +19,77 @@ export const getData = (filePath) => {
     });
 };
 
+// export const writeData = async (filePath, data, existData = null, options = {}) => {
+//   const { append = true } = options;
+
+//   let currentData = [];
+
+//   try {
+//     if (existData) {
+//       currentData = Array.isArray(existData) ? existData : [];
+//     } else {
+//       // Try reading from the file directly
+//       const raw = await fs.promises.readFile(filePath, 'utf8');
+//       const parsed = JSON.parse(raw);
+//       currentData = Array.isArray(parsed) ? parsed : [];
+//     }
+//   } catch (err) {
+//     // If file doesn't exist or is invalid, start with empty array
+//     currentData = [];
+//   }
+
+//   if (append && data) {
+//     if (Array.isArray(data)) {
+//       currentData.push(...data); // Spread to flatten
+//     } else if (typeof data === 'object') {
+//       currentData.push(data);
+//     }
+//   } else if (!append && data) {
+//     // Overwrite with new data instead of appending
+//     currentData = Array.isArray(data) ? data : [data];
+//   }
+
+//   try {
+//     await fs.promises.writeFile(filePath, JSON.stringify(currentData, null, 2), 'utf8');
+//   } catch (err) {
+//     throw err;
+//   }
+// };
+
 export const writeData = async (filePath, data, existData = null, options = {}) => {
   const { append = true } = options;
 
   let currentData = [];
 
   try {
-    if (existData) {
-      currentData = Array.isArray(existData) ? existData : [];
+    if (existData !== null) {
+      // Use the provided existData, but ensure it's an array
+      currentData = Array.isArray(existData) ? [...existData] : [];
     } else {
-      // Try reading from the file directly
+      // Read from the file only if existData is NOT passed
       const raw = await fs.promises.readFile(filePath, 'utf8');
       const parsed = JSON.parse(raw);
       currentData = Array.isArray(parsed) ? parsed : [];
     }
   } catch (err) {
-    // If file doesn't exist or is invalid, start with empty array
     currentData = [];
   }
 
   if (append && data) {
     if (Array.isArray(data)) {
-      currentData.push(...data); // Spread to flatten
+      // Avoid duplicates by filtering out items already in currentData (simple shallow check)
+      const filteredData = data.filter(
+        item => !currentData.some(existing => JSON.stringify(existing) === JSON.stringify(item))
+      );
+      currentData.push(...filteredData);
     } else if (typeof data === 'object') {
-      currentData.push(data);
+      // Only add if not already present
+      const exists = currentData.some(existing => JSON.stringify(existing) === JSON.stringify(data));
+      if (!exists) {
+        currentData.push(data);
+      }
     }
   } else if (!append && data) {
-    // Overwrite with new data instead of appending
     currentData = Array.isArray(data) ? data : [data];
   }
 
@@ -55,6 +99,7 @@ export const writeData = async (filePath, data, existData = null, options = {}) 
     throw err;
   }
 };
+
 
 
 export const getDatabyId = (filePath, id) => {
@@ -75,6 +120,13 @@ export const getDatabyId = (filePath, id) => {
     });
 };
 
+/**
+ * Handles a database error by sending a JSON response with the appropriate
+ * HTTP status code and an error object with code, message, and details.
+ *
+ * @param {Response} res The Express.js response object
+ * @param {Error} error The error that occurred
+ */
 export const handleDBError = (res, error) => {
     let errorCode, errorMessage, errorDetails;
 

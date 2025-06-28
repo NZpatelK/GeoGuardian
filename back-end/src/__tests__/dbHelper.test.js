@@ -2,7 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { getData, writeData, handleDBError } = require('../utils/dbHelpers'); // Adjust the path to your module
 
-jest.mock('fs');  // Mock fs module
+jest.mock('fs');
+
 
 describe('File Operations', () => {
 
@@ -15,6 +16,7 @@ describe('File Operations', () => {
             const result = await getData(filePath);
 
             expect(result).toEqual({ key: 'value' });
+            jest.unmock('fs'); // Unmock fs after test
         });
 
         it('should reject with error if file read fails', async () => {
@@ -23,6 +25,7 @@ describe('File Operations', () => {
             fs.readFile.mockImplementation((path, encoding, callback) => callback(error));
 
             await expect(getData(filePath)).rejects.toThrow(error);
+            jest.unmock('fs');
         });
 
         it('should reject with error if JSON parsing fails', async () => {
@@ -31,19 +34,31 @@ describe('File Operations', () => {
             fs.readFile.mockImplementation((path, encoding, callback) => callback(null, invalidJsonData));
 
             await expect(getData(filePath)).rejects.toThrow(SyntaxError);
+            jest.unmock('fs');
         });
     });
 
     describe('writeData', () => {
+        beforeEach(() => {
+            fs.promises = {
+                writeFile: jest.fn(),
+            };
+        });
+
         it('should write data to file', async () => {
             const filePath = 'path/to/file.json';
             const data = { key: 'newValue' };
             const existingData = [{ key: 'oldValue' }];
-            fs.writeFile.mockImplementation((path, data, encoding, callback) => callback(null));
+
+            fs.promises.writeFile.mockResolvedValue();
 
             await writeData(filePath, data, existingData);
 
-            expect(fs.writeFile).toHaveBeenCalledWith(filePath, JSON.stringify([...existingData], null, 2), 'utf8', expect.any(Function));
+            expect(fs.promises.writeFile).toHaveBeenCalledWith(
+                filePath,
+                JSON.stringify([...existingData, data], null, 2),
+                'utf8'
+            );
         });
 
         it('should reject with error if write fails', async () => {
@@ -51,7 +66,8 @@ describe('File Operations', () => {
             const data = { key: 'newValue' };
             const existingData = [{ key: 'oldValue' }];
             const error = new Error('Write failed');
-            fs.writeFile.mockImplementation((path, data, encoding, callback) => callback(error));
+
+            fs.promises.writeFile.mockRejectedValue(error);
 
             await expect(writeData(filePath, data, existingData)).rejects.toThrow(error);
         });
@@ -60,14 +76,19 @@ describe('File Operations', () => {
             const filePath = 'path/to/file.json';
             const data = { key: 'newValue' };
             const existData = {}; // Not an array
-            fs.writeFile.mockImplementation((path, data, encoding, callback) => callback(null));
+
+            fs.promises.writeFile.mockResolvedValue();
 
             await writeData(filePath, data, existData);
 
-            expect(fs.writeFile).toHaveBeenCalledWith(filePath, JSON.stringify([data], null, 2), 'utf8', expect.any(Function));
+            expect(fs.promises.writeFile).toHaveBeenCalledWith(
+                filePath,
+                JSON.stringify([data], null, 2),
+                'utf8'
+            );
         });
     });
-
+    
     describe('handleDBError', () => {
         it('should handle ENOENT error', () => {
             const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
